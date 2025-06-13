@@ -1,6 +1,4 @@
-pub mod chat;
+pub mod index;
 pub mod init_data;
-pub mod init_data_internal;
 pub mod launch_params;
 pub mod theme_params;
-pub mod user;

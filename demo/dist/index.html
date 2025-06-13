@@ -2,11 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Telegram WebApp SDK Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Telegram Mini App</title>
+
+    <!-- trunk will inject your WASM bundle and CSS -->
     
 <script type="module">
-import init, * as bindings from '/demo-de9c73a03a993bf8.js';
-const wasm = await init({ module_or_path: '/demo-de9c73a03a993bf8_bg.wasm' });
+import init, * as bindings from '/demo-9fb270d1bdec40e4.js';
+const wasm = await init({ module_or_path: '/demo-9fb270d1bdec40e4_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -15,24 +19,24 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f5f5f5;
-        padding: 2rem;
-      }
-      #user-info {
-        white-space: pre-wrap;
-        background: #fff;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 0 5px #ccc;
-      }
-    </style>
-  <link rel="modulepreload" href="/demo-de9c73a03a993bf8.js" crossorigin="anonymous" integrity="sha384-8/Y/ThKZh31140GXjDcVubSE3A8ckzn9Vh5OjO1O1TD5my8FwdMYYaaDBdfl3kSr"><link rel="preload" href="/demo-de9c73a03a993bf8_bg.wasm" crossorigin="anonymous" integrity="sha384-n9vmiVfzeWjYJ13n0jGBEIycuQenDCncOq0Q+HPtvbPhKnXmY/59V6s/XOWzCf8Z" as="fetch" type="application/wasm"></head>
+    <link rel="stylesheet" href="/style-5e5a44c42627ba58.css" integrity="sha384-+hzpL4m9WZtc7Anxz4H1FplMxaopEU6uXWjvZAnaU1mZxzpgBCkZjBAhFXzTHibE"/>
+  <link rel="modulepreload" href="/demo-9fb270d1bdec40e4.js" crossorigin="anonymous" integrity="sha384-q3KS1A7wB5xO41O2BUFUSg+2eMpeLkVkmumapfT+V2rC7tFxT41jntwKgv5NBOJv"><link rel="preload" href="/demo-9fb270d1bdec40e4_bg.wasm" crossorigin="anonymous" integrity="sha384-8LFzNrPs2wdl6vc0wA2s2bhXJWiKQ0xOnh8VFBMwEGZ76qBj5fXUGYnWANU8ER6k" as="fetch" type="application/wasm"></head>
   <body>
-    <h1>Telegram WebApp SDK Demo</h1>
-    <div id="user-info">Loading user...</div>
+    <div id="app">
+      <header>Telegram WebApp SDK Demo</header>
+
+      <!-- вот сюда рендерим все страницы -->
+      <div id="app-root"></div>
+
+      <footer id="dev-menu">
+        <button id="send-data">Send Data</button>
+        <button id="expand">Expand</button>
+        <button id="close">Close</button>
+        <button id="alert">Show Alert</button>
+        <button id="main-button">Main Button</button>
+        <button id="is-expanded">Is Expanded?</button>
+      </footer>
+    </div>
   <script>"use strict";
 
 (function () {

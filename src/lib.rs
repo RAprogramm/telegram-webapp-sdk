@@ -3,3 +3,4 @@ pub mod core;
 pub mod logger;
 pub mod mock;
 pub mod utils;
+pub mod webapp;

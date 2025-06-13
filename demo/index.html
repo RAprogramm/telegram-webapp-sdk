@@ -2,25 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Telegram WebApp SDK Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Telegram Mini App</title>
+
+    <!-- trunk will inject your WASM bundle and CSS -->
     <link data-trunk rel="rust" />
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f5f5f5;
-        padding: 2rem;
-      }
-      #user-info {
-        white-space: pre-wrap;
-        background: #fff;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 0 5px #ccc;
-      }
-    </style>
+    <link data-trunk rel="css" href="style.css" />
   </head>
   <body>
-    <h1>Telegram WebApp SDK Demo</h1>
-    <div id="user-info">Loading user...</div>
+    <div id="app">
+      <header>Telegram WebApp SDK Demo</header>
+
+      <!-- вот сюда рендерим все страницы -->
+      <div id="app-root"></div>
+
+      <footer id="dev-menu">
+        <button id="send-data">Send Data</button>
+        <button id="expand">Expand</button>
+        <button id="close">Close</button>
+        <button id="alert">Show Alert</button>
+        <button id="main-button">Main Button</button>
+        <button id="is-expanded">Is Expanded?</button>
+      </footer>
+    </div>
   </body>
 </html>

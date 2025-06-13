@@ -75,6 +75,8 @@ pub fn init_sdk() -> Result<(), JsValue> {
     let theme_val = Reflect::get(&webapp, &"themeParams".into())?;
     let theme_params: TelegramThemeParams = from_value(theme_val)?;
 
+    // theme_params.clone().apply_to_root();
+
     // === 5. Init global context ===
     TelegramContext::init(init_data, theme_params)?;
 

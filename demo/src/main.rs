@@ -1,13 +1,21 @@
 #![no_main]
 
+pub mod components;
+pub mod pages;
+pub mod router;
+
+use components::dev_menu::setup_dev_menu;
+use pages::{
+    index::render_index_page, init_data::render_init_data_page,
+    launch_params::render_launch_params_page, theme_params::render_theme_params_page
+};
+use router::Router;
 use telegram_webapp_sdk::{
-    core::{init::init_sdk, safe_context::get_context},
-    logger::info,
+    core::init::init_sdk,
     mock::{config::MockTelegramConfig, data::MockTelegramUser, init::mock_telegram_webapp},
     utils::check_env::is_telegram_env
 };
 use wasm_bindgen::prelude::*;
-use web_sys::window;
 
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
@@ -25,6 +33,19 @@ pub fn main() -> Result<(), JsValue> {
             hash: Some("fakehash".into()),
             bg_color: Some("#ffffff".into()),
             text_color: Some("#000000".into()),
+            hint_color: Some("#888888".into()),
+            link_color: Some("#2689bf".into()),
+            button_color: Some("#0088cc".into()),
+            button_text_color: Some("#ffffff".into()),
+            secondary_bg_color: Some("#f0f0f0".into()),
+            header_bg_color: Some("#1d1f21".into()),
+            bottom_bar_bg_color: Some("#1f2226".into()),
+            accent_text_color: Some("#2eaee3".into()),
+            section_bg_color: Some("#222529".into()),
+            section_header_text_color: Some("#c8c9cb".into()),
+            section_separator_color: Some("#2a2c30".into()),
+            subtitle_text_color: Some("#909398".into()),
+            destructive_text_color: Some("#e33e3e".into()),
             ..Default::default()
         })
         .unwrap();
@@ -32,51 +53,14 @@ pub fn main() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let lang = get_context(|ctx| {
-        JsValue::from_str(
-            ctx.init_data
-                .user
-                .as_ref()
-                .and_then(|u| u.language_code.as_deref())
-                .unwrap_or("en")
-        )
-    })?;
-    info(&format!(
-        "language_code: {}",
-        lang.as_string().unwrap_or_default()
-    ));
+    setup_dev_menu();
 
-    let color = get_context(|ctx| {
-        JsValue::from_str(ctx.theme_params.bg_color.as_deref().unwrap_or("none"))
-    })?;
-    info(&format!(
-        "theme.bg_color: {}",
-        color.as_string().unwrap_or_default()
-    ));
+    Router::new()
+        .register("/", render_index_page)
+        .register("/init-data", render_init_data_page)
+        .register("/launch-params", render_launch_params_page)
+        .register("/theme-params", render_theme_params_page)
+        .start();
 
-    let user_str = get_context(|ctx| {
-        ctx.init_data
-            .user
-            .as_ref()
-            .map(|u| {
-                format!(
-                    "👤 {} {}\nUsername: @{}\nLanguage: {}\nID: {}",
-                    u.first_name,
-                    u.last_name.as_deref().unwrap_or(""),
-                    u.username.as_deref().unwrap_or("–"),
-                    u.language_code.as_deref().unwrap_or("en"),
-                    u.id
-                )
-            })
-            .unwrap_or_else(|| "No user info".into())
-    })?;
-
-    if let Some(doc) = window().and_then(|w| w.document()) {
-        if let Some(elem) = doc.get_element_by_id("user-info") {
-            elem.set_inner_html(&user_str);
-        }
-    }
-
-    info(&format!("\nUser: {user_str}"));
     Ok(())
 }

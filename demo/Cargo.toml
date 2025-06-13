@@ -9,6 +9,13 @@ web-sys = { version = "0.3", features = [
   "Window",
   "Document",
   "HtmlElement",
+  "History",
+  "Location",
+  "Event",
+  "EventTarget",
+  "CustomEvent",
+  "CustomEventInit",
   "console",
+  "Text",
 ] }
 telegram-webapp-sdk = { path = "../" }

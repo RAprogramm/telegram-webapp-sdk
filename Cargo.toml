@@ -21,11 +21,13 @@ web-sys = { version = "0.3", features = [
   "Event",
   "Window",
   "Document",
+  "Element",
   "HtmlElement",
   "console",
   "Navigator",
   "Geolocation",
   "Location",
+  "CssStyleDeclaration",
 ] }
 hmac-sha256 = "1.1"
 hex = "0.4"

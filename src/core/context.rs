@@ -1,6 +1,8 @@
 use once_cell::unsync::OnceCell;
 
-use super::types::{init_data::TelegramInitData, theme_params::TelegramThemeParams};
+use super::types::{
+    init_data::TelegramInitData, launch_params::LaunchParams, theme_params::TelegramThemeParams
+};
 
 /// Global context of the Telegram Mini App, initialized once per app session.
 pub struct TelegramContext {
@@ -40,4 +42,36 @@ impl TelegramContext {
     {
         CONTEXT.with(|cell| cell.get().map(f))
     }
+}
+
+pub fn get_launch_params() -> LaunchParams {
+    let window = web_sys::window().expect("no window");
+    let location = window.location();
+
+    LaunchParams {
+        tg_web_app_platform:      location.origin().ok().or_else(|| Some("web".into())),
+        tg_web_app_version:       get_param("tgWebAppVersion"),
+        tg_web_app_start_param:   get_param("tgWebAppStartParam"),
+        tg_web_app_show_settings: get_param("tgWebAppShowSettings").map(|s| s == "1"),
+        tg_web_app_bot_inline:    get_param("tgWebAppBotInline").map(|s| s == "1")
+    }
+}
+
+fn get_param(key: &str) -> Option<String> {
+    web_sys::window()?
+        .document()?
+        .location()?
+        .search()
+        .ok()?
+        .split('&')
+        .find_map(|pair| {
+            let mut parts = pair.split('=');
+            let k = parts.next()?;
+            let v = parts.next()?;
+            if k == key {
+                Some(v.to_string())
+            } else {
+                None
+            }
+        })
 }
