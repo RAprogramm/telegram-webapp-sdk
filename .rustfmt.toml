@@ -1,0 +1,25 @@
+# Не добавлять запятые, если элемент один
+trailing_comma = "Never"
+
+# Скобки остаются на той же строке
+brace_style = "SameLineWhere"
+
+# Выравнивать поля структуры, если длина меньше указанного порога
+struct_field_align_threshold = 20
+
+# Форматировать комментарии внутри документации
+wrap_comments = true
+format_code_in_doc_comments = true
+
+# Не складывать литералы структур в одну строку
+struct_lit_single_line = false
+
+max_width = 99
+
+# Группировка импортов
+imports_granularity = "Crate"      # Группировать импорты по крейтам
+group_imports = "StdExternalCrate" # Стандартные, внешние и локальные импорты в отдельных группах
+reorder_imports = true             # Сортировать импорты внутри групп
+
+# Включить поддержку нестабильных функций (только для nightly)
+unstable_features = true
