@@ -1097,6 +1097,32 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn switch_inline_query_without_types_calls_js() {
+        let webapp = setup_webapp();
+        let switch_inline = Function::new_with_args(
+            "query",
+            "this.query = query; this.args_len = arguments.length;"
+        );
+        let _ = Reflect::set(&webapp, &"switchInlineQuery".into(), &switch_inline);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.switch_inline_query("search", None).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"query".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("search"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"args_len".into()).unwrap().as_f64(),
+            Some(1.0),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn share_url_calls_js() {
         let webapp = setup_webapp();
         let share = Function::new_with_args(
