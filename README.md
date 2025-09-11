@@ -70,14 +70,17 @@ Request access to sensitive user data or open the contact interface:
 use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
-let _ = request_contact();
-let _ = request_phone_number();
-let _ = open_contact();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+request_contact()?;
+request_phone_number()?;
+open_contact()?;
 
-let app = TelegramWebApp::instance().unwrap();
-let _ = app.request_write_access(|granted| {
+let app = TelegramWebApp::try_instance()?;
+app.request_write_access(|granted| {
     let _ = granted;
-});
+})?;
+# Ok(())
+# }
 ```
 
 These calls require the user's explicit permission before any information is shared.
@@ -88,9 +91,11 @@ Hide the native keyboard when it's no longer required:
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-
-let app = TelegramWebApp::instance().unwrap();
-app.hide_keyboard().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+app.hide_keyboard()?;
+# Ok(())
+# }
 ```
 
 ## Closing confirmation
@@ -99,11 +104,13 @@ Prompt users before the Mini App closes:
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-
-let app = TelegramWebApp::instance().unwrap();
-app.enable_closing_confirmation().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+app.enable_closing_confirmation()?;
 // later
-app.disable_closing_confirmation().unwrap();
+app.disable_closing_confirmation()?;
+# Ok(())
+# }
 ```
 ## Sharing
 
@@ -113,7 +120,8 @@ Share links, prepared messages, or stories and join voice chats:
 use js_sys::Object;
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
-let app = TelegramWebApp::instance().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
 app.share_url("https://example.com", Some("Check this out"))?;
 app.join_voice_chat("chat", None)?;
 app.share_message("msg-id", |sent| {
@@ -121,7 +129,10 @@ app.share_message("msg-id", |sent| {
 })?;
 let params = Object::new();
 app.share_to_story("https://example.com/image.png", Some(&params.into()))?;
-# Ok::<(), wasm_bindgen::JsValue>(())
+# Ok(())
+# }
+```
+
 ## Settings button
 
 Control the Telegram client's settings button and handle user clicks:
@@ -161,12 +172,14 @@ Prompt users to add the app to their home screen and check the current status:
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-
-let app = TelegramWebApp::instance().unwrap();
-let _shown = app.add_to_home_screen().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let _shown = app.add_to_home_screen()?;
 app.check_home_screen_status(|status| {
     let _ = status;
-}).unwrap();
+})?;
+# Ok(())
+# }
 ```
 
 ## Event callbacks
@@ -175,11 +188,14 @@ Callback registration methods return an `EventHandle` for later deregistration.
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-let app = TelegramWebApp::instance().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
 let handle = app.on_event("my_event", |value| {
     let _ = value;
-}).unwrap();
-app.off_event(handle).unwrap();
+})?;
+app.off_event(handle)?;
+# Ok(())
+# }
 ```
 
 ## Appearance
@@ -191,20 +207,23 @@ Control the Mini App display and screen orientation:
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-let app = TelegramWebApp::instance().unwrap();
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
 app.set_header_color("#000000")?;
 app.set_background_color("#ffffff")?;
 app.set_bottom_bar_color("#cccccc")?;
-let theme_handle = app.on_theme_changed(|| {}).unwrap();
-let safe_handle = app.on_safe_area_changed(|| {}).unwrap();
-let content_handle = app.on_content_safe_area_changed(|| {}).unwrap();
+let theme_handle = app.on_theme_changed(|| {})?;
+let safe_handle = app.on_safe_area_changed(|| {})?;
+let content_handle = app.on_content_safe_area_changed(|| {})?;
 // later: app.off_event(theme_handle)?; etc.
-# Ok::<(), wasm_bindgen::JsValue>(())
-app.request_fullscreen().unwrap();
-app.lock_orientation("portrait").unwrap();
+
+app.request_fullscreen()?;
+app.lock_orientation("portrait")?;
 // later...
-app.unlock_orientation().unwrap();
-app.exit_fullscreen().unwrap();
+app.unlock_orientation()?;
+app.exit_fullscreen()?;
+# Ok(())
+# }
 ```
 
 ## Haptic feedback
