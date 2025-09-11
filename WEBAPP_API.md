@@ -102,14 +102,14 @@ they are implemented.
 - [ ] authenticate
 
 ### CloudStorage
-- [ ] getItem
-- [ ] setItem
-- [ ] removeItem
-- [ ] getItems
+- [x] getItem
+- [x] setItem
+- [x] removeItem
+- [x] getItems
 - [ ] setItems
-- [ ] removeItems
-- [ ] getKeys
-- [ ] clear
+- [x] removeItems
+- [x] getKeys
+- [x] clear
 
 ## Remaining WebApp Features
 

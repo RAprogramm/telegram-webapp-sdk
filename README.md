@@ -82,6 +82,24 @@ let _ = app.request_write_access(|granted| {
 
 These calls require the user's explicit permission before any information is shared.
 
+## Cloud storage
+
+Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
+
+```rust,no_run
+use telegram_webapp_sdk::api::cloud_storage::{get_item, set_item};
+use wasm_bindgen_futures::JsFuture;
+
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+JsFuture::from(set_item("counter", "1")?).await?;
+let value = JsFuture::from(get_item("counter")?).await?;
+assert_eq!(value.as_string(), Some("1".into()));
+# Ok(())
+# }
+```
+
+All functions return a `Promise` and require the Web App to run inside Telegram.
+
 ## Home screen
 
 Prompt users to add the app to their home screen and check the current status:
