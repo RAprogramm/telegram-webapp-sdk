@@ -89,6 +89,20 @@ let handle = app.on_event("my_event", |value| {
 app.off_event(handle).unwrap();
 ```
 
+## Fullscreen and orientation
+
+Control the Mini App display and screen orientation:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+let app = TelegramWebApp::instance().unwrap();
+app.request_fullscreen().unwrap();
+app.lock_orientation("portrait").unwrap();
+// later...
+app.unlock_orientation().unwrap();
+app.exit_fullscreen().unwrap();
+```
+
 ## Haptic feedback
 
 Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:

@@ -85,6 +85,66 @@ impl TelegramWebApp {
         self.call0("close")
     }
 
+    /// Call `WebApp.requestFullscreen()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.request_fullscreen().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_fullscreen(&self) -> Result<(), JsValue> {
+        self.call0("requestFullscreen")
+    }
+
+    /// Call `WebApp.exitFullscreen()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.exit_fullscreen().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn exit_fullscreen(&self) -> Result<(), JsValue> {
+        self.call0("exitFullscreen")
+    }
+
+    /// Call `WebApp.lockOrientation(orientation)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.lock_orientation("portrait").unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn lock_orientation(&self, orientation: &str) -> Result<(), JsValue> {
+        self.call1("lockOrientation", &orientation.into())
+    }
+
+    /// Call `WebApp.unlockOrientation()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.unlock_orientation().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn unlock_orientation(&self) -> Result<(), JsValue> {
+        self.call0("unlockOrientation")
+    }
+
     /// Call `WebApp.showAlert(message)`.
     ///
     /// # Errors
@@ -1073,6 +1133,94 @@ mod tests {
                 .as_deref(),
             Some("hash"),
         );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_fullscreen_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"requestFullscreen".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.request_fullscreen().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn exit_fullscreen_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"exitFullscreen".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.exit_fullscreen().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn lock_orientation_calls_js() {
+        let webapp = setup_webapp();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"lockOrientation".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.lock_orientation("portrait").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("portrait"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn unlock_orientation_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"unlockOrientation".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.unlock_orientation().unwrap();
+        assert!(called.get());
     }
 
     #[wasm_bindgen_test]
