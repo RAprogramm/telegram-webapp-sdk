@@ -24,15 +24,13 @@ web-sys = { version = "0.3", features = [
   "Element",
   "HtmlElement",
   "console",
-  "Navigator",
-  "Geolocation",
   "Location",
   "CssStyleDeclaration",
 ] }
 hmac-sha256 = "1.1"
 hex = "0.4"
 percent-encoding = "2.3"
-urlencoding = "2.1"
+urlencoding = { version = "2.1", optional = true }
 
 [dependencies.yew]
 version = "0.21.0"
@@ -50,6 +48,7 @@ features = ["csr"]
 default = []
 yew = ["dep:yew"]
 leptos = ["dep:leptos"]
+mock = ["dep:urlencoding"]
 
 [workspace]
 members = ["demo"]

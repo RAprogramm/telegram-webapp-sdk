@@ -8,13 +8,14 @@ A Rust library for building Telegram Web Apps with an ergonomic and safe API.
 - Optional framework integrations activated via Cargo features:
   - `yew` &mdash; provides a Yew hook `use_telegram_context` for retrieving the global `TelegramContext`.
   - `leptos` &mdash; offers `provide_telegram_context` to inject the `TelegramContext` into the Leptos reactive system.
+- `mock` &mdash; injects a configurable mock `Telegram.WebApp` environment for local development.
 - Basic Bot API type definitions including `WebAppInfo`, `WebAppData`,
   `SentWebAppMessage`, `WebhookInfo`, and `WriteAccessAllowed`.
 
 Enable features in `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.1", features = ["yew"] }
+telegram-webapp-sdk = { version = "0.1", features = ["yew", "mock"] }
 ```
 
 ## Examples
