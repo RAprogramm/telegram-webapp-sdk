@@ -1,5 +1,5 @@
-use wasm_bindgen::{prelude::Closure, JsCast};
-use web_sys::{window, Document, Element, HtmlElement};
+use wasm_bindgen::{JsCast, prelude::Closure};
+use web_sys::{Document, Element, HtmlElement, window};
 
 /// Creates a navigation link (styled as a cell with optional subtitle).
 ///

@@ -73,6 +73,14 @@ they are implemented.
 
 ## Objects
 
+### BottomButton (Main & Secondary)
+- [x] show
+- [x] hide
+- [x] setText
+- [x] setColor
+- [x] setTextColor
+- [x] onClick
+- [ ] offClick
 ### MainButton
 - [x] show ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
 - [x] hide ([f0a108d](https://github.com/RAprogramm/telegram-webapp-sdk/commit/f0a108d))

@@ -45,6 +45,24 @@ impl<T: ?Sized> EventHandle<T> {
     }
 }
 
+/// Identifies which bottom button to operate on.
+#[derive(Clone, Copy, Debug)]
+pub enum BottomButton {
+    /// Primary bottom button.
+    Main,
+    /// Secondary bottom button.
+    Secondary
+}
+
+impl BottomButton {
+    const fn js_name(self) -> &'static str {
+        match self {
+            BottomButton::Main => "MainButton",
+            BottomButton::Secondary => "SecondaryButton"
+        }
+    }
+}
+
 /// Safe wrapper around `window.Telegram.WebApp`
 #[derive(Clone)]
 pub struct TelegramWebApp {
@@ -524,6 +542,37 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    fn bottom_button_object(&self, button: BottomButton) -> Result<Object, JsValue> {
+        let name = button.js_name();
+        Reflect::get(&self.inner, &name.into())
+            .inspect_err(|_| logger::error(&format!("{name} not available")))?
+            .dyn_into::<Object>()
+            .inspect_err(|_| logger::error(&format!("{name} is not an object")))
+    }
+
+    fn bottom_button_method(
+        &self,
+        button: BottomButton,
+        method: &str,
+        arg: Option<&JsValue>
+    ) -> Result<(), JsValue> {
+        let name = button.js_name();
+        let btn = self.bottom_button_object(button)?;
+        let f = Reflect::get(&btn, &method.into())
+            .inspect_err(|_| logger::error(&format!("{name}.{method} not available")))?;
+        let func = f.dyn_ref::<Function>().ok_or_else(|| {
+            logger::error(&format!("{name}.{method} is not a function"));
+            JsValue::from_str("not a function")
+        })?;
+        let result = match arg {
+            Some(v) => func.call1(&btn, v),
+            None => func.call0(&btn)
+        };
+        result.inspect_err(|_| logger::error(&format!("{name}.{method} call failed")))?;
+        Ok(())
+    }
+
+    /// Show a bottom button.
     /// Call `WebApp.readTextFromClipboard(callback)`.
     ///
     /// # Examples
@@ -558,38 +607,16 @@ impl TelegramWebApp {
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn show_main_button(&self) -> Result<(), JsValue> {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())?;
-        let f = Reflect::get(&main_button, &"show".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("show is not a function"))?;
-        func.call0(&main_button)?;
-        Ok(())
+    pub fn show_bottom_button(&self, button: BottomButton) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "show", None)
     }
 
-    /// Call `WebApp.MainButton.hide()`.
+    /// Hide a bottom button.
     ///
     /// # Errors
-    /// Returns `Err` if the underlying JavaScript call fails.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// let _ = app.hide_main_button();
-    /// ```
-    pub fn hide_main_button(&self) -> Result<(), JsValue> {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())
-            .inspect_err(|_| logger::error("MainButton not available"))?;
-        let hide = Reflect::get(&main_button, &"hide".into())
-            .inspect_err(|_| logger::error("MainButton.hide not available"))?;
-        let func = hide
-            .dyn_into::<Function>()
-            .inspect_err(|_| logger::error("MainButton.hide is not a function"))?;
-        func.call0(&main_button)
-            .inspect_err(|_| logger::error("MainButton.hide call failed"))?;
-        Ok(())
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn hide_bottom_button(&self, button: BottomButton) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "hide", None)
     }
 
     /// Call `WebApp.ready()`.
@@ -615,6 +642,7 @@ impl TelegramWebApp {
     pub fn hide_back_button(&self) -> Result<(), JsValue> {
         self.call_nested0("BackButton", "hide")
     }
+
 
     /// Call `WebApp.setHeaderColor(color)`.
     ///
@@ -665,70 +693,141 @@ impl TelegramWebApp {
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn set_main_button_text(&self, text: &str) -> Result<(), JsValue> {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())?;
-        let f = Reflect::get(&main_button, &"setText".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("setText is not a function"))?;
-        func.call1(&main_button, &text.into())?;
-        Ok(())
+    pub fn set_bottom_button_text(&self, button: BottomButton, text: &str) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "setText", Some(&text.into()))
     }
 
-    /// Set main button color (`MainButton.setColor(color)`).
+    /// Set bottom button color (`setColor(color)`).
     ///
     /// # Errors
-    /// Returns `Err` if the underlying JavaScript call fails.
+    /// Returns [`JsValue`] if the underlying JS call fails.
     ///
     /// # Examples
     /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # use telegram_webapp_sdk::webapp::{TelegramWebApp, BottomButton};
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// let _ = app.set_main_button_color("#ff0000");
+    /// let _ = app.set_bottom_button_color(BottomButton::Main, "#ff0000");
     /// ```
-    pub fn set_main_button_color(&self, color: &str) -> Result<(), JsValue> {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())
-            .inspect_err(|_| logger::error("MainButton not available"))?;
-        let set_color = Reflect::get(&main_button, &"setColor".into())
-            .inspect_err(|_| logger::error("MainButton.setColor not available"))?;
-        let func = set_color
-            .dyn_into::<Function>()
-            .inspect_err(|_| logger::error("MainButton.setColor is not a function"))?;
-        func.call1(&main_button, &color.into())
-            .inspect_err(|_| logger::error("MainButton.setColor call failed"))?;
-        Ok(())
+    pub fn set_bottom_button_color(
+        &self,
+        button: BottomButton,
+        color: &str
+    ) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "setColor", Some(&color.into()))
     }
 
-    /// Set main button text color (`MainButton.setTextColor(color)`).
+    /// Set bottom button text color (`setTextColor(color)`).
     ///
     /// # Errors
-    /// Returns `Err` if the underlying JavaScript call fails.
+    /// Returns [`JsValue`] if the underlying JS call fails.
     ///
     /// # Examples
     /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # use telegram_webapp_sdk::webapp::{TelegramWebApp, BottomButton};
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// let _ = app.set_main_button_text_color("#ffffff");
+    /// let _ = app.set_bottom_button_text_color(BottomButton::Main, "#ffffff");
     /// ```
-    pub fn set_main_button_text_color(&self, color: &str) -> Result<(), JsValue> {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())
-            .inspect_err(|_| logger::error("MainButton not available"))?;
-        let set_color = Reflect::get(&main_button, &"setTextColor".into())
-            .inspect_err(|_| logger::error("MainButton.setTextColor not available"))?;
-        let func = set_color
-            .dyn_into::<Function>()
-            .inspect_err(|_| logger::error("MainButton.setTextColor is not a function"))?;
-        func.call1(&main_button, &color.into())
-            .inspect_err(|_| logger::error("MainButton.setTextColor call failed"))?;
-        Ok(())
+    pub fn set_bottom_button_text_color(
+        &self,
+        button: BottomButton,
+        color: &str
+    ) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "setTextColor", Some(&color.into()))
     }
 
-    /// Set callback for `MainButton.onClick()`.
+    /// Set callback for `onClick()` on a bottom button.
     ///
     /// Returns an [`EventHandle`] that can be used to remove the callback.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn set_bottom_button_callback<F>(
+        &self,
+        button: BottomButton,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        let btn_val = Reflect::get(&self.inner, &button.js_name().into())?;
+        let btn = btn_val.dyn_into::<Object>()?;
+        let cb = Closure::<dyn FnMut()>::new(callback);
+        let f = Reflect::get(&btn, &"onClick".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onClick is not a function"))?;
+        func.call1(&btn, cb.as_ref().unchecked_ref())?;
+        Ok(EventHandle::new(btn, "offClick", None, cb))
+    }
+
+    /// Remove previously set bottom button callback.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn remove_bottom_button_callback(
+        &self,
+        handle: EventHandle<dyn FnMut()>
+    ) -> Result<(), JsValue> {
+        handle.unregister()
+    }
+
+    /// Legacy alias for [`Self::show_bottom_button`] with
+    /// [`BottomButton::Main`].
+    pub fn show_main_button(&self) -> Result<(), JsValue> {
+        self.show_bottom_button(BottomButton::Main)
+    }
+
+    /// Show the secondary bottom button.
+    pub fn show_secondary_button(&self) -> Result<(), JsValue> {
+        self.show_bottom_button(BottomButton::Secondary)
+    }
+
+    /// Legacy alias for [`Self::hide_bottom_button`] with
+    /// [`BottomButton::Main`].
+    pub fn hide_main_button(&self) -> Result<(), JsValue> {
+        self.hide_bottom_button(BottomButton::Main)
+    }
+
+    /// Hide the secondary bottom button.
+    pub fn hide_secondary_button(&self) -> Result<(), JsValue> {
+        self.hide_bottom_button(BottomButton::Secondary)
+    }
+
+    /// Legacy alias for [`Self::set_bottom_button_text`] with
+    /// [`BottomButton::Main`].
+    pub fn set_main_button_text(&self, text: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_text(BottomButton::Main, text)
+    }
+
+    /// Set text for the secondary bottom button.
+    pub fn set_secondary_button_text(&self, text: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_text(BottomButton::Secondary, text)
+    }
+
+    /// Legacy alias for [`Self::set_bottom_button_color`] with
+    /// [`BottomButton::Main`].
+    pub fn set_main_button_color(&self, color: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_color(BottomButton::Main, color)
+    }
+
+    /// Set color for the secondary bottom button.
+    pub fn set_secondary_button_color(&self, color: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_color(BottomButton::Secondary, color)
+    }
+
+    /// Legacy alias for [`Self::set_bottom_button_text_color`] with
+    /// [`BottomButton::Main`].
+    pub fn set_main_button_text_color(&self, color: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_text_color(BottomButton::Main, color)
+    }
+
+    /// Set text color for the secondary bottom button.
+    pub fn set_secondary_button_text_color(&self, color: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_text_color(BottomButton::Secondary, color)
+    }
+
+    /// Legacy alias for [`Self::set_bottom_button_callback`] with
+    /// [`BottomButton::Main`].
     pub fn set_main_button_callback<F>(
         &self,
         callback: F
@@ -736,26 +835,34 @@ impl TelegramWebApp {
     where
         F: 'static + Fn()
     {
-        let main_button_val = Reflect::get(&self.inner, &"MainButton".into())?;
-        let main_button = main_button_val.dyn_into::<Object>()?;
-        let cb = Closure::<dyn FnMut()>::new(callback);
-        let f = Reflect::get(&main_button, &"onClick".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("onClick is not a function"))?;
-        func.call1(&main_button, cb.as_ref().unchecked_ref())?;
-        Ok(EventHandle::new(main_button, "offClick", None, cb))
+        self.set_bottom_button_callback(BottomButton::Main, callback)
     }
 
-    /// Remove previously set main button callback.
-    ///
-    /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails.
+    /// Set callback for the secondary bottom button.
+    pub fn set_secondary_button_callback<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        self.set_bottom_button_callback(BottomButton::Secondary, callback)
+    }
+
+    /// Legacy alias for [`Self::remove_bottom_button_callback`].
     pub fn remove_main_button_callback(
         &self,
         handle: EventHandle<dyn FnMut()>
     ) -> Result<(), JsValue> {
-        handle.unregister()
+        self.remove_bottom_button_callback(handle)
+    }
+
+    /// Remove callback for the secondary bottom button.
+    pub fn remove_secondary_button_callback(
+        &self,
+        handle: EventHandle<dyn FnMut()>
+    ) -> Result<(), JsValue> {
+        self.remove_bottom_button_callback(handle)
     }
 
     /// Register event handler (`web_app_event_name`, callback).
@@ -1124,7 +1231,7 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn hide_main_button_calls_js() {
+    fn hide_bottom_button_calls_js() {
         let webapp = setup_webapp();
         let main_button = Object::new();
         let called = Rc::new(Cell::new(false));
@@ -1143,13 +1250,38 @@ mod tests {
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
 
         let app = TelegramWebApp::instance().unwrap();
-        app.hide_main_button().unwrap();
+        app.hide_bottom_button(BottomButton::Main).unwrap();
         assert!(called.get());
     }
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn set_main_button_color_calls_js() {
+    fn hide_secondary_button_calls_js() {
+        let webapp = setup_webapp();
+        let secondary_button = Object::new();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let hide_cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &secondary_button,
+            &"hide".into(),
+            hide_cb.as_ref().unchecked_ref()
+        );
+        hide_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.hide_bottom_button(BottomButton::Secondary).unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_button_color_calls_js() {
         let webapp = setup_webapp();
         let main_button = Object::new();
         let received = Rc::new(RefCell::new(None));
@@ -1168,13 +1300,40 @@ mod tests {
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
 
         let app = TelegramWebApp::instance().unwrap();
-        app.set_main_button_color("#00ff00").unwrap();
+        app.set_bottom_button_color(BottomButton::Main, "#00ff00")
+            .unwrap();
         assert_eq!(received.borrow().as_deref(), Some("#00ff00"));
     }
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn set_main_button_text_color_calls_js() {
+    fn set_secondary_button_color_calls_js() {
+        let webapp = setup_webapp();
+        let secondary_button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &secondary_button,
+            &"setColor".into(),
+            set_color_cb.as_ref().unchecked_ref()
+        );
+        set_color_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_bottom_button_color(BottomButton::Secondary, "#00ff00")
+            .unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#00ff00"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_button_text_color_calls_js() {
         let webapp = setup_webapp();
         let main_button = Object::new();
         let received = Rc::new(RefCell::new(None));
@@ -1193,7 +1352,34 @@ mod tests {
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
 
         let app = TelegramWebApp::instance().unwrap();
-        app.set_main_button_text_color("#112233").unwrap();
+        app.set_bottom_button_text_color(BottomButton::Main, "#112233")
+            .unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#112233"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_secondary_button_text_color_calls_js() {
+        let webapp = setup_webapp();
+        let secondary_button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &secondary_button,
+            &"setTextColor".into(),
+            set_color_cb.as_ref().unchecked_ref()
+        );
+        set_color_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_bottom_button_text_color(BottomButton::Secondary, "#112233")
+            .unwrap();
         assert_eq!(received.borrow().as_deref(), Some("#112233"));
     }
 
@@ -1319,7 +1505,7 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn main_button_callback_register_and_remove() {
+    fn bottom_button_callback_register_and_remove() {
         let webapp = setup_webapp();
         let main_button = Object::new();
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
@@ -1334,7 +1520,7 @@ mod tests {
 
         let app = TelegramWebApp::instance().unwrap();
         let handle = app
-            .set_main_button_callback(move || {
+            .set_bottom_button_callback(BottomButton::Main, move || {
                 called_clone.set(true);
             })
             .unwrap();
@@ -1349,8 +1535,45 @@ mod tests {
         let _ = cb_fn.call0(&JsValue::NULL);
         assert!(called.get());
 
-        app.remove_main_button_callback(handle).unwrap();
+        app.remove_bottom_button_callback(handle).unwrap();
         let stored_after = Reflect::has(&main_button, &"cb".into()).unwrap();
+        assert!(!stored_after);
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn secondary_button_callback_register_and_remove() {
+        let webapp = setup_webapp();
+        let secondary_button = Object::new();
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
+
+        let on_click = Function::new_with_args("cb", "this.cb = cb;");
+        let off_click = Function::new_with_args("", "delete this.cb;");
+        let _ = Reflect::set(&secondary_button, &"onClick".into(), &on_click);
+        let _ = Reflect::set(&secondary_button, &"offClick".into(), &off_click);
+
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app
+            .set_bottom_button_callback(BottomButton::Secondary, move || {
+                called_clone.set(true);
+            })
+            .unwrap();
+
+        let stored = Reflect::has(&secondary_button, &"cb".into()).unwrap();
+        assert!(stored);
+
+        let cb_fn = Reflect::get(&secondary_button, &"cb".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        let _ = cb_fn.call0(&JsValue::NULL);
+        assert!(called.get());
+
+        app.remove_bottom_button_callback(handle).unwrap();
+        let stored_after = Reflect::has(&secondary_button, &"cb".into()).unwrap();
         assert!(!stored_after);
     }
 
