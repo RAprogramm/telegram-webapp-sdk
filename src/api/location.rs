@@ -1,1 +1,0 @@
-//! Location API stub.

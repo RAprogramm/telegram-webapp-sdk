@@ -1,4 +1,5 @@
 use telegram_webapp_sdk::core::safe_context::get_context;
+use wasm_bindgen::JsValue;
 
 use crate::components::{
     display_data::{DisplayDataRow, render_display_data},
@@ -28,6 +29,10 @@ pub fn render_theme_params_page() {
         }]
     });
 
-    let section = render_display_data("Theme Params", &rows);
-    page.append(&section);
+    match render_display_data("Theme Params", &rows) {
+        Ok(section) => page.append(&section),
+        Err(err) => {
+            web_sys::console::error_1(&JsValue::from_str(&err.to_string()));
+        }
+    }
 }

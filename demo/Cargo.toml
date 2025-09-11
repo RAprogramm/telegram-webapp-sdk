@@ -19,6 +19,7 @@ web-sys = { version = "0.3", features = [
   "Text",
 ] }
 telegram-webapp-sdk = { path = "../", features = ["mock"] }
+masterror = "0.3"
 
 [[bin]]
 name = "demo"

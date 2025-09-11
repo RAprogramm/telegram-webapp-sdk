@@ -1,4 +1,5 @@
 use telegram_webapp_sdk::core::safe_context::get_context;
+use wasm_bindgen::JsValue;
 
 use crate::components::{
     display_data::{DisplayDataRow, render_display_data},
@@ -31,19 +32,25 @@ pub fn render_init_data_page() {
     });
 
     match result {
-        Ok(Some(rows)) => {
-            let section = render_display_data("User", &rows);
-            layout.append(&section);
-        }
+        Ok(Some(rows)) => match render_display_data("User", &rows) {
+            Ok(section) => layout.append(&section),
+            Err(err) => {
+                web_sys::console::error_1(&JsValue::from_str(&err.to_string()));
+            }
+        },
         _ => {
-            let fallback = render_display_data(
+            match render_display_data(
                 "User",
                 &[DisplayDataRow {
                     title: "error".into(),
                     value: "init_data not available".into()
                 }]
-            );
-            layout.append(&fallback);
+            ) {
+                Ok(fallback) => layout.append(&fallback),
+                Err(err) => {
+                    web_sys::console::error_1(&JsValue::from_str(&err.to_string()));
+                }
+            }
         }
     }
 }
