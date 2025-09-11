@@ -66,14 +66,14 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] authenticate
 
 ### CloudStorage
-- [ ] getItem
-- [ ] setItem
-- [ ] removeItem
-- [ ] getItems
+- [x] getItem
+- [x] setItem
+- [x] removeItem
+- [x] getItems
 - [ ] setItems
-- [ ] removeItems
-- [ ] getKeys
-- [ ] clear
+- [x] removeItems
+- [x] getKeys
+- [x] clear
 
 ## Remaining WebApp Features
 
