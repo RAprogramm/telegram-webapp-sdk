@@ -1,6 +1,6 @@
 use js_sys::{Function, Object, Reflect};
 use serde_wasm_bindgen::to_value;
-use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
+use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
 use crate::{core::types::download_file_params::DownloadFileParams, logger};
@@ -76,6 +76,21 @@ impl TelegramWebApp {
         let tg = Reflect::get(&win, &"Telegram".into()).ok()?;
         let webapp = Reflect::get(&tg, &"WebApp".into()).ok()?;
         webapp.dyn_into::<Object>().ok().map(|inner| Self {
+            inner
+        })
+    }
+
+    /// Try to get instance of `Telegram.WebApp`.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the `Telegram.WebApp` object is missing or
+    /// malformed.
+    pub fn try_instance() -> Result<Self, JsValue> {
+        let win = window().ok_or_else(|| JsValue::from_str("window not available"))?;
+        let tg = Reflect::get(&win, &"Telegram".into())?;
+        let webapp = Reflect::get(&tg, &"WebApp".into())?;
+        let inner = webapp.dyn_into::<Object>()?;
+        Ok(Self {
             inner
         })
     }
@@ -743,7 +758,7 @@ impl TelegramWebApp {
     /// })
     /// .unwrap();
     /// ```
-    /// 
+    ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn read_text_from_clipboard<F>(&self, callback: F) -> Result<(), JsValue>
