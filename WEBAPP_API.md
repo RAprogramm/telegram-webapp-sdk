@@ -146,6 +146,20 @@ they are implemented.
 - [x] getKeys
 - [x] clear
 
+### DeviceStorage
+- [x] set
+- [x] get
+- [x] remove
+- [x] clear
+
+### SecureStorage
+- [x] set
+- [x] get
+- [x] restore
+- [x] remove
+- [x] clear
+
+
 ## Remaining WebApp Features
 
 The following features are not yet covered by the SDK:

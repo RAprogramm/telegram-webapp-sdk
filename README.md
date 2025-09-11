@@ -209,6 +209,34 @@ selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
 
+## Device storage
+
+Persist lightweight data on the user's device:
+
+```rust,no_run
+use telegram_webapp_sdk::api::device_storage::{set, get};
+
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+set("theme", "dark").await?;
+let value = get("theme").await?;
+# Ok(())
+# }
+```
+
+## Secure storage
+
+Store sensitive data encrypted and restorable:
+
+```rust,no_run
+use telegram_webapp_sdk::api::secure_storage::{set, restore};
+
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+set("token", "secret").await?;
+let _ = restore("token").await?;
+# Ok(())
+# }
+```
+
 ## Location manager
 
 Retrieve user location and react to related events via Telegram's location manager:
