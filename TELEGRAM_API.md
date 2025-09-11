@@ -470,7 +470,7 @@ Check off types and structures as they are implemented:
 - [ ] UniqueGiftModel
 - [ ] UniqueGiftSymbol
 - [ ] Update
-- [ ] User
+- [x] User
 - [ ] UserChatBoosts
 - [ ] UserProfilePhotos
 - [ ] UserShared
