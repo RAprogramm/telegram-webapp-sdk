@@ -94,6 +94,7 @@ pub fn authenticate(
         }
         (None, None) => {
             func.call1(&biom, &key)?;
+
         }
     }
     Ok(())
@@ -231,6 +232,13 @@ mod tests {
                 .as_string()
                 .unwrap(),
             "abc"
+        );
+        assert_eq!(
+            Reflect::get(&biom, &"reason".into())
+                .unwrap()
+                .as_string()
+                .unwrap(),
+            "why"
         );
     }
 

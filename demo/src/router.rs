@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use wasm_bindgen::prelude::*;
-use web_sys::{window, Event, EventTarget};
+use web_sys::{Event, EventTarget, window};
 
 type RenderFn = fn();
 
