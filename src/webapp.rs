@@ -602,6 +602,7 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.hideKeyboard()`.
     fn bottom_button_object(&self, button: BottomButton) -> Result<Object, JsValue> {
         let name = button.js_name();
         Reflect::get(&self.inner, &name.into())
@@ -639,6 +640,16 @@ impl TelegramWebApp {
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.hide_keyboard().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn hide_keyboard(&self) -> Result<(), JsValue> {
+        self.call0("hideKeyboard")
+    }
+
+    /// Call `WebApp.MainButton.show()`.
     /// app.read_text_from_clipboard(|text| {
     ///     let _ = text;
     /// })
@@ -1291,7 +1302,29 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn hide_bottom_button_calls_js() {
+    fn hide_keyboard_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let hide_cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"hideKeyboard".into(),
+            hide_cb.as_ref().unchecked_ref()
+        );
+        hide_cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.hide_keyboard().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn hide_main_button_calls_js() {
         let webapp = setup_webapp();
         let main_button = Object::new();
         let called = Rc::new(Cell::new(false));

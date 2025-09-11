@@ -82,6 +82,15 @@ let _ = app.request_write_access(|granted| {
 
 These calls require the user's explicit permission before any information is shared.
 
+## Keyboard control
+
+Hide the native keyboard when it's no longer required:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+app.hide_keyboard().unwrap();
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:

@@ -27,6 +27,7 @@ they are implemented.
  - [x] ready
  - [x] expand
  - [x] close
+ - [x] hideKeyboard
  - [x] sendData
  - [x] openLink
  - [x] openTelegramLink
@@ -63,6 +64,7 @@ they are implemented.
 - [ ] ready
 - [ ] expand
 - [ ] close
+- [ ] hideKeyboard
 - [ ] sendData
 - [ ] openLink
 - [ ] openTelegramLink
