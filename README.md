@@ -105,6 +105,31 @@ selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
 
+## Device storage
+
+Persist lightweight data on the user's device:
+
+```rust,no_run
+use telegram_webapp_sdk::api::device_storage::{set, get};
+
+set("theme", "dark")?;
+let value = get("theme")?;
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
+## Secure storage
+
+Store sensitive data encrypted and restorable:
+
+```rust,no_run
+use telegram_webapp_sdk::api::secure_storage::{set, restore};
+
+set("token", "secret")?;
+let _ = restore("token")?;
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
+
 ## API coverage
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.

@@ -75,6 +75,20 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] getKeys
 - [ ] clear
 
+### DeviceStorage
+- [x] set
+- [x] get
+- [x] remove
+- [x] clear
+
+### SecureStorage
+- [x] set
+- [x] get
+- [x] restore
+- [x] remove
+- [x] clear
+
+
 ## Remaining WebApp Features
 
 The following features are not yet covered by the SDK:
