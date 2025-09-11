@@ -21,7 +21,8 @@ pub fn init() -> Result<(), JsValue> {
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.requestAccess(auth_key, reason, options)`.
+/// Calls `Telegram.WebApp.BiometricManager.requestAccess(auth_key, reason,
+/// options)`.
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -36,7 +37,7 @@ pub fn init() -> Result<(), JsValue> {
 pub fn request_access(
     auth_key: &str,
     reason: Option<&str>,
-    options: Option<&JsValue>,
+    options: Option<&JsValue>
 ) -> Result<(), JsValue> {
     let biom = biometric_object()?;
     let func = Reflect::get(&biom, &JsValue::from_str("requestAccess"))?.dyn_into::<Function>()?;
@@ -60,7 +61,8 @@ pub fn request_access(
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.authenticate(auth_key, reason, options)`.
+/// Calls `Telegram.WebApp.BiometricManager.authenticate(auth_key, reason,
+/// options)`.
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -75,7 +77,7 @@ pub fn request_access(
 pub fn authenticate(
     auth_key: &str,
     reason: Option<&str>,
-    options: Option<&JsValue>,
+    options: Option<&JsValue>
 ) -> Result<(), JsValue> {
     let biom = biometric_object()?;
     let func = Reflect::get(&biom, &JsValue::from_str("authenticate"))?.dyn_into::<Function>()?;
@@ -138,6 +140,120 @@ pub fn open_settings() -> Result<(), JsValue> {
     Ok(())
 }
 
+/// Returns `Telegram.WebApp.BiometricManager.isInited`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a boolean.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::is_inited;
+///
+/// let _ = is_inited();
+/// ```
+pub fn is_inited() -> Result<bool, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("isInited"))?;
+    value
+        .as_bool()
+        .ok_or_else(|| JsValue::from_str("isInited not a bool"))
+}
+
+/// Returns `Telegram.WebApp.BiometricManager.isBiometricAvailable`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a boolean.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::is_biometric_available;
+///
+/// let _ = is_biometric_available();
+/// ```
+pub fn is_biometric_available() -> Result<bool, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("isBiometricAvailable"))?;
+    value
+        .as_bool()
+        .ok_or_else(|| JsValue::from_str("isBiometricAvailable not a bool"))
+}
+
+/// Returns `Telegram.WebApp.BiometricManager.isAccessRequested`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a boolean.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::is_access_requested;
+///
+/// let _ = is_access_requested();
+/// ```
+pub fn is_access_requested() -> Result<bool, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("isAccessRequested"))?;
+    value
+        .as_bool()
+        .ok_or_else(|| JsValue::from_str("isAccessRequested not a bool"))
+}
+
+/// Returns `Telegram.WebApp.BiometricManager.isAccessGranted`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a boolean.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::is_access_granted;
+///
+/// let _ = is_access_granted();
+/// ```
+pub fn is_access_granted() -> Result<bool, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("isAccessGranted"))?;
+    value
+        .as_bool()
+        .ok_or_else(|| JsValue::from_str("isAccessGranted not a bool"))
+}
+
+/// Returns `Telegram.WebApp.BiometricManager.isBiometricTokenSaved`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a boolean.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::is_biometric_token_saved;
+///
+/// let _ = is_biometric_token_saved();
+/// ```
+pub fn is_biometric_token_saved() -> Result<bool, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("isBiometricTokenSaved"))?;
+    value
+        .as_bool()
+        .ok_or_else(|| JsValue::from_str("isBiometricTokenSaved not a bool"))
+}
+
+/// Returns `Telegram.WebApp.BiometricManager.deviceId`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if the property is unavailable or not a string.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::biometric::device_id;
+///
+/// let _ = device_id();
+/// ```
+pub fn device_id() -> Result<String, JsValue> {
+    let biom = biometric_object()?;
+    let value = Reflect::get(&biom, &JsValue::from_str("deviceId"))?;
+    value
+        .as_string()
+        .ok_or_else(|| JsValue::from_str("deviceId not a string"))
+}
+
 fn biometric_object() -> Result<JsValue, JsValue> {
     let win = window().ok_or_else(|| JsValue::from_str("no window"))?;
     let tg = Reflect::get(&win, &JsValue::from_str("Telegram"))?;
@@ -148,6 +264,7 @@ fn biometric_object() -> Result<JsValue, JsValue> {
 #[cfg(test)]
 mod tests {
     use js_sys::{Function, Object, Reflect};
+    use wasm_bindgen::JsValue;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 
@@ -289,5 +406,95 @@ mod tests {
     fn open_settings_err() {
         let _ = setup_biometric();
         assert!(open_settings().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_inited_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"isInited".into(), &JsValue::from(true));
+        assert!(is_inited().expect("is_inited"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_inited_err() {
+        let _ = setup_biometric();
+        assert!(is_inited().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_biometric_available_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"isBiometricAvailable".into(), &JsValue::from(true));
+        assert!(is_biometric_available().expect("is_biometric_available"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_biometric_available_err() {
+        let _ = setup_biometric();
+        assert!(is_biometric_available().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_access_requested_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"isAccessRequested".into(), &JsValue::from(true));
+        assert!(is_access_requested().expect("is_access_requested"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_access_requested_err() {
+        let _ = setup_biometric();
+        assert!(is_access_requested().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_access_granted_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"isAccessGranted".into(), &JsValue::from(true));
+        assert!(is_access_granted().expect("is_access_granted"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_access_granted_err() {
+        let _ = setup_biometric();
+        assert!(is_access_granted().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_biometric_token_saved_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"isBiometricTokenSaved".into(), &JsValue::from(true));
+        assert!(is_biometric_token_saved().expect("is_biometric_token_saved"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn is_biometric_token_saved_err() {
+        let _ = setup_biometric();
+        assert!(is_biometric_token_saved().is_err());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn device_id_ok() {
+        let biom = setup_biometric();
+        let _ = Reflect::set(&biom, &"deviceId".into(), &JsValue::from_str("id123"));
+        assert_eq!(device_id().expect("device_id"), "id123");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn device_id_err() {
+        let _ = setup_biometric();
+        assert!(device_id().is_err());
     }
 }

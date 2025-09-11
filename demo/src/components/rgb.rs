@@ -1,3 +1,4 @@
+use masterror::{AppError, AppResult};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlElement, window};
 
@@ -8,33 +9,38 @@ pub struct RGB;
 
 impl RGB {
     /// Build the DOM node for a given `#RRGGBB` string.
-    pub fn render(color: &str) -> HtmlElement {
-        let doc = window().unwrap().document().unwrap();
+    pub fn render(color: &str) -> AppResult<HtmlElement> {
+        let doc = window()
+            .ok_or_else(|| AppError::internal("no window"))?
+            .document()
+            .ok_or_else(|| AppError::internal("no document"))?;
 
         // <span class="rgb">
         let span = doc
             .create_element("span")
-            .unwrap()
+            .map_err(|_| AppError::internal("create span"))?
             .dyn_into::<HtmlElement>()
-            .unwrap();
+            .map_err(|_| AppError::internal("span into HtmlElement"))?;
         span.set_class_name("rgb");
 
         //   <i class="rgb__icon" style="background-color: #RRGGBB"></i>
         let icon = doc
             .create_element("i")
-            .unwrap()
+            .map_err(|_| AppError::internal("create icon"))?
             .dyn_into::<HtmlElement>()
-            .unwrap();
+            .map_err(|_| AppError::internal("icon into HtmlElement"))?;
         icon.set_class_name("rgb__icon");
         icon.style()
             .set_property("background-color", color)
-            .unwrap();
-        span.append_child(&icon).unwrap();
+            .map_err(|_| AppError::internal("set color"))?;
+        span.append_child(&icon)
+            .map_err(|_| AppError::internal("append icon"))?;
 
         //   text node: “#RRGGBB”
         let text = doc.create_text_node(color);
-        span.append_child(&text).unwrap();
+        span.append_child(&text)
+            .map_err(|_| AppError::internal("append text"))?;
 
-        span
+        Ok(span)
     }
 }

@@ -1339,7 +1339,7 @@ mod tests {
     };
 
     use js_sys::{Function, Object, Reflect};
-    use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
+    use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 
@@ -2208,15 +2208,6 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn request_write_access_returns_error_when_missing() {
-        let _webapp = setup_webapp();
-        let app = TelegramWebApp::instance().unwrap();
-        let res = app.request_write_access(|_| {});
-        assert!(res.is_err());
-    }
-
-    #[wasm_bindgen_test]
-    #[allow(dead_code, clippy::unused_unit)]
     fn download_file_invokes_callback() {
         let webapp = setup_webapp();
         let received_url = Rc::new(RefCell::new(String::new()));
@@ -2266,6 +2257,14 @@ mod tests {
         assert_eq!(result.borrow().as_str(), "id");
     }
 
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_write_access_returns_error_when_missing() {
+        let _webapp = setup_webapp();
+        let app = TelegramWebApp::instance().unwrap();
+        let res = app.request_write_access(|_| {});
+        assert!(res.is_err());
+    }
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
     fn request_emoji_status_access_invokes_callback() {

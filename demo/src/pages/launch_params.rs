@@ -1,4 +1,5 @@
 use telegram_webapp_sdk::core::context::get_launch_params;
+use wasm_bindgen::JsValue;
 
 use crate::components::{
     display_data::{DisplayDataRow, render_display_data},
@@ -42,6 +43,10 @@ pub fn render_launch_params_page() {
         },
     ];
 
-    let section = render_display_data("Launch Parameters", &rows);
-    page.append(&section);
+    match render_display_data("Launch Parameters", &rows) {
+        Ok(section) => page.append(&section),
+        Err(err) => {
+            web_sys::console::error_1(&JsValue::from_str(&err.to_string()));
+        }
+    }
 }
