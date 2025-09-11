@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - User API wrappers: `request_contact`, `request_phone_number`, and `open_contact`.
+- Home screen utilities: `add_to_home_screen` and `check_home_screen_status`.
 
 ## [0.1.0] - 2025-09-11
 ### Added

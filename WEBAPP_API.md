@@ -24,6 +24,49 @@ they are implemented.
 - [x] requestContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] requestPhoneNumber ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] openContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
+ - [x] ready
+ - [x] expand
+ - [x] close
+ - [x] sendData
+ - [x] openLink
+ - [x] openTelegramLink
+ - [x] openInvoice
+ - [x] downloadFile
+ - [ ] switchInlineQuery
+ - [x] switchInlineQuery
+ - [x] showAlert
+ - [x] showConfirm
+ - [x] showPopup
+- [ ] shareURL
+- [ ] joinVoiceChat
+- [x] requestWriteAccess
+- [x] requestContact
+ - [ ] shareURL
+ - [x] readTextFromClipboard
+  - [ ] switchInlineQuery
+  - [x] showAlert
+  - [x] showConfirm
+  - [x] showPopup
+  - [ ] shareURL
+ - [ ] joinVoiceChat
+ - [ ] requestWriteAccess
+ - [x] requestContact
+- [ ] ready
+- [ ] expand
+- [ ] close
+- [ ] sendData
+- [ ] openLink
+- [ ] openTelegramLink
+ - [ ] openInvoice
+ - [ ] downloadFile
+ - [x] switchInlineQuery
+- [ ] showAlert
+- [ ] showConfirm
+- [ ] showPopup
+- [x] shareURL
+- [x] joinVoiceChat
+- [x] requestWriteAccess
+- [ ] requestContact
 
 ## Objects
 
@@ -73,6 +116,6 @@ The following features are not yet covered by the SDK:
 - [ ] Theme change events
 - [ ] Viewport management
 - [ ] Location access
-- [ ] Clipboard access
+- [x] Clipboard access
 - [ ] Invoice payments
 - [ ] Background events
