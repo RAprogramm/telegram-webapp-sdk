@@ -232,6 +232,13 @@ mod tests {
                 .unwrap(),
             "abc"
         );
+        assert_eq!(
+            Reflect::get(&biom, &"reason".into())
+                .unwrap()
+                .as_string()
+                .unwrap(),
+            "why"
+        );
     }
 
     #[wasm_bindgen_test]

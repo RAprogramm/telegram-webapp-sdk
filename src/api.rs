@@ -1,5 +1,4 @@
 pub mod biometric;
-
 pub mod accelerometer;
 pub mod device_orientation;
 pub mod cloud_storage;
