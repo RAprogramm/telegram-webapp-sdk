@@ -115,7 +115,8 @@ use telegram_webapp_sdk::api::device_storage::{set, get};
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
 set("theme", "dark").await?;
 let value = get("theme").await?;
-# Ok(()) }
+# Ok(())
+# }
 ```
 
 ## Secure storage
@@ -128,7 +129,8 @@ use telegram_webapp_sdk::api::secure_storage::{set, restore};
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
 set("token", "secret").await?;
 let _ = restore("token").await?;
-# Ok(()) }
+# Ok(())
+# }
 ```
 
 
