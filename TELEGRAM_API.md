@@ -423,7 +423,7 @@ Check off types and structures as they are implemented:
 - [ ] RevenueWithdrawalStatePending
 - [ ] RevenueWithdrawalStateSucceeded
 - [ ] RevenueWithdrawalStateUnion
-- [ ] SentWebAppMessage
+- [x] SentWebAppMessage
 - [ ] SharedUser
 - [ ] ShippingAddress
 - [ ] ShippingOption
@@ -483,7 +483,7 @@ Check off types and structures as they are implemented:
 - [ ] VideoChatStarted
 - [ ] VideoNote
 - [ ] Voice
-- [ ] WebAppData
-- [ ] WebAppInfo
-- [ ] WebhookInfo
-- [ ] WriteAccessAllowed
+- [x] WebAppData
+- [x] WebAppInfo
+- [x] WebhookInfo
+- [x] WriteAccessAllowed
