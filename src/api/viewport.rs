@@ -68,17 +68,22 @@ pub fn get_is_expanded() -> Option<bool> {
     result
 }
 
-/// Calls Telegram.WebApp.expand() to expand the viewport.
-pub fn expand_viewport() {
-    if let Ok(webapp) = webapp_object() {
-        let _ = Reflect::get(&webapp, &"expand".into())
-            .ok()
-            .and_then(|f| f.dyn_ref::<Function>().cloned())
-            .and_then(|f| f.call0(&webapp).ok());
-        debug("Called WebApp.expand()");
-    } else {
-        warn("Cannot expand viewport: WebApp not found");
-    }
+/// Calls `Telegram.WebApp.expand()` to expand the viewport.
+///
+/// # Errors
+/// Returns [`JsValue`] if the underlying JS call fails.
+///
+/// # Examples
+/// ```no_run
+/// # use telegram_webapp_sdk::api::viewport::expand_viewport;
+/// let _ = expand_viewport();
+/// ```
+pub fn expand_viewport() -> Result<(), JsValue> {
+    let webapp = webapp_object()?;
+    let func = Reflect::get(&webapp, &"expand".into())?.dyn_into::<Function>()?;
+    func.call0(&webapp)?;
+    debug("Called WebApp.expand()");
+    Ok(())
 }
 
 /// Registers a callback to be called on `viewportChanged` event.
@@ -108,7 +113,7 @@ fn webapp_object() -> Result<JsValue, JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use js_sys::{Object, Reflect};
+    use js_sys::{Function, Object, Reflect};
     use wasm_bindgen::JsValue;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
@@ -139,5 +144,24 @@ mod tests {
         );
         assert_eq!(get_viewport_width(), Some(200.0));
         assert_eq!(get_viewport_stable_height(), Some(500.0));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code)]
+    fn expand_viewport_success() {
+        let webapp = setup_webapp();
+        let func = Function::new_no_args("this._expanded = true;");
+        let _ = Reflect::set(&webapp, &"expand".into(), &func);
+        assert!(expand_viewport().is_ok());
+        let called = Reflect::get(&webapp, &"_expanded".into()).unwrap();
+        assert_eq!(called.as_bool(), Some(true));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code)]
+    fn expand_viewport_failure() {
+        let webapp = setup_webapp();
+        let _ = Reflect::set(&webapp, &"expand".into(), &JsValue::from_f64(1.0));
+        assert!(expand_viewport().is_err());
     }
 }

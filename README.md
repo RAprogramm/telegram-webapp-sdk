@@ -76,6 +76,19 @@ let _ = open_contact();
 
 These calls require the user's explicit permission before any information is shared.
 
+## Event callbacks
+
+Callback registration methods return an `EventHandle` for later deregistration.
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+let app = TelegramWebApp::instance().unwrap();
+let handle = app.on_event("my_event", |value| {
+    let _ = value;
+}).unwrap();
+app.off_event(handle).unwrap();
+```
+
 ## Haptic feedback
 
 Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
