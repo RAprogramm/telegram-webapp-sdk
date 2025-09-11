@@ -1,7 +1,6 @@
 # Telegram WebApp API Coverage
 
-This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as
-they are implemented.
+This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as they are implemented.
 
 ## Methods
 
@@ -19,82 +18,43 @@ they are implemented.
 - [x] showScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] closeScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] shareURL ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
+- [x] shareMessage ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
+- [x] shareToStory ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] joinVoiceChat ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] requestWriteAccess ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] requestContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] requestPhoneNumber ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] openContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
-- [x] enableVerticalSwipes
-- [x] disableVerticalSwipes
- - [x] ready
-  - [x] expand
-  - [x] close
- - [x] hideKeyboard
- - [x] sendData
- - [x] openLink
- - [x] openTelegramLink
- - [x] openInvoice
- - [x] downloadFile
- - [ ] switchInlineQuery
- - [x] switchInlineQuery
- - [x] showAlert
- - [x] showConfirm
- - [x] showPopup
- - [x] shareURL
- - [x] shareMessage
- - [x] shareToStory
- - [x] joinVoiceChat
- - [x] requestWriteAccess
- - [x] requestContact
-- [ ] shareURL
-- [ ] joinVoiceChat
-- [x] requestWriteAccess
-- [x] requestContact
- - [ ] shareURL
- - [x] readTextFromClipboard
-  - [ ] switchInlineQuery
-  - [x] showAlert
-  - [x] showConfirm
-  - [x] showPopup
-  - [ ] shareURL
- - [ ] joinVoiceChat
- - [ ] requestWriteAccess
- - [x] setEmojiStatus
- - [x] requestEmojiStatusAccess
- - [x] requestContact
- - [x] setHeaderColor
- - [x] setBackgroundColor
- - [x] setBottomBarColor
-- [ ] ready
-- [ ] expand
-- [ ] close
-- [ ] hideKeyboard
-- [ ] sendData
-- [ ] openLink
-- [ ] openTelegramLink
- - [ ] openInvoice
- - [ ] downloadFile
- - [x] switchInlineQuery
-- [ ] showAlert
-- [ ] showConfirm
-- [ ] showPopup
-- [x] shareURL
-- [x] joinVoiceChat
-- [x] requestWriteAccess
- - [x] setEmojiStatus
- - [x] requestEmojiStatusAccess
-- [ ] requestContact
+- [x] enableVerticalSwipes ([8e60df3](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8e60df3))
+- [x] disableVerticalSwipes ([8e60df3](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8e60df3))
+- [x] hideKeyboard ([94ff585](https://github.com/RAprogramm/telegram-webapp-sdk/commit/94ff585))
+- [x] downloadFile ([3092094](https://github.com/RAprogramm/telegram-webapp-sdk/commit/3092094))
+- [x] readTextFromClipboard ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
+- [x] setEmojiStatus ([12cfbd0](https://github.com/RAprogramm/telegram-webapp-sdk/commit/12cfbd0))
+- [x] requestEmojiStatusAccess ([12cfbd0](https://github.com/RAprogramm/telegram-webapp-sdk/commit/12cfbd0))
+- [x] setHeaderColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
+- [x] setBackgroundColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
+- [x] setBottomBarColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
+- [x] addToHomeScreen ([e709edb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/e709edb))
+- [x] checkHomeScreenStatus ([e709edb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/e709edb))
+- [x] enableClosingConfirmation ([8fe4dec](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8fe4dec))
+- [x] disableClosingConfirmation ([8fe4dec](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8fe4dec))
+- [x] requestFullscreen ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
+- [x] exitFullscreen ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
+- [x] lockOrientation ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
+- [x] unlockOrientation ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
 
 ## Objects
 
 ### BottomButton (Main & Secondary)
-- [x] show
-- [x] hide
-- [x] setText
-- [x] setColor
-- [x] setTextColor
-- [x] onClick
-- [ ] offClick
+- [x] show ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] hide ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] setText ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] setColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] setTextColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] onClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] offClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+
 ### MainButton
 - [x] show ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
 - [x] hide ([f0a108d](https://github.com/RAprogramm/telegram-webapp-sdk/commit/f0a108d))
@@ -109,77 +69,86 @@ they are implemented.
 - [x] offClick ([0a42d7b](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0a42d7b))
 
 ### SettingsButton
-- [x] show
-- [x] hide
-- [x] onClick
-- [x] offClick
+- [x] show ([885be03](https://github.com/RAprogramm/telegram-webapp-sdk/commit/885be03))
+- [x] hide ([885be03](https://github.com/RAprogramm/telegram-webapp-sdk/commit/885be03))
+- [x] onClick ([885be03](https://github.com/RAprogramm/telegram-webapp-sdk/commit/885be03))
+- [x] offClick ([885be03](https://github.com/RAprogramm/telegram-webapp-sdk/commit/885be03))
 
 ### HapticFeedback
 - [x] impactOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] notificationOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] selectionChanged ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 
+## Sensors
+
 ### Accelerometer
-- [x] start
-- [x] stop
-- [x] getAcceleration
+- [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] getAcceleration ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### Gyroscope
-- [x] start
-- [x] stop
-- [x] getAngularVelocity
+- [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] getAngularVelocity ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### DeviceOrientation
-- [x] start
-- [x] stop
-- [x] getOrientation
+- [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] getOrientation ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+
+### LocationManager
+- [x] init ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
+- [x] getLocation ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
+- [x] openSettings ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
+- [x] onLocationManagerUpdated ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
+- [x] onLocationRequested ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 
 ### BiometricManager
-- [x] init
-- [x] requestAccess
-- [x] authenticate
-- [x] updateBiometricToken
-- [x] openSettings
-- [x] isInited
-- [x] isBiometricAvailable
-- [x] isAccessRequested
-- [x] isAccessGranted
-- [x] isBiometricTokenSaved
-- [x] deviceId
+- [x] init ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
+- [x] requestAccess ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
+- [x] authenticate ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
+- [x] updateBiometricToken ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
+- [x] openSettings ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
+- [x] isInited ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+- [x] isBiometricAvailable ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+- [x] isAccessRequested ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+- [x] isAccessGranted ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+- [x] isBiometricTokenSaved ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+- [x] deviceId ([7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c))
+
+## Storages
 
 ### CloudStorage
-- [x] getItem
-- [x] setItem
-- [x] removeItem
-- [x] getItems
+- [x] getItem ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
+- [x] setItem ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
+- [x] removeItem ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
+- [x] getItems ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 - [ ] setItems
-- [x] removeItems
-- [x] getKeys
-- [x] clear
+- [x] removeItems ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
+- [x] getKeys ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
+- [x] clear ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 
 ### DeviceStorage
-- [x] set
-- [x] get
-- [x] remove
-- [x] clear
+- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ### SecureStorage
-- [x] set
-- [x] get
-- [x] restore
-- [x] remove
-- [x] clear
-
+- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] restore ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ## Remaining WebApp Features
 
 The following features are not yet covered by the SDK:
 
 - [ ] Init data validation
-- [x] Theme and safe area change events
+- [x] Theme and safe area change events ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
 - [ ] Viewport management
-- [ ] Clipboard access
-- [ ] Location access
-- [x] Clipboard access
+- [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
+- [x] Location access ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [ ] Invoice payments
 - [ ] Background events
