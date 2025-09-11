@@ -11,7 +11,13 @@ pub fn render_launch_params_page() {
 
     let page = PageLayout::new("Launch Parameters");
 
-    let lp = get_launch_params();
+    let lp = match get_launch_params() {
+        Ok(params) => params,
+        Err(err) => {
+            web_sys::console::error_1(&err);
+            return;
+        }
+    };
 
     let rows = vec![
         DisplayDataRow {

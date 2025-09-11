@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- User API wrappers: `request_contact`, `request_phone_number`, and `open_contact`.
+
 ## [0.1.0] - 2025-09-11
 ### Added
 - Initial release with core WebApp utilities, Yew and Leptos integrations,
