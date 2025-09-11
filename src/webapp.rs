@@ -69,6 +69,136 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.openLink(url)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.open_link("https://example.com").unwrap();
+    /// ```
+    pub fn open_link(&self, url: &str) -> Result<(), JsValue> {
+        Reflect::get(&self.inner, &"openLink".into())?
+            .dyn_into::<Function>()?
+            .call1(&self.inner, &url.into())?;
+        Ok(())
+    }
+
+    /// Call `WebApp.openTelegramLink(url)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.open_telegram_link("https://t.me/telegram").unwrap();
+    /// ```
+    pub fn open_telegram_link(&self, url: &str) -> Result<(), JsValue> {
+        Reflect::get(&self.inner, &"openTelegramLink".into())?
+            .dyn_into::<Function>()?
+            .call1(&self.inner, &url.into())?;
+        Ok(())
+    }
+
+    /// Call `WebApp.openInvoice(url, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.open_invoice("https://invoice", |status| {
+    ///     let _ = status;
+    /// })
+    /// .unwrap();
+    /// ```
+    pub fn open_invoice<F>(&self, url: &str, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |status: JsValue| {
+            callback(status.as_string().unwrap_or_default());
+        });
+        Reflect::get(&self.inner, &"openInvoice".into())?
+            .dyn_into::<Function>()?
+            .call2(&self.inner, &url.into(), cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.showPopup(params, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use js_sys::Object;
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let params = Object::new();
+    /// app.show_popup(&params.into(), |id| {
+    ///     let _ = id;
+    /// })
+    /// .unwrap();
+    /// ```
+    pub fn show_popup<F>(&self, params: &JsValue, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |id: JsValue| {
+            callback(id.as_string().unwrap_or_default());
+        });
+        Reflect::get(&self.inner, &"showPopup".into())?
+            .dyn_into::<Function>()?
+            .call2(&self.inner, params, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.showScanQrPopup(text, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.show_scan_qr_popup("Scan", |text| {
+    ///     let _ = text;
+    /// })
+    /// .unwrap();
+    /// ```
+    pub fn show_scan_qr_popup<F>(&self, text: &str, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+            callback(value.as_string().unwrap_or_default());
+        });
+        Reflect::get(&self.inner, &"showScanQrPopup".into())?
+            .dyn_into::<Function>()?
+            .call2(&self.inner, &text.into(), cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.closeScanQrPopup()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.close_scan_qr_popup().unwrap();
+    /// ```
+    pub fn close_scan_qr_popup(&self) -> Result<(), JsValue> {
+        Reflect::get(&self.inner, &"closeScanQrPopup".into())?
+            .dyn_into::<Function>()?
+            .call0(&self.inner)?;
+        Ok(())
+    }
+
+    /// Call `WebApp.MainButton.show()`
+    pub fn show_main_button(&self) {
+        if let Ok(main_button) = Reflect::get(&self.inner, &"MainButton".into()) {
+            let _ = Reflect::get(&main_button, &"show".into())
+                .ok()
+                .and_then(|f| f.dyn_ref::<Function>().cloned())
+                .and_then(|f| f.call0(&main_button).ok());
+        }
     /// Call `WebApp.MainButton.show()`.
     ///
     /// # Errors
@@ -329,7 +459,10 @@ impl TelegramWebApp {
 
 #[cfg(test)]
 mod tests {
-    use std::{cell::Cell, rc::Rc};
+    use std::{
+        cell::{Cell, RefCell},
+        rc::Rc
+    };
 
     use js_sys::{Function, Object, Reflect};
     use wasm_bindgen::JsValue;
@@ -386,5 +519,100 @@ mod tests {
         })
         .unwrap();
         assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn open_link_and_telegram_link() {
+        let webapp = setup_webapp();
+        let open_link = Function::new_with_args("url", "this.open_link = url;");
+        let open_tg_link = Function::new_with_args("url", "this.open_tg_link = url;");
+        let _ = Reflect::set(&webapp, &"openLink".into(), &open_link);
+        let _ = Reflect::set(&webapp, &"openTelegramLink".into(), &open_tg_link);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let url = "https://example.com";
+        app.open_link(url).unwrap();
+        app.open_telegram_link(url).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"open_link".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(url)
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"open_tg_link".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(url)
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn open_invoice_invokes_callback() {
+        let webapp = setup_webapp();
+        let open_invoice = Function::new_with_args("url, cb", "cb('paid');");
+        let _ = Reflect::set(&webapp, &"openInvoice".into(), &open_invoice);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let status = Rc::new(RefCell::new(String::new()));
+        let status_clone = Rc::clone(&status);
+
+        app.open_invoice("https://invoice", move |s| {
+            *status_clone.borrow_mut() = s;
+        })
+        .unwrap();
+
+        assert_eq!(status.borrow().as_str(), "paid");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn show_popup_invokes_callback() {
+        let webapp = setup_webapp();
+        let show_popup = Function::new_with_args("params, cb", "cb('ok');");
+        let _ = Reflect::set(&webapp, &"showPopup".into(), &show_popup);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let button = Rc::new(RefCell::new(String::new()));
+        let button_clone = Rc::clone(&button);
+
+        app.show_popup(&JsValue::NULL, move |id| {
+            *button_clone.borrow_mut() = id;
+        })
+        .unwrap();
+
+        assert_eq!(button.borrow().as_str(), "ok");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn scan_qr_popup_invokes_callback_and_close() {
+        let webapp = setup_webapp();
+        let show_scan = Function::new_with_args("text, cb", "cb('code');");
+        let close_scan = Function::new_with_args("", "this.closed = true;");
+        let _ = Reflect::set(&webapp, &"showScanQrPopup".into(), &show_scan);
+        let _ = Reflect::set(&webapp, &"closeScanQrPopup".into(), &close_scan);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let text = Rc::new(RefCell::new(String::new()));
+        let text_clone = Rc::clone(&text);
+
+        app.show_scan_qr_popup("scan", move |value| {
+            *text_clone.borrow_mut() = value;
+        })
+        .unwrap();
+        assert_eq!(text.borrow().as_str(), "code");
+
+        app.close_scan_qr_popup().unwrap();
+        let closed = Reflect::get(&webapp, &"closed".into())
+            .unwrap()
+            .as_bool()
+            .unwrap_or(false);
+        assert!(closed);
     }
 }
