@@ -391,6 +391,7 @@ dependencies = [
 name = "demo"
 version = "0.1.0"
 dependencies = [
+ "masterror",
  "telegram-webapp-sdk",
  "wasm-bindgen",
  "web-sys",
@@ -1492,6 +1493,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "masterror"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e7c3a243a6f697e05d0b971c22d0ac029b9080c20b2bbc5f4a3f43ea6024a60"
+dependencies = [
+ "http 1.3.1",
+ "serde",
+ "thiserror 2.0.16",
+ "tracing",
+]
+
+[[package]]
 name = "memchr"
 version = "2.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2315,6 +2328,7 @@ dependencies = [
  "hmac-sha256",
  "js-sys",
  "leptos",
+ "masterror",
  "once_cell",
  "percent-encoding",
  "serde",
