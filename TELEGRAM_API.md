@@ -4,6 +4,7 @@ This list is based on the official [Telegram Bot API](https://core.telegram.org/
 
 ## Methods
 
+
 Check off methods as they are implemented:
 
 - [ ] addStickerToSet
