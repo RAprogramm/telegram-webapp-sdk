@@ -51,7 +51,7 @@ pub fn request_access(
             func.call2(&biom, &key, &r)?;
         }
         (None, Some(o)) => {
-            func.call2(&biom, &key, o)?;
+            func.call3(&biom, &key, &JsValue::UNDEFINED, o)?;
         }
         (None, None) => {
             func.call1(&biom, &key)?;
@@ -90,11 +90,10 @@ pub fn authenticate(
             func.call2(&biom, &key, &r)?;
         }
         (None, Some(o)) => {
-            func.call2(&biom, &key, o)?;
+            func.call3(&biom, &key, &JsValue::UNDEFINED, o)?;
         }
         (None, None) => {
             func.call1(&biom, &key)?;
-
         }
     }
     Ok(())
