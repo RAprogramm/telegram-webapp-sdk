@@ -104,6 +104,36 @@ impl TelegramWebApp {
         self.call0("close")
     }
 
+    /// Call `WebApp.enableClosingConfirmation()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.enable_closing_confirmation().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn enable_closing_confirmation(&self) -> Result<(), JsValue> {
+        self.call0("enableClosingConfirmation")
+    }
+
+    /// Call `WebApp.disableClosingConfirmation()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.disable_closing_confirmation().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn disable_closing_confirmation(&self) -> Result<(), JsValue> {
+        self.call0("disableClosingConfirmation")
+    }
+
     /// Call `WebApp.requestFullscreen()`.
     ///
     /// # Examples
@@ -713,7 +743,7 @@ impl TelegramWebApp {
     /// })
     /// .unwrap();
     /// ```
-    ///
+    /// 
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn read_text_from_clipboard<F>(&self, callback: F) -> Result<(), JsValue>
