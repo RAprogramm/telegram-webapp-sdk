@@ -5,7 +5,7 @@ use super::{chat::TelegramChat, user::TelegramUser};
 /// Represents the complete initialization data passed to the Mini App.
 /// WARNING: Always validate this data on the server using the `hash` or
 /// `signature`.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TelegramInitData {
     /// Unique identifier for the current Mini App session.
     pub query_id: Option<String>,

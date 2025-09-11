@@ -5,6 +5,7 @@ use super::types::{
 };
 
 /// Global context of the Telegram Mini App, initialized once per app session.
+#[derive(Clone)]
 pub struct TelegramContext {
     pub init_data:    TelegramInitData,
     pub theme_params: TelegramThemeParams
@@ -12,7 +13,7 @@ pub struct TelegramContext {
 
 thread_local! {
     /// Thread-local global TelegramContext instance.
-    static CONTEXT: OnceCell<TelegramContext> = OnceCell::new();
+    static CONTEXT: OnceCell<TelegramContext> = const { OnceCell::new() };
 }
 
 impl TelegramContext {
@@ -68,10 +69,6 @@ fn get_param(key: &str) -> Option<String> {
             let mut parts = pair.split('=');
             let k = parts.next()?;
             let v = parts.next()?;
-            if k == key {
-                Some(v.to_string())
-            } else {
-                None
-            }
+            if k == key { Some(v.to_string()) } else { None }
         })
 }
