@@ -1,6 +1,6 @@
 use js_sys::{Function, Object, Reflect};
 use serde_wasm_bindgen::to_value;
-use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
+use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::window;
 
 use crate::{core::types::download_file_params::DownloadFileParams, logger};
@@ -162,6 +162,36 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn unlock_orientation(&self) -> Result<(), JsValue> {
         self.call0("unlockOrientation")
+    }
+
+    /// Call `WebApp.enableVerticalSwipes()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.enable_vertical_swipes().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn enable_vertical_swipes(&self) -> Result<(), JsValue> {
+        self.call0("enableVerticalSwipes")
+    }
+
+    /// Call `WebApp.disableVerticalSwipes()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.disable_vertical_swipes().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn disable_vertical_swipes(&self) -> Result<(), JsValue> {
+        self.call0("disableVerticalSwipes")
     }
 
     /// Call `WebApp.showAlert(message)`.
@@ -494,47 +524,6 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.downloadFile(params, callback)`.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::core::types::download_file_params::DownloadFileParams;
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// let params = DownloadFileParams {
-    ///     url:       "https://example.com/file",
-    ///     file_name: None,
-    ///     mime_type: None
-    /// };
-    /// app.download_file(params, |file_id| {
-    ///     let _ = file_id;
-    /// })
-    /// .unwrap();
-    /// ```
-    ///
-    /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails or the parameters
-    /// fail to serialize.
-    pub fn download_file<F>(
-        &self,
-        params: DownloadFileParams<'_>,
-        callback: F
-    ) -> Result<(), JsValue>
-    where
-        F: 'static + Fn(String)
-    {
-        let js_params =
-            to_value(&params).map_err(|e| JsValue::from_str(&format!("serialize params: {e}")))?;
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
-            callback(v.as_string().unwrap_or_default());
-        });
-        Reflect::get(&self.inner, &"downloadFile".into())?
-            .dyn_into::<Function>()?
-            .call2(&self.inner, &js_params, cb.as_ref().unchecked_ref())?;
-        cb.forget();
-        Ok(())
-    }
-
     /// Call `WebApp.requestEmojiStatusAccess(callback)`.
     ///
     /// # Examples
@@ -697,8 +686,8 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Show a bottom button.
-    /// Call `WebApp.readTextFromClipboard(callback)`.
+    /// Hide the on-screen keyboard.
+    /// Call `WebApp.hideKeyboard()`.
     ///
     /// # Examples
     /// ```no_run
@@ -713,7 +702,12 @@ impl TelegramWebApp {
         self.call0("hideKeyboard")
     }
 
-    /// Call `WebApp.MainButton.show()`.
+    /// Call `WebApp.readTextFromClipboard(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
     /// app.read_text_from_clipboard(|text| {
     ///     let _ = text;
     /// })
@@ -777,7 +771,6 @@ impl TelegramWebApp {
     pub fn hide_back_button(&self) -> Result<(), JsValue> {
         self.call_nested0("BackButton", "hide")
     }
-
 
     /// Call `WebApp.setHeaderColor(color)`.
     ///
@@ -1963,7 +1956,6 @@ mod tests {
                 .as_string()
                 .as_deref(),
             Some("hi"),
-
         );
     }
 
@@ -2042,6 +2034,10 @@ mod tests {
             .as_bool()
             .unwrap_or(false);
         assert!(called);
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn request_fullscreen_calls_js() {
         let webapp = setup_webapp();
         let called = Rc::new(Cell::new(false));
@@ -2101,6 +2097,10 @@ mod tests {
         .unwrap();
 
         assert_eq!(status.borrow().as_str(), "added");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn lock_orientation_calls_js() {
         let webapp = setup_webapp();
         let received = Rc::new(RefCell::new(None));
@@ -2145,6 +2145,50 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn enable_vertical_swipes_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"enableVerticalSwipes".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.enable_vertical_swipes().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn disable_vertical_swipes_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"disableVerticalSwipes".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.disable_vertical_swipes().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn request_write_access_invokes_callback() {
         let webapp = setup_webapp();
         let request = Function::new_with_args("cb", "cb(true);");
@@ -2164,53 +2208,6 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn download_file_invokes_callback() {
-        let webapp = setup_webapp();
-        let received_url = Rc::new(RefCell::new(String::new()));
-        let received_name = Rc::new(RefCell::new(String::new()));
-        let url_clone = Rc::clone(&received_url);
-        let name_clone = Rc::clone(&received_name);
-
-        let download = Closure::<dyn FnMut(JsValue, JsValue)>::new(move |params, cb: JsValue| {
-            let url = Reflect::get(&params, &"url".into())
-                .unwrap()
-                .as_string()
-                .unwrap_or_default();
-            let name = Reflect::get(&params, &"file_name".into())
-                .unwrap()
-                .as_string()
-                .unwrap_or_default();
-            *url_clone.borrow_mut() = url;
-            *name_clone.borrow_mut() = name;
-            let func = cb.dyn_ref::<Function>().unwrap();
-            let _ = func.call1(&JsValue::NULL, &JsValue::from_str("id"));
-        });
-        let _ = Reflect::set(
-            &webapp,
-            &"downloadFile".into(),
-            download.as_ref().unchecked_ref()
-        );
-        download.forget();
-
-        let app = TelegramWebApp::instance().unwrap();
-        let result = Rc::new(RefCell::new(String::new()));
-        let result_clone = Rc::clone(&result);
-        let params = DownloadFileParams {
-            url:       "https://example.com/data.bin",
-            file_name: Some("data.bin"),
-            mime_type: None
-        };
-        app.download_file(params, move |id| {
-            *result_clone.borrow_mut() = id;
-        })
-        .unwrap();
-
-        assert_eq!(
-            received_url.borrow().as_str(),
-            "https://example.com/data.bin"
-        );
-        assert_eq!(received_name.borrow().as_str(), "data.bin");
-        assert_eq!(result.borrow().as_str(), "id");
     fn request_write_access_returns_error_when_missing() {
         let _webapp = setup_webapp();
         let app = TelegramWebApp::instance().unwrap();
