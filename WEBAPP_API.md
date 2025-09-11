@@ -133,8 +133,17 @@ they are implemented.
 - [x] getOrientation
 
 ### BiometricManager
-- [ ] isBiometricAvailable
-- [ ] authenticate
+- [x] init
+- [x] requestAccess
+- [x] authenticate
+- [x] updateBiometricToken
+- [x] openSettings
+- [x] isInited
+- [x] isBiometricAvailable
+- [x] isAccessRequested
+- [x] isAccessGranted
+- [x] isBiometricTokenSaved
+- [x] deviceId
 
 ### CloudStorage
 - [x] getItem
