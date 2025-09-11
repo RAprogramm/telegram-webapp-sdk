@@ -1,4 +1,4 @@
-use web_sys::{window, Document, Element};
+use web_sys::{Document, Element, window};
 
 /// Struct representing a basic page layout
 pub struct PageLayout {
