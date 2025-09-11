@@ -68,10 +68,16 @@ Request access to sensitive user data or open the contact interface:
 
 ```rust,no_run
 use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
+use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 let _ = request_contact();
 let _ = request_phone_number();
 let _ = open_contact();
+
+let app = TelegramWebApp::instance().unwrap();
+let _ = app.request_write_access(|granted| {
+    let _ = granted;
+});
 ```
 
 These calls require the user's explicit permission before any information is shared.
@@ -103,6 +109,20 @@ let handle = app.on_event("my_event", |value| {
 app.off_event(handle).unwrap();
 ```
 
+## Fullscreen and orientation
+
+Control the Mini App display and screen orientation:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+let app = TelegramWebApp::instance().unwrap();
+app.request_fullscreen().unwrap();
+app.lock_orientation("portrait").unwrap();
+// later...
+app.unlock_orientation().unwrap();
+app.exit_fullscreen().unwrap();
+```
+
 ## Haptic feedback
 
 Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
@@ -117,6 +137,28 @@ impact_occurred(HapticImpactStyle::Light)?;
 notification_occurred(HapticNotificationType::Success)?;
 selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
+```
+
+## Init data validation
+
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+
+```rust
+use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+
+let bot_token = "123456:ABC";
+let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
+verify_hmac_sha256(query, bot_token)?;
+
+// For Ed25519-signed data
+# use ed25519_dalek::{Signer, SigningKey};
+# let sk = SigningKey::from_bytes(&[1u8;32]);
+# let pk = sk.verifying_key();
+# let sig = sk.sign(b"a=1\nb=2");
+# let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
+verify_ed25519(&init_data, pk.as_bytes())?;
+
+# Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
 ## API coverage

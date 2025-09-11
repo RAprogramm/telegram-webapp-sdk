@@ -14,10 +14,21 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [x] addToHomeScreen
  - [x] checkHomeScreenStatus
  - [ ] switchInlineQuery
+ - [x] switchInlineQuery
  - [x] showAlert
  - [x] showConfirm
  - [x] showPopup
+- [ ] shareURL
+- [ ] joinVoiceChat
+- [x] requestWriteAccess
+- [x] requestContact
  - [ ] shareURL
+ - [x] readTextFromClipboard
+  - [ ] switchInlineQuery
+  - [x] showAlert
+  - [x] showConfirm
+  - [x] showPopup
+  - [ ] shareURL
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
  - [x] requestContact
@@ -25,14 +36,15 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] expand
 - [ ] close
 - [ ] sendData
-- [ ] openLink
-- [ ] openTelegramLink
-- [ ] openInvoice
-- [x] switchInlineQuery
-- [ ] showAlert
-- [ ] showConfirm
-- [ ] showPopup
-- [x] shareURL
+ - [ ] openLink
+ - [ ] openTelegramLink
+ - [ ] openInvoice
+ - [ ] readTextFromClipboard
+  - [x] switchInlineQuery
+  - [ ] showAlert
+  - [ ] showConfirm
+  - [ ] showPopup
+  - [x] shareURL
 - [x] joinVoiceChat
 - [x] requestWriteAccess
 - [ ] requestContact
@@ -85,6 +97,6 @@ The following features are not yet covered by the SDK:
 - [ ] Theme change events
 - [ ] Viewport management
 - [ ] Location access
-- [ ] Clipboard access
+- [x] Clipboard access
 - [ ] Invoice payments
 - [ ] Background events
