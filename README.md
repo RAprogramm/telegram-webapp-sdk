@@ -76,6 +76,20 @@ let _ = open_contact();
 
 These calls require the user's explicit permission before any information is shared.
 
+## Home screen
+
+Prompt users to add the app to their home screen and check the current status:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+let _shown = app.add_to_home_screen().unwrap();
+app.check_home_screen_status(|status| {
+    let _ = status;
+}).unwrap();
+```
+
 ## Event callbacks
 
 Callback registration methods return an `EventHandle` for later deregistration.
