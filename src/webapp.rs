@@ -2,6 +2,8 @@ use js_sys::{Function, Object, Reflect};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
+use crate::logger;
+
 /// Safe wrapper around `window.Telegram.WebApp`
 #[derive(Clone)]
 pub struct TelegramWebApp {
@@ -64,6 +66,30 @@ impl TelegramWebApp {
                 .and_then(|f| f.call0(&main_button).ok());
         }
     }
+
+    /// Call `WebApp.MainButton.hide()`.
+    ///
+    /// # Errors
+    /// Returns `Err` if the underlying JavaScript call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _ = app.hide_main_button();
+    /// ```
+    pub fn hide_main_button(&self) -> Result<(), JsValue> {
+        let main_button = Reflect::get(&self.inner, &"MainButton".into())
+            .inspect_err(|_| logger::error("MainButton not available"))?;
+        let hide = Reflect::get(&main_button, &"hide".into())
+            .inspect_err(|_| logger::error("MainButton.hide not available"))?;
+        let func = hide
+            .dyn_into::<Function>()
+            .inspect_err(|_| logger::error("MainButton.hide is not a function"))?;
+        func.call0(&main_button)
+            .inspect_err(|_| logger::error("MainButton.hide call failed"))?;
+        Ok(())
+    }
     /// Call `WebApp.ready()`
     pub fn ready(&self) {
         let _ = self.call0("ready");
@@ -87,6 +113,54 @@ impl TelegramWebApp {
                 .and_then(|f| f.dyn_ref::<Function>().cloned())
                 .and_then(|f| f.call1(&main_button, &text.into()).ok());
         }
+    }
+
+    /// Set main button color (`MainButton.setColor(color)`).
+    ///
+    /// # Errors
+    /// Returns `Err` if the underlying JavaScript call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _ = app.set_main_button_color("#ff0000");
+    /// ```
+    pub fn set_main_button_color(&self, color: &str) -> Result<(), JsValue> {
+        let main_button = Reflect::get(&self.inner, &"MainButton".into())
+            .inspect_err(|_| logger::error("MainButton not available"))?;
+        let set_color = Reflect::get(&main_button, &"setColor".into())
+            .inspect_err(|_| logger::error("MainButton.setColor not available"))?;
+        let func = set_color
+            .dyn_into::<Function>()
+            .inspect_err(|_| logger::error("MainButton.setColor is not a function"))?;
+        func.call1(&main_button, &color.into())
+            .inspect_err(|_| logger::error("MainButton.setColor call failed"))?;
+        Ok(())
+    }
+
+    /// Set main button text color (`MainButton.setTextColor(color)`).
+    ///
+    /// # Errors
+    /// Returns `Err` if the underlying JavaScript call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _ = app.set_main_button_text_color("#ffffff");
+    /// ```
+    pub fn set_main_button_text_color(&self, color: &str) -> Result<(), JsValue> {
+        let main_button = Reflect::get(&self.inner, &"MainButton".into())
+            .inspect_err(|_| logger::error("MainButton not available"))?;
+        let set_color = Reflect::get(&main_button, &"setTextColor".into())
+            .inspect_err(|_| logger::error("MainButton.setTextColor not available"))?;
+        let func = set_color
+            .dyn_into::<Function>()
+            .inspect_err(|_| logger::error("MainButton.setTextColor is not a function"))?;
+        func.call1(&main_button, &color.into())
+            .inspect_err(|_| logger::error("MainButton.setTextColor call failed"))?;
+        Ok(())
     }
 
     /// Set callback for MainButton.onClick()
@@ -274,10 +348,13 @@ impl TelegramWebApp {
 
 #[cfg(test)]
 mod tests {
-    use std::{cell::Cell, rc::Rc};
+    use std::{
+        cell::{Cell, RefCell},
+        rc::Rc
+    };
 
     use js_sys::{Function, Object, Reflect};
-    use wasm_bindgen::JsValue;
+    use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 
@@ -293,6 +370,81 @@ mod tests {
         let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
         let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
         webapp
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn hide_main_button_calls_js() {
+        let webapp = setup_webapp();
+        let main_button = Object::new();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let hide_cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &main_button,
+            &"hide".into(),
+            hide_cb.as_ref().unchecked_ref()
+        );
+        hide_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.hide_main_button().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_main_button_color_calls_js() {
+        let webapp = setup_webapp();
+        let main_button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &main_button,
+            &"setColor".into(),
+            set_color_cb.as_ref().unchecked_ref()
+        );
+        set_color_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_main_button_color("#00ff00").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#00ff00"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_main_button_text_color_calls_js() {
+        let webapp = setup_webapp();
+        let main_button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &main_button,
+            &"setTextColor".into(),
+            set_color_cb.as_ref().unchecked_ref()
+        );
+        set_color_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_main_button_text_color("#112233").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#112233"));
     }
 
     #[wasm_bindgen_test]
