@@ -84,6 +84,7 @@ impl TelegramThemeParams {
     /// # Examples
     ///
     /// ```
+    /// use telegram_webapp_sdk::core::types::theme_params::TelegramThemeParams;
     /// let theme = TelegramThemeParams {
     ///     bg_color: Some("#ffffff".into()),
     ///     text_color: Some("#000000".into()),

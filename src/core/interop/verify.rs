@@ -1,5 +1,5 @@
 use hex::encode;
-use hmac_sha256::{Hash, HMAC};
+use hmac_sha256::{HMAC, Hash};
 use percent_encoding::percent_decode_str;
 
 /// Verifies the `hash` of Telegram init data using the secret key derived from
@@ -45,7 +45,7 @@ pub fn verify_init_data_hash(init_data: &str, bot_token: &str) -> bool {
         .join("\n");
 
     let secret_key = Hash::hash(format!("WebAppData{}", bot_token).as_bytes());
-    let expected_hash = HMAC::mac(check_string.as_bytes(), &secret_key);
+    let expected_hash = HMAC::mac(check_string.as_bytes(), secret_key);
     let expected_hex = encode(expected_hash);
 
     expected_hex == actual_hash

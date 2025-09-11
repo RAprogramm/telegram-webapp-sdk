@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 /// Represents a chat context (group, supergroup, or channel).
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TelegramChat {
     /// Unique identifier of the chat.
     pub id: u64,

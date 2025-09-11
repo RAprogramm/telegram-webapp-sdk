@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 /// Represents a Telegram user in the context of a Mini App.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TelegramUser {
     /// Unique Telegram user or bot ID (64-bit unsigned integer).
     pub id: u64,
