@@ -1,5 +1,6 @@
-use js_sys::{Function, Reflect};
+use js_sys::{Function, Promise, Reflect};
 use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen_futures::JsFuture;
 use web_sys::window;
 
 /// Stores a value under the given key in Telegram's device storage.
@@ -11,14 +12,17 @@ use web_sys::window;
 /// # Examples
 /// ```
 /// use telegram_webapp_sdk::api::device_storage::set;
-/// # fn run() -> Result<(), wasm_bindgen::JsValue> {
-/// set("foo", "bar")?;
+/// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+/// set("foo", "bar").await?;
 /// # Ok(()) }
 /// ```
-pub fn set(key: &str, value: &str) -> Result<(), JsValue> {
+pub async fn set(key: &str, value: &str) -> Result<(), JsValue> {
     let storage = device_storage_object()?;
     let func = Reflect::get(&storage, &JsValue::from_str("set"))?.dyn_into::<Function>()?;
-    func.call2(&storage, &JsValue::from_str(key), &JsValue::from_str(value))?;
+    let promise = func
+        .call2(&storage, &JsValue::from_str(key), &JsValue::from_str(value))?
+        .dyn_into::<Promise>()?;
+    JsFuture::from(promise).await?;
     Ok(())
 }
 
@@ -31,16 +35,19 @@ pub fn set(key: &str, value: &str) -> Result<(), JsValue> {
 /// # Examples
 /// ```
 /// use telegram_webapp_sdk::api::device_storage::{get, set};
-/// # fn run() -> Result<(), wasm_bindgen::JsValue> {
-/// set("foo", "bar")?;
-/// let value = get("foo")?;
+/// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+/// set("foo", "bar").await?;
+/// let value = get("foo").await?;
 /// assert_eq!(value.as_deref(), Some("bar"));
 /// # Ok(()) }
 /// ```
-pub fn get(key: &str) -> Result<Option<String>, JsValue> {
+pub async fn get(key: &str) -> Result<Option<String>, JsValue> {
     let storage = device_storage_object()?;
     let func = Reflect::get(&storage, &JsValue::from_str("get"))?.dyn_into::<Function>()?;
-    let value = func.call1(&storage, &JsValue::from_str(key))?;
+    let promise = func
+        .call1(&storage, &JsValue::from_str(key))?
+        .dyn_into::<Promise>()?;
+    let value = JsFuture::from(promise).await?;
     Ok(value.as_string())
 }
 
@@ -53,15 +60,18 @@ pub fn get(key: &str) -> Result<Option<String>, JsValue> {
 /// # Examples
 /// ```
 /// use telegram_webapp_sdk::api::device_storage::{remove, set};
-/// # fn run() -> Result<(), wasm_bindgen::JsValue> {
-/// set("foo", "bar")?;
-/// remove("foo")?;
+/// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+/// set("foo", "bar").await?;
+/// remove("foo").await?;
 /// # Ok(()) }
 /// ```
-pub fn remove(key: &str) -> Result<(), JsValue> {
+pub async fn remove(key: &str) -> Result<(), JsValue> {
     let storage = device_storage_object()?;
     let func = Reflect::get(&storage, &JsValue::from_str("remove"))?.dyn_into::<Function>()?;
-    func.call1(&storage, &JsValue::from_str(key))?;
+    let promise = func
+        .call1(&storage, &JsValue::from_str(key))?
+        .dyn_into::<Promise>()?;
+    JsFuture::from(promise).await?;
     Ok(())
 }
 
@@ -74,15 +84,16 @@ pub fn remove(key: &str) -> Result<(), JsValue> {
 /// # Examples
 /// ```
 /// use telegram_webapp_sdk::api::device_storage::{clear, set};
-/// # fn run() -> Result<(), wasm_bindgen::JsValue> {
-/// set("foo", "bar")?;
-/// clear()?;
+/// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+/// set("foo", "bar").await?;
+/// clear().await?;
 /// # Ok(()) }
 /// ```
-pub fn clear() -> Result<(), JsValue> {
+pub async fn clear() -> Result<(), JsValue> {
     let storage = device_storage_object()?;
     let func = Reflect::get(&storage, &JsValue::from_str("clear"))?.dyn_into::<Function>()?;
-    func.call0(&storage)?;
+    let promise = func.call0(&storage)?.dyn_into::<Promise>()?;
+    JsFuture::from(promise).await?;
     Ok(())
 }
 
@@ -116,73 +127,75 @@ mod tests {
         storage
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn set_calls_js() {
+    async fn set_calls_js() {
         let storage = setup_device_storage();
-        let func = Function::new_with_args("k,v", "this[k] = v;");
+        let func = Function::new_with_args("k,v", "this[k] = v; return Promise.resolve();");
         let _ = Reflect::set(&storage, &"set".into(), &func);
-        assert!(set("a", "b").is_ok());
+        assert!(set("a", "b").await.is_ok());
         let val = Reflect::get(&storage, &"a".into()).unwrap();
         assert_eq!(val.as_string().as_deref(), Some("b"));
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn set_err() {
-        assert!(set("a", "b").is_err());
+    async fn set_err() {
+        assert!(set("a", "b").await.is_err());
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn get_calls_js() {
+    async fn get_calls_js() {
         let storage = setup_device_storage();
         let func = Function::new_with_args("k", "return this[k];");
         let _ = Reflect::set(&storage, &"get".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));
-        let value = get("a").unwrap();
+        let value = get("a").await.unwrap();
         assert_eq!(value.as_deref(), Some("b"));
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn get_err() {
-        assert!(get("a").is_err());
+    async fn get_err() {
+        assert!(get("a").await.is_err());
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn remove_calls_js() {
+    async fn remove_calls_js() {
         let storage = setup_device_storage();
-        let func = Function::new_with_args("k", "delete this[k];");
+        let func = Function::new_with_args("k", "delete this[k]; return Promise.resolve();");
         let _ = Reflect::set(&storage, &"remove".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));
-        assert!(remove("a").is_ok());
+        assert!(remove("a").await.is_ok());
         let has = Reflect::has(&storage, &"a".into()).unwrap();
         assert!(!has);
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn remove_err() {
-        assert!(remove("a").is_err());
+    async fn remove_err() {
+        assert!(remove("a").await.is_err());
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn clear_calls_js() {
+    async fn clear_calls_js() {
         let storage = setup_device_storage();
-        let func = Function::new_no_args("Object.keys(this).forEach(k => delete this[k]);");
+        let func = Function::new_no_args(
+            "Object.keys(this).forEach(k => delete this[k]); return Promise.resolve();",
+        );
         let _ = Reflect::set(&storage, &"clear".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));
-        assert!(clear().is_ok());
+        assert!(clear().await.is_ok());
         let has = Reflect::has(&storage, &"a".into()).unwrap();
         assert!(!has);
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn clear_err() {
-        assert!(clear().is_err());
+    async fn clear_err() {
+        assert!(clear().await.is_err());
     }
 }

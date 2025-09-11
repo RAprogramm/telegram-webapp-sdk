@@ -112,9 +112,10 @@ Persist lightweight data on the user's device:
 ```rust,no_run
 use telegram_webapp_sdk::api::device_storage::{set, get};
 
-set("theme", "dark")?;
-let value = get("theme")?;
-# Ok::<(), wasm_bindgen::JsValue>(())
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+set("theme", "dark").await?;
+let value = get("theme").await?;
+# Ok(()) }
 ```
 
 ## Secure storage
@@ -124,9 +125,10 @@ Store sensitive data encrypted and restorable:
 ```rust,no_run
 use telegram_webapp_sdk::api::secure_storage::{set, restore};
 
-set("token", "secret")?;
-let _ = restore("token")?;
-# Ok::<(), wasm_bindgen::JsValue>(())
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+set("token", "secret").await?;
+let _ = restore("token").await?;
+# Ok(()) }
 ```
 
 
