@@ -80,11 +80,7 @@ fn get_param(key: &str) -> Option<String> {
             let mut parts = pair.split('=');
             let k = parts.next()?;
             let v = parts.next()?;
-            if k == key {
-                Some(v.to_string())
-            } else {
-                None
-            }
+            if k == key { Some(v.to_string()) } else { None }
         })
 }
 

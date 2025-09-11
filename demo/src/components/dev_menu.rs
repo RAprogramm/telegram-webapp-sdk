@@ -1,6 +1,9 @@
-use telegram_webapp_sdk::{logger::info, webapp::TelegramWebApp};
+use telegram_webapp_sdk::{
+    logger::info,
+    webapp::{BottomButton, TelegramWebApp}
+};
 use wasm_bindgen::prelude::*;
-use web_sys::{window, HtmlElement};
+use web_sys::{HtmlElement, window};
 
 const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
     ("send-data", |tg| tg.send_data("Hello from Dev Menu!")),
@@ -10,8 +13,8 @@ const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
         tg.show_alert("This is a test alert from DevMenu")
     }),
     ("main-button", |tg| {
-        tg.set_main_button_text("Clicked!");
-        tg.show_main_button();
+        tg.set_bottom_button_text(BottomButton::Main, "Clicked!");
+        tg.show_bottom_button(BottomButton::Main);
     }),
     ("is-expanded", |tg| {
         let expanded = tg.is_expanded();

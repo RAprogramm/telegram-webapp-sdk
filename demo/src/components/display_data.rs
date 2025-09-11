@@ -1,4 +1,4 @@
-use web_sys::{window, Element};
+use web_sys::{Element, window};
 
 use crate::components::rgb::RGB; // ← your swatch component
 

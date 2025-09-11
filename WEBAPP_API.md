@@ -37,10 +37,12 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 
 ## Objects
 
-### MainButton
+### BottomButton (Main & Secondary)
 - [x] show
 - [x] hide
 - [x] setText
+- [x] setColor
+- [x] setTextColor
 - [x] onClick
 - [ ] offClick
 
