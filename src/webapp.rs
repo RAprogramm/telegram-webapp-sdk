@@ -86,6 +86,66 @@ impl TelegramWebApp {
         self.call0("close")
     }
 
+    /// Call `WebApp.requestFullscreen()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.request_fullscreen().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_fullscreen(&self) -> Result<(), JsValue> {
+        self.call0("requestFullscreen")
+    }
+
+    /// Call `WebApp.exitFullscreen()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.exit_fullscreen().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn exit_fullscreen(&self) -> Result<(), JsValue> {
+        self.call0("exitFullscreen")
+    }
+
+    /// Call `WebApp.lockOrientation(orientation)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.lock_orientation("portrait").unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn lock_orientation(&self, orientation: &str) -> Result<(), JsValue> {
+        self.call1("lockOrientation", &orientation.into())
+    }
+
+    /// Call `WebApp.unlockOrientation()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.unlock_orientation().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn unlock_orientation(&self) -> Result<(), JsValue> {
+        self.call0("unlockOrientation")
+    }
+
     /// Call `WebApp.showAlert(message)`.
     ///
     /// # Errors
@@ -245,6 +305,50 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.addToHomeScreen()` and return whether the prompt was shown.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _shown = app.add_to_home_screen().unwrap();
+    /// ```
+    pub fn add_to_home_screen(&self) -> Result<bool, JsValue> {
+        let f = Reflect::get(&self.inner, &"addToHomeScreen".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("addToHomeScreen is not a function"))?;
+        let result = func.call0(&self.inner)?;
+        Ok(result.as_bool().unwrap_or(false))
+    }
+
+    /// Call `WebApp.checkHomeScreenStatus(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.check_home_screen_status(|status| {
+    ///     let _ = status;
+    /// })
+    /// .unwrap();
+    /// ```
+    pub fn check_home_screen_status<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |status: JsValue| {
+            callback(status.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"checkHomeScreenStatus".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("checkHomeScreenStatus is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
     /// Call `WebApp.requestWriteAccess(callback)`.
     ///
     /// # Examples
@@ -266,11 +370,7 @@ impl TelegramWebApp {
         let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
-        let f = Reflect::get(&self.inner, &"requestWriteAccess".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("requestWriteAccess is not a function"))?;
-        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        self.call1("requestWriteAccess", cb.as_ref().unchecked_ref())?;
         cb.forget();
         Ok(())
     }
@@ -380,6 +480,36 @@ impl TelegramWebApp {
         Reflect::get(&self.inner, &"closeScanQrPopup".into())?
             .dyn_into::<Function>()?
             .call0(&self.inner)?;
+        Ok(())
+    }
+
+    /// Call `WebApp.readTextFromClipboard(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.read_text_from_clipboard(|text| {
+    ///     let _ = text;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn read_text_from_clipboard<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |text: JsValue| {
+            callback(text.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"readTextFromClipboard".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("readTextFromClipboard is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
         Ok(())
     }
 
@@ -696,6 +826,40 @@ impl TelegramWebApp {
         ))
     }
 
+    /// Register a callback for received clipboard text.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_clipboard_text_received<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(JsValue)>, JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |text: JsValue| {
+            callback(text.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"clipboardTextReceived".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("clipboardTextReceived".to_string()),
+            cb
+        ))
+    }
+
     /// Registers a callback for the native back button.
     ///
     /// Returns an [`EventHandle`] that can be passed to
@@ -764,7 +928,7 @@ mod tests {
     };
 
     use js_sys::{Function, Object, Reflect};
-    use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
+    use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 
@@ -982,6 +1146,22 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn clipboard_text_received_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_clipboard_text_received(|_| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"clipboardTextReceived".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"clipboardTextReceived".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn open_link_and_telegram_link() {
         let webapp = setup_webapp();
         let open_link = Function::new_with_args("url", "this.open_link = url;");
@@ -1059,6 +1239,32 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn switch_inline_query_without_types_calls_js() {
+        let webapp = setup_webapp();
+        let switch_inline = Function::new_with_args(
+            "query",
+            "this.query = query; this.args_len = arguments.length;"
+        );
+        let _ = Reflect::set(&webapp, &"switchInlineQuery".into(), &switch_inline);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.switch_inline_query("search", None).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"query".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("search"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"args_len".into()).unwrap().as_f64(),
+            Some(1.0),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn share_url_calls_js() {
         let webapp = setup_webapp();
         let share = Function::new_with_args(
@@ -1119,6 +1325,122 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn add_to_home_screen_calls_js() {
+        let webapp = setup_webapp();
+        let add = Function::new_with_args("", "this.called = true; return true;");
+        let _ = Reflect::set(&webapp, &"addToHomeScreen".into(), &add);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let shown = app.add_to_home_screen().unwrap();
+        assert!(shown);
+        let called = Reflect::get(&webapp, &"called".into())
+            .unwrap()
+            .as_bool()
+            .unwrap_or(false);
+        assert!(called);
+    fn request_fullscreen_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"requestFullscreen".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.request_fullscreen().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn exit_fullscreen_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"exitFullscreen".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.exit_fullscreen().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn check_home_screen_status_invokes_callback() {
+        let webapp = setup_webapp();
+        let check = Function::new_with_args("cb", "cb('added');");
+        let _ = Reflect::set(&webapp, &"checkHomeScreenStatus".into(), &check);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let status = Rc::new(RefCell::new(String::new()));
+        let status_clone = Rc::clone(&status);
+
+        app.check_home_screen_status(move |s| {
+            *status_clone.borrow_mut() = s;
+        })
+        .unwrap();
+
+        assert_eq!(status.borrow().as_str(), "added");
+    fn lock_orientation_calls_js() {
+        let webapp = setup_webapp();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"lockOrientation".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.lock_orientation("portrait").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("portrait"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn unlock_orientation_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"unlockOrientation".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.unlock_orientation().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn request_write_access_invokes_callback() {
         let webapp = setup_webapp();
         let request = Function::new_with_args("cb", "cb(true);");
@@ -1128,10 +1450,10 @@ mod tests {
         let granted = Rc::new(Cell::new(false));
         let granted_clone = Rc::clone(&granted);
 
-        app.request_write_access(move |g| {
+        let res = app.request_write_access(move |g| {
             granted_clone.set(g);
-        })
-        .unwrap();
+        });
+        assert!(res.is_ok());
 
         assert!(granted.get());
     }
@@ -1185,6 +1507,11 @@ mod tests {
         );
         assert_eq!(received_name.borrow().as_str(), "data.bin");
         assert_eq!(result.borrow().as_str(), "id");
+    fn request_write_access_returns_error_when_missing() {
+        let _webapp = setup_webapp();
+        let app = TelegramWebApp::instance().unwrap();
+        let res = app.request_write_access(|_| {});
+        assert!(res.is_err());
     }
 
     #[wasm_bindgen_test]
@@ -1204,6 +1531,25 @@ mod tests {
         .unwrap();
 
         assert_eq!(button.borrow().as_str(), "ok");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn read_text_from_clipboard_invokes_callback() {
+        let webapp = setup_webapp();
+        let read_clip = Function::new_with_args("cb", "cb('clip');");
+        let _ = Reflect::set(&webapp, &"readTextFromClipboard".into(), &read_clip);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let text = Rc::new(RefCell::new(String::new()));
+        let text_clone = Rc::clone(&text);
+
+        app.read_text_from_clipboard(move |t| {
+            *text_clone.borrow_mut() = t;
+        })
+        .unwrap();
+
+        assert_eq!(text.borrow().as_str(), "clip");
     }
 
     #[wasm_bindgen_test]
