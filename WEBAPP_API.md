@@ -4,6 +4,21 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 
 ## Methods
 
+ - [x] ready
+ - [x] expand
+ - [x] close
+ - [x] sendData
+ - [x] openLink
+ - [x] openTelegramLink
+ - [x] openInvoice
+ - [ ] switchInlineQuery
+ - [x] showAlert
+ - [x] showConfirm
+ - [x] showPopup
+ - [ ] shareURL
+ - [ ] joinVoiceChat
+ - [ ] requestWriteAccess
+ - [x] requestContact
 - [ ] ready
 - [ ] expand
 - [ ] close
@@ -11,28 +26,28 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] openLink
 - [ ] openTelegramLink
 - [ ] openInvoice
-- [ ] switchInlineQuery
+- [x] switchInlineQuery
 - [ ] showAlert
 - [ ] showConfirm
 - [ ] showPopup
-- [ ] shareURL
-- [ ] joinVoiceChat
-- [ ] requestWriteAccess
+- [x] shareURL
+- [x] joinVoiceChat
+- [x] requestWriteAccess
 - [ ] requestContact
 
 ## Objects
 
 ### MainButton
-- [ ] show
-- [ ] hide
-- [ ] setText
-- [ ] onClick
+- [x] show
+- [x] hide
+- [x] setText
+- [x] onClick
 - [ ] offClick
 
 ### BackButton
-- [ ] show
-- [ ] hide
-- [ ] onClick
+- [x] show
+- [x] hide
+- [x] onClick
 - [ ] offClick
 
 ### SettingsButton
@@ -42,9 +57,9 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] offClick
 
 ### HapticFeedback
-- [ ] impactOccurred
-- [ ] notificationOccurred
-- [ ] selectionChanged
+- [x] impactOccurred
+- [x] notificationOccurred
+- [x] selectionChanged
 
 ### BiometricManager
 - [ ] isBiometricAvailable

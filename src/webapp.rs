@@ -4,6 +4,46 @@ use web_sys::window;
 
 use crate::logger;
 
+/// Handle returned when registering callbacks.
+pub struct EventHandle<T: ?Sized> {
+    target:   Object,
+    method:   &'static str,
+    event:    Option<String>,
+    callback: Closure<T>
+}
+
+impl<T: ?Sized> EventHandle<T> {
+    fn new(
+        target: Object,
+        method: &'static str,
+        event: Option<String>,
+        callback: Closure<T>
+    ) -> Self {
+        Self {
+            target,
+            method,
+            event,
+            callback
+        }
+    }
+
+    pub(crate) fn unregister(self) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.target, &self.method.into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str(&format!("{} is not a function", self.method)))?;
+        match self.event {
+            Some(event) => func.call2(
+                &self.target,
+                &event.into(),
+                self.callback.as_ref().unchecked_ref()
+            )?,
+            None => func.call1(&self.target, self.callback.as_ref().unchecked_ref())?
+        };
+        Ok(())
+    }
+}
+
 /// Safe wrapper around `window.Telegram.WebApp`
 #[derive(Clone)]
 pub struct TelegramWebApp {
@@ -122,6 +162,114 @@ impl TelegramWebApp {
         Reflect::get(&self.inner, &"openInvoice".into())?
             .dyn_into::<Function>()?
             .call2(&self.inner, &url.into(), cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.switchInlineQuery(query, choose_chat_types)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.switch_inline_query("query", None).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn switch_inline_query(
+        &self,
+        query: &str,
+        choose_chat_types: Option<&JsValue>
+    ) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"switchInlineQuery".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("switchInlineQuery is not a function"))?;
+        match choose_chat_types {
+            Some(types) => func.call2(&self.inner, &query.into(), types)?,
+            None => func.call1(&self.inner, &query.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.shareURL(url, text)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.share_url("https://example.com", Some("Check this"))
+    ///     .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn share_url(&self, url: &str, text: Option<&str>) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"shareURL".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("shareURL is not a function"))?;
+        match text {
+            Some(t) => func.call2(&self.inner, &url.into(), &t.into())?,
+            None => func.call1(&self.inner, &url.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.joinVoiceChat(chat_id, invite_hash)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.join_voice_chat("chat", None).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn join_voice_chat(
+        &self,
+        chat_id: &str,
+        invite_hash: Option<&str>
+    ) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"joinVoiceChat".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("joinVoiceChat is not a function"))?;
+        match invite_hash {
+            Some(hash) => func.call2(&self.inner, &chat_id.into(), &hash.into())?,
+            None => func.call1(&self.inner, &chat_id.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.requestWriteAccess(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.request_write_access(|granted| {
+    ///     let _ = granted;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_write_access<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"requestWriteAccess".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("requestWriteAccess is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
         cb.forget();
         Ok(())
     }
@@ -316,30 +464,54 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.setTextColor call failed"))?;
         Ok(())
     }
+
     /// Set callback for `MainButton.onClick()`.
+    ///
+    /// Returns an [`EventHandle`] that can be used to remove the callback.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn set_main_button_callback<F>(&self, callback: F) -> Result<(), JsValue>
+    pub fn set_main_button_callback<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
     where
         F: 'static + Fn()
     {
-        let main_button = Reflect::get(&self.inner, &"MainButton".into())?;
+        let main_button_val = Reflect::get(&self.inner, &"MainButton".into())?;
+        let main_button = main_button_val.dyn_into::<Object>()?;
         let cb = Closure::<dyn FnMut()>::new(callback);
         let f = Reflect::get(&main_button, &"onClick".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("onClick is not a function"))?;
         func.call1(&main_button, cb.as_ref().unchecked_ref())?;
-        cb.forget(); // Safe leak
-        Ok(())
+        Ok(EventHandle::new(main_button, "offClick", None, cb))
     }
 
-    /// Register event handler (web_app_event_name, callback).
+    /// Remove previously set main button callback.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn on_event<F>(&self, event: &str, callback: F) -> Result<(), JsValue>
+    pub fn remove_main_button_callback(
+        &self,
+        handle: EventHandle<dyn FnMut()>
+    ) -> Result<(), JsValue> {
+        handle.unregister()
+    }
+
+    /// Register event handler (`web_app_event_name`, callback).
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_event<F>(
+        &self,
+        event: &str,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(JsValue)>, JsValue>
     where
         F: 'static + Fn(JsValue)
     {
@@ -349,25 +521,20 @@ impl TelegramWebApp {
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
         func.call2(&self.inner, &event.into(), cb.as_ref().unchecked_ref())?;
-        cb.forget(); // Safe leak
-        Ok(())
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some(event.to_owned()),
+            cb
+        ))
     }
 
-    /// Deregister event handler.
+    /// Deregister a previously registered event handler.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn off_event<F>(&self, event: &str, callback: F) -> Result<(), JsValue>
-    where
-        F: 'static + Fn(JsValue)
-    {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(callback);
-        let f = Reflect::get(&self.inner, &"offEvent".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("offEvent is not a function"))?;
-        func.call2(&self.inner, &event.into(), cb.as_ref().unchecked_ref())?;
-        Ok(())
+    pub fn off_event<T: ?Sized>(&self, handle: EventHandle<T>) -> Result<(), JsValue> {
+        handle.unregister()
     }
 
     /// Internal: call `this[field][method]()`
@@ -460,9 +627,12 @@ impl TelegramWebApp {
 
     /// Register a callback for viewport changes.
     ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn on_viewport_changed<F>(&self, callback: F) -> Result<(), JsValue>
+    pub fn on_viewport_changed<F>(&self, callback: F) -> Result<EventHandle<dyn FnMut()>, JsValue>
     where
         F: 'static + Fn()
     {
@@ -476,34 +646,56 @@ impl TelegramWebApp {
             &"viewportChanged".into(),
             cb.as_ref().unchecked_ref()
         )?;
-        cb.forget();
-        Ok(())
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("viewportChanged".to_string()),
+            cb
+        ))
     }
 
     /// Registers a callback for the native back button.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`remove_back_button_callback`](Self::remove_back_button_callback).
     ///
     /// # Examples
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.set_back_button_callback(|| {}).expect("callback");
+    /// let handle = app.set_back_button_callback(|| {}).expect("callback");
+    /// app.remove_back_button_callback(handle).unwrap();
     /// ```
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn set_back_button_callback<F>(&self, callback: F) -> Result<(), JsValue>
+    pub fn set_back_button_callback<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
     where
         F: 'static + Fn()
     {
-        let back_button = Reflect::get(&self.inner, &"BackButton".into())?;
+        let back_button_val = Reflect::get(&self.inner, &"BackButton".into())?;
+        let back_button = back_button_val.dyn_into::<Object>()?;
         let cb = Closure::<dyn FnMut()>::new(callback);
         let f = Reflect::get(&back_button, &"onClick".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("onClick is not a function"))?;
         func.call1(&back_button, cb.as_ref().unchecked_ref())?;
-        cb.forget();
-        Ok(())
+        Ok(EventHandle::new(back_button, "offClick", None, cb))
+    }
+
+    /// Remove previously set back button callback.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn remove_back_button_callback(
+        &self,
+        handle: EventHandle<dyn FnMut()>
+    ) -> Result<(), JsValue> {
+        handle.unregister()
     }
     /// Returns whether the native back button is visible.
     ///
@@ -646,19 +838,104 @@ mod tests {
         let _ = Reflect::set(&webapp, &"BackButton".into(), &back_button);
         let _ = Reflect::set(&back_button, &"isVisible".into(), &JsValue::TRUE);
 
-        let on_click = Function::new_with_args("cb", "cb();");
+        let on_click = Function::new_with_args("cb", "this.cb = cb;");
+        let off_click = Function::new_with_args("", "delete this.cb;");
         let _ = Reflect::set(&back_button, &"onClick".into(), &on_click);
+        let _ = Reflect::set(&back_button, &"offClick".into(), &off_click);
 
         let called = Rc::new(Cell::new(false));
         let called_clone = Rc::clone(&called);
 
         let app = TelegramWebApp::instance().unwrap();
         assert!(app.is_back_button_visible());
-        app.set_back_button_callback(move || {
-            called_clone.set(true);
-        })
-        .unwrap();
+        let handle = app
+            .set_back_button_callback(move || {
+                called_clone.set(true);
+            })
+            .unwrap();
+
+        let stored = Reflect::has(&back_button, &"cb".into()).unwrap();
+        assert!(stored);
+
+        let cb_fn = Reflect::get(&back_button, &"cb".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        let _ = cb_fn.call0(&JsValue::NULL);
         assert!(called.get());
+
+        app.remove_back_button_callback(handle).unwrap();
+        let stored_after = Reflect::has(&back_button, &"cb".into()).unwrap();
+        assert!(!stored_after);
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn main_button_callback_register_and_remove() {
+        let webapp = setup_webapp();
+        let main_button = Object::new();
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
+
+        let on_click = Function::new_with_args("cb", "this.cb = cb;");
+        let off_click = Function::new_with_args("", "delete this.cb;");
+        let _ = Reflect::set(&main_button, &"onClick".into(), &on_click);
+        let _ = Reflect::set(&main_button, &"offClick".into(), &off_click);
+
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app
+            .set_main_button_callback(move || {
+                called_clone.set(true);
+            })
+            .unwrap();
+
+        let stored = Reflect::has(&main_button, &"cb".into()).unwrap();
+        assert!(stored);
+
+        let cb_fn = Reflect::get(&main_button, &"cb".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        let _ = cb_fn.call0(&JsValue::NULL);
+        assert!(called.get());
+
+        app.remove_main_button_callback(handle).unwrap();
+        let stored_after = Reflect::has(&main_button, &"cb".into()).unwrap();
+        assert!(!stored_after);
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn on_event_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_event("test", |_: JsValue| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"test".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"test".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn viewport_changed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_viewport_changed(|| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"viewportChanged".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"viewportChanged".into()).unwrap());
     }
 
     #[wasm_bindgen_test]
@@ -708,6 +985,113 @@ mod tests {
         .unwrap();
 
         assert_eq!(status.borrow().as_str(), "paid");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn switch_inline_query_calls_js() {
+        let webapp = setup_webapp();
+        let switch_inline =
+            Function::new_with_args("query, types", "this.query = query; this.types = types;");
+        let _ = Reflect::set(&webapp, &"switchInlineQuery".into(), &switch_inline);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let types = JsValue::from_str("users");
+        app.switch_inline_query("search", Some(&types)).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"query".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("search"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"types".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("users"),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn share_url_calls_js() {
+        let webapp = setup_webapp();
+        let share = Function::new_with_args(
+            "url, text",
+            "this.shared_url = url; this.shared_text = text;"
+        );
+        let _ = Reflect::set(&webapp, &"shareURL".into(), &share);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let url = "https://example.com";
+        let text = "check";
+        app.share_url(url, Some(text)).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"shared_url".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(url),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"shared_text".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(text),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn join_voice_chat_calls_js() {
+        let webapp = setup_webapp();
+        let join = Function::new_with_args(
+            "id, hash",
+            "this.voice_chat_id = id; this.voice_chat_hash = hash;"
+        );
+        let _ = Reflect::set(&webapp, &"joinVoiceChat".into(), &join);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.join_voice_chat("123", Some("hash")).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"voice_chat_id".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("123"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"voice_chat_hash".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("hash"),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_write_access_invokes_callback() {
+        let webapp = setup_webapp();
+        let request = Function::new_with_args("cb", "cb(true);");
+        let _ = Reflect::set(&webapp, &"requestWriteAccess".into(), &request);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let granted = Rc::new(Cell::new(false));
+        let granted_clone = Rc::clone(&granted);
+
+        app.request_write_access(move |g| {
+            granted_clone.set(g);
+        })
+        .unwrap();
+
+        assert!(granted.get());
     }
 
     #[wasm_bindgen_test]
