@@ -24,9 +24,11 @@ they are implemented.
 - [x] requestContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] requestPhoneNumber ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
 - [x] openContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
+- [x] enableVerticalSwipes
+- [x] disableVerticalSwipes
  - [x] ready
- - [x] expand
- - [x] close
+  - [x] expand
+  - [x] close
  - [x] hideKeyboard
  - [x] sendData
  - [x] openLink

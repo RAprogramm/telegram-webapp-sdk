@@ -1,6 +1,6 @@
 use js_sys::{Function, Object, Reflect};
 use serde_wasm_bindgen::to_value;
-use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
+use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::window;
 
 use crate::{core::types::download_file_params::DownloadFileParams, logger};
@@ -162,6 +162,36 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn unlock_orientation(&self) -> Result<(), JsValue> {
         self.call0("unlockOrientation")
+    }
+
+    /// Call `WebApp.enableVerticalSwipes()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.enable_vertical_swipes().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn enable_vertical_swipes(&self) -> Result<(), JsValue> {
+        self.call0("enableVerticalSwipes")
+    }
+
+    /// Call `WebApp.disableVerticalSwipes()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.disable_vertical_swipes().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn disable_vertical_swipes(&self) -> Result<(), JsValue> {
+        self.call0("disableVerticalSwipes")
     }
 
     /// Call `WebApp.showAlert(message)`.
@@ -656,8 +686,8 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Show a bottom button.
-    /// Call `WebApp.readTextFromClipboard(callback)`.
+    /// Hide the on-screen keyboard.
+    /// Call `WebApp.hideKeyboard()`.
     ///
     /// # Examples
     /// ```no_run
@@ -2110,6 +2140,50 @@ mod tests {
 
         let app = TelegramWebApp::instance().unwrap();
         app.unlock_orientation().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn enable_vertical_swipes_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"enableVerticalSwipes".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.enable_vertical_swipes().unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn disable_vertical_swipes_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"disableVerticalSwipes".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.disable_vertical_swipes().unwrap();
         assert!(called.get());
     }
 
