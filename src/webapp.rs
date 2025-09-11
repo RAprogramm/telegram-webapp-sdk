@@ -193,14 +193,6 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.MainButton.show()`
-    pub fn show_main_button(&self) {
-        if let Ok(main_button) = Reflect::get(&self.inner, &"MainButton".into()) {
-            let _ = Reflect::get(&main_button, &"show".into())
-                .ok()
-                .and_then(|f| f.dyn_ref::<Function>().cloned())
-                .and_then(|f| f.call0(&main_button).ok());
-        }
     /// Call `WebApp.MainButton.show()`.
     ///
     /// # Errors
@@ -238,9 +230,7 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.hide call failed"))?;
         Ok(())
     }
-    /// Call `WebApp.ready()`
-    pub fn ready(&self) {
-        let _ = self.call0("ready");
+
     /// Call `WebApp.ready()`.
     ///
     /// # Errors
@@ -326,10 +316,6 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.setTextColor call failed"))?;
         Ok(())
     }
-
-    /// Set callback for MainButton.onClick()
-    pub fn set_main_button_callback<F>(&self, callback: F)
-
     /// Set callback for `MainButton.onClick()`.
     ///
     /// # Errors
