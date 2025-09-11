@@ -57,6 +57,8 @@ they are implemented.
   - [ ] shareURL
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
+ - [x] setEmojiStatus
+ - [x] requestEmojiStatusAccess
  - [x] requestContact
  - [x] setHeaderColor
  - [x] setBackgroundColor
@@ -77,6 +79,8 @@ they are implemented.
 - [x] shareURL
 - [x] joinVoiceChat
 - [x] requestWriteAccess
+ - [x] setEmojiStatus
+ - [x] requestEmojiStatusAccess
 - [ ] requestContact
 
 ## Objects
