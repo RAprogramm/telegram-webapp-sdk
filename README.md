@@ -76,6 +76,23 @@ let _ = open_contact();
 
 These calls require the user's explicit permission before any information is shared.
 
+## Settings button
+
+Control the Telegram client's settings button and handle user clicks:
+
+```rust,no_run
+use telegram_webapp_sdk::api::settings_button::{show, hide, on_click, off_click};
+use wasm_bindgen::prelude::Closure;
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let cb = Closure::wrap(Box::new(|| {}) as Box<dyn Fn()>);
+on_click(&cb)?;
+show()?;
+hide()?;
+off_click(&cb)?;
+# Ok(()) }
+```
+
 ## Event callbacks
 
 Callback registration methods return an `EventHandle` for later deregistration.

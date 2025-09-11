@@ -51,10 +51,10 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] offClick
 
 ### SettingsButton
-- [ ] show
-- [ ] hide
-- [ ] onClick
-- [ ] offClick
+- [x] show
+- [x] hide
+- [x] onClick
+- [x] offClick
 
 ### HapticFeedback
 - [x] impactOccurred
