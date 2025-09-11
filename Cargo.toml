@@ -5,6 +5,10 @@ edition = "2024"
 description = "Telegram WebApp SDK for Rust"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/RAprogramm/telegram-webapp-sdk"
+readme = "README.md"
+documentation = "https://docs.rs/telegram-webapp-sdk"
+keywords = ["telegram", "webapp", "wasm"]
+categories = ["web-programming", "wasm"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

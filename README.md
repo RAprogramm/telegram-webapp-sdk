@@ -1,30 +1,35 @@
-# telegram-webapp-sdk
+# Telegram WebApp SDK
 
-A Rust library for building Telegram Web Apps with an ergonomic and safe API.
+`telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
-## Features
+## Installation
 
-- Core utilities to interact with the `Telegram.WebApp` interface.
-- Optional framework integrations activated via Cargo features:
-  - `yew` &mdash; provides a Yew hook `use_telegram_context` for retrieving the global `TelegramContext`.
-  - `leptos` &mdash; offers `provide_telegram_context` to inject the `TelegramContext` into the Leptos reactive system.
-- `mock` &mdash; injects a configurable mock `Telegram.WebApp` environment for local development.
-- Basic Bot API type definitions including `WebAppInfo`, `WebAppData`,
-  `SentWebAppMessage`, `WebhookInfo`, and `WriteAccessAllowed`.
+Add the crate to your `Cargo.toml`:
 
-Enable features in `Cargo.toml`:
+```toml
+[dependencies]
+telegram-webapp-sdk = "0.1"
+```
+
+Optional features:
+
+- `yew` &mdash; exposes a `use_telegram_context` hook.
+- `leptos` &mdash; integrates the context into the Leptos reactive system.
+- `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
+
+Enable features as needed:
 
 ```toml
 telegram-webapp-sdk = { version = "0.1", features = ["yew", "mock"] }
 ```
 
-## Examples
+## Quick start
 
 ### Yew
 
 ```rust,no_run
-use yew::prelude::*;
 use telegram_webapp_sdk::yew::use_telegram_context;
+use yew::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
@@ -48,6 +53,28 @@ fn App() -> impl IntoView {
 }
 ```
 
-## API Coverage
+## Mock environment
 
-See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of Telegram Bot API methods and types.
+The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
+
+```rust,no_run
+let config = telegram_webapp_sdk::mock::MockConfig::default();
+let ctx = telegram_webapp_sdk::mock::install(config)?;
+```
+
+## API coverage
+
+See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of supported Telegram Bot API objects and methods.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
+## License
+
+`telegram-webapp-sdk` is licensed under either of
+
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+
+at your option.
