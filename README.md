@@ -91,6 +91,20 @@ use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 let app = TelegramWebApp::instance().unwrap();
 app.hide_keyboard().unwrap();
+```
+
+## Closing confirmation
+
+Prompt users before the Mini App closes:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+app.enable_closing_confirmation().unwrap();
+// later
+app.disable_closing_confirmation().unwrap();
+```
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:
