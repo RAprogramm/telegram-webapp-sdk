@@ -200,6 +200,26 @@ selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
 
+## Location manager
+
+Retrieve user location and react to related events via Telegram's location manager:
+
+```rust,no_run
+use telegram_webapp_sdk::api::location_manager::{
+    init, get_location, open_settings, on_location_requested,
+};
+use wasm_bindgen::closure::Closure;
+
+init()?;
+let _ = get_location();
+open_settings()?;
+
+let cb = Closure::wrap(Box::new(|| {}) as Box<dyn Fn()>);
+on_location_requested(&cb)?;
+cb.forget();
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
 ## Device sensors
 
 Access motion sensors if the user's device exposes them.
