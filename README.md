@@ -44,3 +44,7 @@ fn App() -> impl IntoView {
     view! { <span>{ ctx.init_data.auth_date }</span> }
 }
 ```
+
+## API Coverage
+
+See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of Telegram Bot API methods.
