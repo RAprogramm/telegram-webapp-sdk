@@ -304,6 +304,50 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.addToHomeScreen()` and return whether the prompt was shown.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _shown = app.add_to_home_screen().unwrap();
+    /// ```
+    pub fn add_to_home_screen(&self) -> Result<bool, JsValue> {
+        let f = Reflect::get(&self.inner, &"addToHomeScreen".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("addToHomeScreen is not a function"))?;
+        let result = func.call0(&self.inner)?;
+        Ok(result.as_bool().unwrap_or(false))
+    }
+
+    /// Call `WebApp.checkHomeScreenStatus(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.check_home_screen_status(|status| {
+    ///     let _ = status;
+    /// })
+    /// .unwrap();
+    /// ```
+    pub fn check_home_screen_status<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |status: JsValue| {
+            callback(status.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"checkHomeScreenStatus".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("checkHomeScreenStatus is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
     /// Call `WebApp.requestWriteAccess(callback)`.
     ///
     /// # Examples
@@ -1239,6 +1283,19 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn add_to_home_screen_calls_js() {
+        let webapp = setup_webapp();
+        let add = Function::new_with_args("", "this.called = true; return true;");
+        let _ = Reflect::set(&webapp, &"addToHomeScreen".into(), &add);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let shown = app.add_to_home_screen().unwrap();
+        assert!(shown);
+        let called = Reflect::get(&webapp, &"called".into())
+            .unwrap()
+            .as_bool()
+            .unwrap_or(false);
+        assert!(called);
     fn request_fullscreen_calls_js() {
         let webapp = setup_webapp();
         let called = Rc::new(Cell::new(false));
@@ -1283,6 +1340,21 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn check_home_screen_status_invokes_callback() {
+        let webapp = setup_webapp();
+        let check = Function::new_with_args("cb", "cb('added');");
+        let _ = Reflect::set(&webapp, &"checkHomeScreenStatus".into(), &check);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let status = Rc::new(RefCell::new(String::new()));
+        let status_clone = Rc::clone(&status);
+
+        app.check_home_screen_status(move |s| {
+            *status_clone.borrow_mut() = s;
+        })
+        .unwrap();
+
+        assert_eq!(status.borrow().as_str(), "added");
     fn lock_orientation_calls_js() {
         let webapp = setup_webapp();
         let received = Rc::new(RefCell::new(None));
