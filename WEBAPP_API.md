@@ -11,6 +11,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [x] openLink
  - [x] openTelegramLink
  - [x] openInvoice
+ - [x] downloadFile
  - [ ] switchInlineQuery
  - [x] showAlert
  - [x] showConfirm
@@ -25,8 +26,9 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] sendData
 - [ ] openLink
 - [ ] openTelegramLink
-- [ ] openInvoice
-- [x] switchInlineQuery
+ - [ ] openInvoice
+ - [ ] downloadFile
+ - [x] switchInlineQuery
 - [ ] showAlert
 - [ ] showConfirm
 - [ ] showPopup

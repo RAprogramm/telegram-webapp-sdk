@@ -1,8 +1,9 @@
 use js_sys::{Function, Object, Reflect};
+use serde_wasm_bindgen::to_value;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
-use crate::logger;
+use crate::{core::types::download_file_params::DownloadFileParams, logger};
 
 /// Handle returned when registering callbacks.
 pub struct EventHandle<T: ?Sized> {
@@ -270,6 +271,47 @@ impl TelegramWebApp {
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("requestWriteAccess is not a function"))?;
         func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.downloadFile(params, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::core::types::download_file_params::DownloadFileParams;
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let params = DownloadFileParams {
+    ///     url:       "https://example.com/file",
+    ///     file_name: None,
+    ///     mime_type: None
+    /// };
+    /// app.download_file(params, |file_id| {
+    ///     let _ = file_id;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails or the parameters
+    /// fail to serialize.
+    pub fn download_file<F>(
+        &self,
+        params: DownloadFileParams<'_>,
+        callback: F
+    ) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let js_params =
+            to_value(&params).map_err(|e| JsValue::from_str(&format!("serialize params: {e}")))?;
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_string().unwrap_or_default());
+        });
+        Reflect::get(&self.inner, &"downloadFile".into())?
+            .dyn_into::<Function>()?
+            .call2(&self.inner, &js_params, cb.as_ref().unchecked_ref())?;
         cb.forget();
         Ok(())
     }
@@ -1092,6 +1134,57 @@ mod tests {
         .unwrap();
 
         assert!(granted.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn download_file_invokes_callback() {
+        let webapp = setup_webapp();
+        let received_url = Rc::new(RefCell::new(String::new()));
+        let received_name = Rc::new(RefCell::new(String::new()));
+        let url_clone = Rc::clone(&received_url);
+        let name_clone = Rc::clone(&received_name);
+
+        let download = Closure::<dyn FnMut(JsValue, JsValue)>::new(move |params, cb: JsValue| {
+            let url = Reflect::get(&params, &"url".into())
+                .unwrap()
+                .as_string()
+                .unwrap_or_default();
+            let name = Reflect::get(&params, &"file_name".into())
+                .unwrap()
+                .as_string()
+                .unwrap_or_default();
+            *url_clone.borrow_mut() = url;
+            *name_clone.borrow_mut() = name;
+            let func = cb.dyn_ref::<Function>().unwrap();
+            let _ = func.call1(&JsValue::NULL, &JsValue::from_str("id"));
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"downloadFile".into(),
+            download.as_ref().unchecked_ref()
+        );
+        download.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        let result = Rc::new(RefCell::new(String::new()));
+        let result_clone = Rc::clone(&result);
+        let params = DownloadFileParams {
+            url:       "https://example.com/data.bin",
+            file_name: Some("data.bin"),
+            mime_type: None
+        };
+        app.download_file(params, move |id| {
+            *result_clone.borrow_mut() = id;
+        })
+        .unwrap();
+
+        assert_eq!(
+            received_url.borrow().as_str(),
+            "https://example.com/data.bin"
+        );
+        assert_eq!(received_name.borrow().as_str(), "data.bin");
+        assert_eq!(result.borrow().as_str(), "id");
     }
 
     #[wasm_bindgen_test]
