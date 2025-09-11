@@ -68,10 +68,16 @@ Request access to sensitive user data or open the contact interface:
 
 ```rust,no_run
 use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
+use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 let _ = request_contact();
 let _ = request_phone_number();
 let _ = open_contact();
+
+let app = TelegramWebApp::instance().unwrap();
+let _ = app.request_write_access(|granted| {
+    let _ = granted;
+});
 ```
 
 These calls require the user's explicit permission before any information is shared.
