@@ -1,4 +1,4 @@
-use web_sys::{window, Document, Element};
+use web_sys::{Document, Element, window};
 
 use crate::components::{nav_link::nav_link, page_layout::PageLayout};
 

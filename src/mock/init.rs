@@ -1,5 +1,5 @@
 use js_sys::{Object, Reflect};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;
 
 use super::{data::MockTelegramUser, utils::generate_mock_init_data};
