@@ -68,10 +68,16 @@ Request access to sensitive user data or open the contact interface:
 
 ```rust,no_run
 use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
+use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 let _ = request_contact();
 let _ = request_phone_number();
 let _ = open_contact();
+
+let app = TelegramWebApp::instance().unwrap();
+let _ = app.request_write_access(|granted| {
+    let _ = granted;
+});
 ```
 
 These calls require the user's explicit permission before any information is shared.
@@ -91,6 +97,36 @@ show()?;
 hide()?;
 off_click(&cb)?;
 # Ok(()) }
+## Cloud storage
+
+Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
+
+```rust,no_run
+use telegram_webapp_sdk::api::cloud_storage::{get_item, set_item};
+use wasm_bindgen_futures::JsFuture;
+
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+JsFuture::from(set_item("counter", "1")?).await?;
+let value = JsFuture::from(get_item("counter")?).await?;
+assert_eq!(value.as_string(), Some("1".into()));
+# Ok(())
+# }
+```
+
+All functions return a `Promise` and require the Web App to run inside Telegram.
+
+## Home screen
+
+Prompt users to add the app to their home screen and check the current status:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+let _shown = app.add_to_home_screen().unwrap();
+app.check_home_screen_status(|status| {
+    let _ = status;
+}).unwrap();
 ```
 
 ## Event callbacks
@@ -104,6 +140,31 @@ let handle = app.on_event("my_event", |value| {
     let _ = value;
 }).unwrap();
 app.off_event(handle).unwrap();
+```
+
+## Appearance
+
+Customize colors and react to theme or safe area updates:
+## Fullscreen and orientation
+
+Control the Mini App display and screen orientation:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+let app = TelegramWebApp::instance().unwrap();
+app.set_header_color("#000000")?;
+app.set_background_color("#ffffff")?;
+app.set_bottom_bar_color("#cccccc")?;
+let theme_handle = app.on_theme_changed(|| {}).unwrap();
+let safe_handle = app.on_safe_area_changed(|| {}).unwrap();
+let content_handle = app.on_content_safe_area_changed(|| {}).unwrap();
+// later: app.off_event(theme_handle)?; etc.
+# Ok::<(), wasm_bindgen::JsValue>(())
+app.request_fullscreen().unwrap();
+app.lock_orientation("portrait").unwrap();
+// later...
+app.unlock_orientation().unwrap();
+app.exit_fullscreen().unwrap();
 ```
 
 ## Haptic feedback
@@ -120,6 +181,28 @@ impact_occurred(HapticImpactStyle::Light)?;
 notification_occurred(HapticNotificationType::Success)?;
 selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
+```
+
+## Init data validation
+
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+
+```rust
+use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+
+let bot_token = "123456:ABC";
+let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
+verify_hmac_sha256(query, bot_token)?;
+
+// For Ed25519-signed data
+# use ed25519_dalek::{Signer, SigningKey};
+# let sk = SigningKey::from_bytes(&[1u8;32]);
+# let pk = sk.verifying_key();
+# let sig = sk.sign(b"a=1\nb=2");
+# let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
+verify_ed25519(&init_data, pk.as_bytes())?;
+
+# Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
 ## API coverage
