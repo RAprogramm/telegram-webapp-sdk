@@ -1,4 +1,7 @@
+pub mod accelerometer;
+pub mod device_orientation;
 pub mod events;
+pub mod gyroscope;
 pub mod haptic;
 pub mod location;
 pub mod theme;

@@ -61,6 +61,21 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] notificationOccurred
 - [x] selectionChanged
 
+### Accelerometer
+- [x] start
+- [x] stop
+- [x] getAcceleration
+
+### Gyroscope
+- [x] start
+- [x] stop
+- [x] getAngularVelocity
+
+### DeviceOrientation
+- [x] start
+- [x] stop
+- [x] getOrientation
+
 ### BiometricManager
 - [ ] isBiometricAvailable
 - [ ] authenticate

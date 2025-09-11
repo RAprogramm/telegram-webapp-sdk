@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - User API wrappers: `request_contact`, `request_phone_number`, and `open_contact`.
+- Accelerometer, gyroscope, and device orientation sensor APIs with start/stop,
+  value reading and event callbacks.
 
 ## [0.1.0] - 2025-09-11
 ### Added
