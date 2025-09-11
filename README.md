@@ -80,7 +80,7 @@ selection_changed()?;
 
 ## API coverage
 
-See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of supported Telegram Bot API objects and methods.
+See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
 
 ## Changelog
 
