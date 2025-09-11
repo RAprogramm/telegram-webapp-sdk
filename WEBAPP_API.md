@@ -82,7 +82,6 @@ The following features are not yet covered by the SDK:
 - [ ] Init data validation
 - [ ] Theme change events
 - [ ] Viewport management
-- [ ] Location access
 - [ ] Clipboard access
 - [ ] Invoice payments
 - [ ] Background events
