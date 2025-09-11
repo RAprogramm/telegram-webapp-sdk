@@ -16,10 +16,11 @@ use crate::logger::warn;
 ///
 /// ```ignore
 /// use serde_wasm_bindgen::from_value;
+/// # use wasm_bindgen::JsValue;
 /// # let js_value = /* obtain JS value from Telegram.WebApp.themeParams */
-/// let theme: TelegramThemeParams = from_value(js_value)
-///     .expect("Failed to deserialize theme parameters");
-/// theme.apply_to_root();
+/// let theme: TelegramThemeParams = from_value(js_value)?;
+/// theme.apply_to_root()?;
+/// # Ok::<(), JsValue>(())
 /// ```
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -133,23 +134,23 @@ impl TelegramThemeParams {
     /// This makes any CSS rules using `var(--tg-theme-…)` automatically adopt
     /// the Telegram user’s current theme colors.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// - If `window()` or `document()` cannot be accessed (should not happen in
-    ///   a properly initialized WASM/DOM environment).
-    /// - If the document root element cannot be cast to `HtmlElement`.
-    pub fn apply_to_root(self) {
+    /// Returns `Err(JsValue)` if the global `window` or `document` objects are
+    /// unavailable or if the document root element cannot be cast to an
+    /// `HtmlElement`.
+    pub fn apply_to_root(self) -> Result<(), JsValue> {
         let document = web_sys::window()
-            .expect("Global `window` object not available")
+            .ok_or_else(|| JsValue::from_str("Global `window` object not available"))?
             .document()
-            .expect("Global `document` object not available");
+            .ok_or_else(|| JsValue::from_str("Global `document` object not available"))?;
 
         // Cast the <html> element to HtmlElement to call `.style()`
         let html_el: HtmlElement = document
             .document_element()
-            .expect("Document root element missing")
-            .dyn_into()
-            .expect("Document root is not an HtmlElement");
+            .ok_or_else(|| JsValue::from_str("Document root element missing"))?
+            .dyn_into::<HtmlElement>()
+            .map_err(|_| JsValue::from_str("Document root is not an HtmlElement"))?;
 
         let style: CssStyleDeclaration = html_el.style();
         for (key, val) in self.into_css_vars() {
@@ -163,6 +164,8 @@ impl TelegramThemeParams {
                 ));
             });
         }
+
+        Ok(())
     }
 
     /// Returns all non‐empty theme parameters as a vector of
@@ -176,7 +179,7 @@ impl TelegramThemeParams {
 }
 
 #[wasm_bindgen]
-pub fn apply_default_theme() {
+pub fn apply_default_theme() -> Result<(), JsValue> {
     let theme: TelegramThemeParams = Default::default();
-    theme.apply_to_root();
+    theme.apply_to_root()
 }
