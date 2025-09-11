@@ -378,6 +378,7 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.hide call failed"))?;
         Ok(())
     }
+
     /// Call `WebApp.ready()`.
     ///
     /// # Errors
