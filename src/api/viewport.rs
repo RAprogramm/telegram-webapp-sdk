@@ -1,5 +1,5 @@
 use js_sys::{Function, Reflect};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;
 
 use crate::logger::{debug, warn};
@@ -13,6 +13,44 @@ pub fn get_viewport_height() -> Option<f64> {
         debug(&format!("viewportHeight: {}px", px));
     } else {
         warn("viewportHeight is not a number");
+    }
+    result
+}
+
+/// Returns the current viewport width in pixels.
+///
+/// # Examples
+/// ```no_run
+/// # use telegram_webapp_sdk::api::viewport::get_viewport_width;
+/// let _ = get_viewport_width();
+/// ```
+pub fn get_viewport_width() -> Option<f64> {
+    let webapp = webapp_object().ok()?;
+    let value = Reflect::get(&webapp, &"viewportWidth".into()).ok()?;
+    let result = value.as_f64();
+    if let Some(px) = result {
+        debug(&format!("viewportWidth: {}px", px));
+    } else {
+        warn("viewportWidth is not a number");
+    }
+    result
+}
+
+/// Returns the stable viewport height in pixels.
+///
+/// # Examples
+/// ```no_run
+/// # use telegram_webapp_sdk::api::viewport::get_viewport_stable_height;
+/// let _ = get_viewport_stable_height();
+/// ```
+pub fn get_viewport_stable_height() -> Option<f64> {
+    let webapp = webapp_object().ok()?;
+    let value = Reflect::get(&webapp, &"viewportStableHeight".into()).ok()?;
+    let result = value.as_f64();
+    if let Some(px) = result {
+        debug(&format!("viewportStableHeight: {}px", px));
+    } else {
+        warn("viewportStableHeight is not a number");
     }
     result
 }
@@ -66,4 +104,40 @@ fn webapp_object() -> Result<JsValue, JsValue> {
     let win = window().ok_or_else(|| JsValue::from_str("no window"))?;
     let tg = Reflect::get(&win, &"Telegram".into())?;
     Reflect::get(&tg, &"WebApp".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use js_sys::{Object, Reflect};
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::window;
+
+    use super::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    #[allow(dead_code)]
+    fn setup_webapp() -> Object {
+        let win = window().unwrap();
+        let telegram = Object::new();
+        let webapp = Object::new();
+        let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
+        let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
+        webapp
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn width_and_stable_height() {
+        let webapp = setup_webapp();
+        let _ = Reflect::set(&webapp, &"viewportWidth".into(), &JsValue::from_f64(200.0));
+        let _ = Reflect::set(
+            &webapp,
+            &"viewportStableHeight".into(),
+            &JsValue::from_f64(500.0)
+        );
+        assert_eq!(get_viewport_width(), Some(200.0));
+        assert_eq!(get_viewport_stable_height(), Some(500.0));
+    }
 }
