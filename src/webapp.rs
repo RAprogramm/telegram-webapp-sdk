@@ -1,5 +1,5 @@
 use js_sys::{Function, Object, Reflect};
-use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
+use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::window;
 
 use crate::logger;
@@ -265,11 +265,7 @@ impl TelegramWebApp {
         let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
-        let f = Reflect::get(&self.inner, &"requestWriteAccess".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("requestWriteAccess is not a function"))?;
-        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        self.call1("requestWriteAccess", cb.as_ref().unchecked_ref())?;
         cb.forget();
         Ok(())
     }
@@ -722,7 +718,7 @@ mod tests {
     };
 
     use js_sys::{Function, Object, Reflect};
-    use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
+    use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 
@@ -1086,12 +1082,21 @@ mod tests {
         let granted = Rc::new(Cell::new(false));
         let granted_clone = Rc::clone(&granted);
 
-        app.request_write_access(move |g| {
+        let res = app.request_write_access(move |g| {
             granted_clone.set(g);
-        })
-        .unwrap();
+        });
+        assert!(res.is_ok());
 
         assert!(granted.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_write_access_returns_error_when_missing() {
+        let _webapp = setup_webapp();
+        let app = TelegramWebApp::instance().unwrap();
+        let res = app.request_write_access(|_| {});
+        assert!(res.is_err());
     }
 
     #[wasm_bindgen_test]
