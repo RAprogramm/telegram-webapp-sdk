@@ -76,6 +76,17 @@ let _ = open_contact();
 
 These calls require the user's explicit permission before any information is shared.
 
+## Keyboard control
+
+Hide the native keyboard when it's no longer required:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+app.hide_keyboard().unwrap();
+```
+
 ## Event callbacks
 
 Callback registration methods return an `EventHandle` for later deregistration.

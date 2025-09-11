@@ -341,6 +341,21 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.hideKeyboard()`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.hide_keyboard().unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn hide_keyboard(&self) -> Result<(), JsValue> {
+        self.call0("hideKeyboard")
+    }
+
     /// Call `WebApp.MainButton.show()`.
     ///
     /// # Errors
@@ -738,6 +753,28 @@ mod tests {
         let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
         let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
         webapp
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn hide_keyboard_calls_js() {
+        let webapp = setup_webapp();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let hide_cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"hideKeyboard".into(),
+            hide_cb.as_ref().unchecked_ref()
+        );
+        hide_cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.hide_keyboard().unwrap();
+        assert!(called.get());
     }
 
     #[wasm_bindgen_test]

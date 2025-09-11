@@ -7,6 +7,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [x] ready
  - [x] expand
  - [x] close
+ - [x] hideKeyboard
  - [x] sendData
  - [x] openLink
  - [x] openTelegramLink
@@ -22,6 +23,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [ ] ready
 - [ ] expand
 - [ ] close
+- [ ] hideKeyboard
 - [ ] sendData
 - [ ] openLink
 - [ ] openTelegramLink
