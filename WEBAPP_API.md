@@ -37,6 +37,12 @@ they are implemented.
  - [x] showAlert
  - [x] showConfirm
  - [x] showPopup
+ - [x] shareURL
+ - [x] shareMessage
+ - [x] shareToStory
+ - [x] joinVoiceChat
+ - [x] requestWriteAccess
+ - [x] requestContact
 - [ ] shareURL
 - [ ] joinVoiceChat
 - [x] requestWriteAccess

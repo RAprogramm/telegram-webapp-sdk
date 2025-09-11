@@ -272,6 +272,66 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.shareMessage(msg_id, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.share_message("id123", |sent| {
+    ///     let _ = sent;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn share_message<F>(&self, msg_id: &str, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"shareMessage".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("shareMessage is not a function"))?;
+        func.call2(&self.inner, &msg_id.into(), cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.shareToStory(media_url, params)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use js_sys::Object;
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let params = Object::new();
+    /// app.share_to_story("https://example.com/image.png", Some(&params.into()))
+    ///     .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn share_to_story(
+        &self,
+        media_url: &str,
+        params: Option<&JsValue>
+    ) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"shareToStory".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("shareToStory is not a function"))?;
+        match params {
+            Some(p) => func.call2(&self.inner, &media_url.into(), p)?,
+            None => func.call1(&self.inner, &media_url.into())?
+        };
+        Ok(())
+    }
+
     /// Call `WebApp.shareURL(url, text)`.
     ///
     /// # Examples
@@ -1752,27 +1812,61 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn switch_inline_query_without_types_calls_js() {
+    fn share_message_calls_js() {
         let webapp = setup_webapp();
-        let switch_inline = Function::new_with_args(
-            "query",
-            "this.query = query; this.args_len = arguments.length;"
-        );
-        let _ = Reflect::set(&webapp, &"switchInlineQuery".into(), &switch_inline);
+        let share = Function::new_with_args("id, cb", "this.shared_id = id; cb(true);");
+        let _ = Reflect::set(&webapp, &"shareMessage".into(), &share);
 
         let app = TelegramWebApp::instance().unwrap();
-        app.switch_inline_query("search", None).unwrap();
+        let sent = Rc::new(Cell::new(false));
+        let sent_clone = Rc::clone(&sent);
+
+        app.share_message("123", move |s| {
+            sent_clone.set(s);
+        })
+        .unwrap();
 
         assert_eq!(
-            Reflect::get(&webapp, &"query".into())
+            Reflect::get(&webapp, &"shared_id".into())
                 .unwrap()
                 .as_string()
                 .as_deref(),
-            Some("search"),
+            Some("123"),
         );
+        assert!(sent.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn share_to_story_calls_js() {
+        let webapp = setup_webapp();
+        let share = Function::new_with_args(
+            "url, params",
+            "this.story_url = url; this.story_params = params;"
+        );
+        let _ = Reflect::set(&webapp, &"shareToStory".into(), &share);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let url = "https://example.com/media";
+        let params = Object::new();
+        let _ = Reflect::set(&params, &"text".into(), &"hi".into());
+        app.share_to_story(url, Some(&params.into())).unwrap();
+
         assert_eq!(
-            Reflect::get(&webapp, &"args_len".into()).unwrap().as_f64(),
-            Some(1.0),
+            Reflect::get(&webapp, &"story_url".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(url),
+        );
+        let stored = Reflect::get(&webapp, &"story_params".into()).unwrap();
+        assert_eq!(
+            Reflect::get(&stored, &"text".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("hi"),
+
         );
     }
 

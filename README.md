@@ -82,6 +82,23 @@ let _ = app.request_write_access(|granted| {
 
 These calls require the user's explicit permission before any information is shared.
 
+## Sharing
+
+Share links, prepared messages, or stories and join voice chats:
+
+```rust,no_run
+use js_sys::Object;
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+let app = TelegramWebApp::instance().unwrap();
+app.share_url("https://example.com", Some("Check this out"))?;
+app.join_voice_chat("chat", None)?;
+app.share_message("msg-id", |sent| {
+    let _ = sent;
+})?;
+let params = Object::new();
+app.share_to_story("https://example.com/image.png", Some(&params.into()))?;
+# Ok::<(), wasm_bindgen::JsValue>(())
 ## Settings button
 
 Control the Telegram client's settings button and handle user clicks:
