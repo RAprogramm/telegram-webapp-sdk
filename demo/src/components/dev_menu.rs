@@ -24,6 +24,16 @@ const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
         } else {
             tg.expand();
         }
+    }),
+    ("add-to-home-screen", |tg| {
+        if let Ok(shown) = tg.add_to_home_screen() {
+            info(&format!("addToHomeScreen shown = {}", shown));
+        }
+    }),
+    ("check-home-screen", |tg| {
+        let _ = tg.check_home_screen_status(|status| {
+            info(&format!("home screen status: {}", status));
+        });
     })
 ];
 
