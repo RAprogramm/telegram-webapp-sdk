@@ -1,4 +1,5 @@
 use once_cell::unsync::OnceCell;
+use wasm_bindgen::JsValue;
 
 use super::types::{
     init_data::TelegramInitData, launch_params::LaunchParams, theme_params::TelegramThemeParams
@@ -45,17 +46,27 @@ impl TelegramContext {
     }
 }
 
-pub fn get_launch_params() -> LaunchParams {
-    let window = web_sys::window().expect("no window");
+/// Returns launch parameters parsed from the current window location.
+///
+/// # Errors
+/// Returns a [`JsValue`] if the global window object is unavailable.
+///
+/// # Examples
+/// ```no_run
+/// # use telegram_webapp_sdk::core::context::get_launch_params;
+/// let _ = get_launch_params();
+/// ```
+pub fn get_launch_params() -> Result<LaunchParams, JsValue> {
+    let window = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
     let location = window.location();
 
-    LaunchParams {
+    Ok(LaunchParams {
         tg_web_app_platform:      location.origin().ok().or_else(|| Some("web".into())),
         tg_web_app_version:       get_param("tgWebAppVersion"),
         tg_web_app_start_param:   get_param("tgWebAppStartParam"),
         tg_web_app_show_settings: get_param("tgWebAppShowSettings").map(|s| s == "1"),
         tg_web_app_bot_inline:    get_param("tgWebAppBotInline").map(|s| s == "1")
-    }
+    })
 }
 
 fn get_param(key: &str) -> Option<String> {
@@ -69,6 +80,25 @@ fn get_param(key: &str) -> Option<String> {
             let mut parts = pair.split('=');
             let k = parts.next()?;
             let v = parts.next()?;
-            if k == key { Some(v.to_string()) } else { None }
+            if k == key {
+                Some(v.to_string())
+            } else {
+                None
+            }
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen_test::wasm_bindgen_test;
+
+    use super::*;
+
+    #[allow(dead_code)]
+    #[wasm_bindgen_test]
+    fn get_launch_params_returns_error_without_window() {
+        let err = get_launch_params().unwrap_err();
+        assert_eq!(err, JsValue::from_str("no window"));
+    }
 }

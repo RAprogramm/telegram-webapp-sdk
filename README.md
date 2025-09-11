@@ -76,9 +76,25 @@ let _ = open_contact();
 
 These calls require the user's explicit permission before any information is shared.
 
+## Haptic feedback
+
+Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
+
+```rust,no_run
+use telegram_webapp_sdk::api::haptic::{
+    impact_occurred, notification_occurred, selection_changed,
+    HapticImpactStyle, HapticNotificationType,
+};
+
+impact_occurred(HapticImpactStyle::Light)?;
+notification_occurred(HapticNotificationType::Success)?;
+selection_changed()?;
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
 ## API coverage
 
-See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of supported Telegram Bot API objects and methods.
+See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
 
 ## Changelog
 
