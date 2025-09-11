@@ -126,6 +126,114 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.switchInlineQuery(query, choose_chat_types)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.switch_inline_query("query", None).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn switch_inline_query(
+        &self,
+        query: &str,
+        choose_chat_types: Option<&JsValue>
+    ) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"switchInlineQuery".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("switchInlineQuery is not a function"))?;
+        match choose_chat_types {
+            Some(types) => func.call2(&self.inner, &query.into(), types)?,
+            None => func.call1(&self.inner, &query.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.shareURL(url, text)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.share_url("https://example.com", Some("Check this"))
+    ///     .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn share_url(&self, url: &str, text: Option<&str>) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"shareURL".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("shareURL is not a function"))?;
+        match text {
+            Some(t) => func.call2(&self.inner, &url.into(), &t.into())?,
+            None => func.call1(&self.inner, &url.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.joinVoiceChat(chat_id, invite_hash)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.join_voice_chat("chat", None).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn join_voice_chat(
+        &self,
+        chat_id: &str,
+        invite_hash: Option<&str>
+    ) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"joinVoiceChat".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("joinVoiceChat is not a function"))?;
+        match invite_hash {
+            Some(hash) => func.call2(&self.inner, &chat_id.into(), &hash.into())?,
+            None => func.call1(&self.inner, &chat_id.into())?
+        };
+        Ok(())
+    }
+
+    /// Call `WebApp.requestWriteAccess(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.request_write_access(|granted| {
+    ///     let _ = granted;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_write_access<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"requestWriteAccess".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("requestWriteAccess is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
     /// Call `WebApp.showPopup(params, callback)`.
     ///
     /// # Examples
@@ -193,14 +301,6 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.MainButton.show()`
-    pub fn show_main_button(&self) {
-        if let Ok(main_button) = Reflect::get(&self.inner, &"MainButton".into()) {
-            let _ = Reflect::get(&main_button, &"show".into())
-                .ok()
-                .and_then(|f| f.dyn_ref::<Function>().cloned())
-                .and_then(|f| f.call0(&main_button).ok());
-        }
     /// Call `WebApp.MainButton.show()`.
     ///
     /// # Errors
@@ -238,9 +338,6 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.hide call failed"))?;
         Ok(())
     }
-    /// Call `WebApp.ready()`
-    pub fn ready(&self) {
-        let _ = self.call0("ready");
     /// Call `WebApp.ready()`.
     ///
     /// # Errors
@@ -326,9 +423,6 @@ impl TelegramWebApp {
             .inspect_err(|_| logger::error("MainButton.setTextColor call failed"))?;
         Ok(())
     }
-
-    /// Set callback for MainButton.onClick()
-    pub fn set_main_button_callback<F>(&self, callback: F)
 
     /// Set callback for `MainButton.onClick()`.
     ///
@@ -722,6 +816,113 @@ mod tests {
         .unwrap();
 
         assert_eq!(status.borrow().as_str(), "paid");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn switch_inline_query_calls_js() {
+        let webapp = setup_webapp();
+        let switch_inline =
+            Function::new_with_args("query, types", "this.query = query; this.types = types;");
+        let _ = Reflect::set(&webapp, &"switchInlineQuery".into(), &switch_inline);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let types = JsValue::from_str("users");
+        app.switch_inline_query("search", Some(&types)).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"query".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("search"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"types".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("users"),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn share_url_calls_js() {
+        let webapp = setup_webapp();
+        let share = Function::new_with_args(
+            "url, text",
+            "this.shared_url = url; this.shared_text = text;"
+        );
+        let _ = Reflect::set(&webapp, &"shareURL".into(), &share);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let url = "https://example.com";
+        let text = "check";
+        app.share_url(url, Some(text)).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"shared_url".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(url),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"shared_text".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some(text),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn join_voice_chat_calls_js() {
+        let webapp = setup_webapp();
+        let join = Function::new_with_args(
+            "id, hash",
+            "this.voice_chat_id = id; this.voice_chat_hash = hash;"
+        );
+        let _ = Reflect::set(&webapp, &"joinVoiceChat".into(), &join);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.join_voice_chat("123", Some("hash")).unwrap();
+
+        assert_eq!(
+            Reflect::get(&webapp, &"voice_chat_id".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("123"),
+        );
+        assert_eq!(
+            Reflect::get(&webapp, &"voice_chat_hash".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("hash"),
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_write_access_invokes_callback() {
+        let webapp = setup_webapp();
+        let request = Function::new_with_args("cb", "cb(true);");
+        let _ = Reflect::set(&webapp, &"requestWriteAccess".into(), &request);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let granted = Rc::new(Cell::new(false));
+        let granted_clone = Rc::clone(&granted);
+
+        app.request_write_access(move |g| {
+            granted_clone.set(g);
+        })
+        .unwrap();
+
+        assert!(granted.get());
     }
 
     #[wasm_bindgen_test]
