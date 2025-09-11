@@ -47,4 +47,4 @@ fn App() -> impl IntoView {
 
 ## API Coverage
 
-See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of Telegram Bot API methods.
+See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of Telegram Bot API methods and types.
