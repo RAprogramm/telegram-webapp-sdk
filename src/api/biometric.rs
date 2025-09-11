@@ -21,7 +21,7 @@ pub fn init() -> Result<(), JsValue> {
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.requestAccess()`.
+/// Calls `Telegram.WebApp.BiometricManager.requestAccess(auth_key, reason, options)`.
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -31,24 +31,36 @@ pub fn init() -> Result<(), JsValue> {
 /// ```no_run
 /// use telegram_webapp_sdk::api::biometric::request_access;
 ///
-/// let _ = request_access("auth_key", None);
+/// let _ = request_access("auth-key", None, None);
 /// ```
-pub fn request_access(auth_key: &str, params: Option<&JsValue>) -> Result<(), JsValue> {
+pub fn request_access(
+    auth_key: &str,
+    reason: Option<&str>,
+    options: Option<&JsValue>,
+) -> Result<(), JsValue> {
     let biom = biometric_object()?;
-    let func = Reflect::get(&biom, &JsValue::from_str("requestAccess"))?
-        .dyn_into::<Function>()?;
-    match params {
-        Some(p) => {
-            func.call2(&biom, &JsValue::from_str(auth_key), p)?;
+    let func = Reflect::get(&biom, &JsValue::from_str("requestAccess"))?.dyn_into::<Function>()?;
+    let key = JsValue::from_str(auth_key);
+    match (reason, options) {
+        (Some(r), Some(o)) => {
+            let r = JsValue::from_str(r);
+            func.call3(&biom, &key, &r, o)?;
         }
-        None => {
-            func.call1(&biom, &JsValue::from_str(auth_key))?;
+        (Some(r), None) => {
+            let r = JsValue::from_str(r);
+            func.call2(&biom, &key, &r)?;
+        }
+        (None, Some(o)) => {
+            func.call2(&biom, &key, o)?;
+        }
+        (None, None) => {
+            func.call1(&biom, &key)?;
         }
     }
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.authenticate()`.
+/// Calls `Telegram.WebApp.BiometricManager.authenticate(auth_key, reason, options)`.
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -58,7 +70,7 @@ pub fn request_access(auth_key: &str, params: Option<&JsValue>) -> Result<(), Js
 /// ```no_run
 /// use telegram_webapp_sdk::api::biometric::authenticate;
 ///
-/// let _ = authenticate("auth_key", None, None);
+/// let _ = authenticate("auth-key", None, None);
 /// ```
 pub fn authenticate(
     auth_key: &str,
@@ -66,29 +78,23 @@ pub fn authenticate(
     options: Option<&JsValue>,
 ) -> Result<(), JsValue> {
     let biom = biometric_object()?;
-    let func = Reflect::get(&biom, &JsValue::from_str("authenticate"))?
-        .dyn_into::<Function>()?;
+    let func = Reflect::get(&biom, &JsValue::from_str("authenticate"))?.dyn_into::<Function>()?;
+    let key = JsValue::from_str(auth_key);
     match (reason, options) {
         (Some(r), Some(o)) => {
-            func.call3(
-                &biom,
-                &JsValue::from_str(auth_key),
-                &JsValue::from_str(r),
-                o,
-            )?;
+            let r = JsValue::from_str(r);
+            func.call3(&biom, &key, &r, o)?;
         }
         (Some(r), None) => {
-            func.call2(
-                &biom,
-                &JsValue::from_str(auth_key),
-                &JsValue::from_str(r),
-            )?;
+            let r = JsValue::from_str(r);
+            func.call2(&biom, &key, &r)?;
         }
         (None, Some(o)) => {
-            func.call2(&biom, &JsValue::from_str(auth_key), o)?;
+            func.call2(&biom, &key, o)?;
         }
         (None, None) => {
-            func.call1(&biom, &JsValue::from_str(auth_key))?;
+            func.call1(&biom, &key)?;
+
         }
     }
     Ok(())
@@ -186,9 +192,13 @@ mod tests {
     #[allow(dead_code, clippy::unused_unit)]
     fn request_access_ok() {
         let biom = setup_biometric();
-        let func = Function::new_with_args("key", "this.key = key;");
+        let func = Function::new_with_args("key", "this.called = true; this.key = key;");
         let _ = Reflect::set(&biom, &"requestAccess".into(), &func);
-        assert!(request_access("abc", None).is_ok());
+        assert!(request_access("abc", None, None).is_ok());
+        assert!(Reflect::get(&biom, &"called".into())
+            .unwrap()
+            .as_bool()
+            .unwrap());
         assert_eq!(
             Reflect::get(&biom, &"key".into())
                 .unwrap()
@@ -202,17 +212,20 @@ mod tests {
     #[allow(dead_code, clippy::unused_unit)]
     fn request_access_err() {
         let _ = setup_biometric();
-        assert!(request_access("abc", None).is_err());
+        assert!(request_access("abc", None, None).is_err());
     }
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
     fn authenticate_ok() {
         let biom = setup_biometric();
-        let func =
-            Function::new_with_args("key, reason", "this.key = key; this.reason = reason;");
+        let func = Function::new_with_args("key", "this.called = true; this.key = key;");
         let _ = Reflect::set(&biom, &"authenticate".into(), &func);
-        assert!(authenticate("abc", Some("why"), None).is_ok());
+        assert!(authenticate("abc", None, None).is_ok());
+        assert!(Reflect::get(&biom, &"called".into())
+            .unwrap()
+            .as_bool()
+            .unwrap());
         assert_eq!(
             Reflect::get(&biom, &"key".into())
                 .unwrap()
