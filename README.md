@@ -62,9 +62,39 @@ let config = telegram_webapp_sdk::mock::MockConfig::default();
 let ctx = telegram_webapp_sdk::mock::install(config)?;
 ```
 
+## User interactions
+
+Request access to sensitive user data or open the contact interface:
+
+```rust,no_run
+use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
+
+let _ = request_contact();
+let _ = request_phone_number();
+let _ = open_contact();
+```
+
+These calls require the user's explicit permission before any information is shared.
+
+## Haptic feedback
+
+Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
+
+```rust,no_run
+use telegram_webapp_sdk::api::haptic::{
+    impact_occurred, notification_occurred, selection_changed,
+    HapticImpactStyle, HapticNotificationType,
+};
+
+impact_occurred(HapticImpactStyle::Light)?;
+notification_occurred(HapticNotificationType::Success)?;
+selection_changed()?;
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
 ## API coverage
 
-See [TELEGRAM_API.md](./TELEGRAM_API.md) for a checklist of supported Telegram Bot API objects and methods.
+See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
 
 ## Changelog
 
