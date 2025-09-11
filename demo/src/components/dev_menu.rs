@@ -1,6 +1,9 @@
-use telegram_webapp_sdk::{logger::info, webapp::TelegramWebApp};
+use telegram_webapp_sdk::{
+    logger::info,
+    webapp::{BottomButton, TelegramWebApp}
+};
 use wasm_bindgen::prelude::*;
-use web_sys::{window, HtmlElement};
+use web_sys::{HtmlElement, window};
 
 const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
     ("send-data", |tg| tg.send_data("Hello from Dev Menu!")),
@@ -10,8 +13,8 @@ const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
         tg.show_alert("This is a test alert from DevMenu")
     }),
     ("main-button", |tg| {
-        tg.set_main_button_text("Clicked!");
-        tg.show_main_button();
+        tg.set_bottom_button_text(BottomButton::Main, "Clicked!");
+        tg.show_bottom_button(BottomButton::Main);
     }),
     ("is-expanded", |tg| {
         let expanded = tg.is_expanded();
@@ -21,6 +24,16 @@ const BUTTON_IDS: &[(&str, fn(&TelegramWebApp))] = &[
         } else {
             tg.expand();
         }
+    }),
+    ("add-to-home-screen", |tg| {
+        if let Ok(shown) = tg.add_to_home_screen() {
+            info(&format!("addToHomeScreen shown = {}", shown));
+        }
+    }),
+    ("check-home-screen", |tg| {
+        let _ = tg.check_home_screen_status(|status| {
+            info(&format!("home screen status: {}", status));
+        });
     })
 ];
 

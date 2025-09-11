@@ -1,5 +1,5 @@
 use wasm_bindgen::JsCast;
-use web_sys::{window, HtmlElement};
+use web_sys::{HtmlElement, window};
 
 /// A little UI “component” that renders “🔵 #112233”
 /// as `<span class="rgb"><i class="rgb__icon"
