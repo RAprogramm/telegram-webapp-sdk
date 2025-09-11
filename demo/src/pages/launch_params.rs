@@ -1,7 +1,7 @@
 use telegram_webapp_sdk::core::context::get_launch_params;
 
 use crate::components::{
-    display_data::{render_display_data, DisplayDataRow},
+    display_data::{DisplayDataRow, render_display_data},
     page_layout::PageLayout
 };
 
