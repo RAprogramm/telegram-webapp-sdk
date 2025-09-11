@@ -111,6 +111,21 @@ they are implemented.
 - [x] notificationOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] selectionChanged ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 
+### Accelerometer
+- [x] start
+- [x] stop
+- [x] getAcceleration
+
+### Gyroscope
+- [x] start
+- [x] stop
+- [x] getAngularVelocity
+
+### DeviceOrientation
+- [x] start
+- [x] stop
+- [x] getOrientation
+
 ### BiometricManager
 - [ ] isBiometricAvailable
 - [ ] authenticate

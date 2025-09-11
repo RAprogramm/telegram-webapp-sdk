@@ -200,6 +200,22 @@ selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
 
+## Device sensors
+
+Access motion sensors if the user's device exposes them.
+
+```rust,no_run
+use telegram_webapp_sdk::api::accelerometer::{start, get_acceleration, stop};
+
+start()?;
+let reading = get_acceleration();
+stop()?;
+# Ok::<(), wasm_bindgen::JsValue>(())
+```
+
+Callbacks for sensor lifecycle events are available through `on_started`,
+`on_changed`, `on_stopped`, and `on_failed` functions for accelerometer,
+gyroscope, and device orientation sensors.
 ## Init data validation
 
 Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
