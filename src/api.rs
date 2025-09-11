@@ -1,3 +1,4 @@
+pub mod biometric;
 pub mod events;
 pub mod haptic;
 pub mod location;
