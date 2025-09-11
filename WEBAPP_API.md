@@ -51,6 +51,9 @@ they are implemented.
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
  - [x] requestContact
+ - [x] setHeaderColor
+ - [x] setBackgroundColor
+ - [x] setBottomBarColor
 - [ ] ready
 - [ ] expand
 - [ ] close
@@ -113,7 +116,7 @@ they are implemented.
 The following features are not yet covered by the SDK:
 
 - [ ] Init data validation
-- [ ] Theme change events
+- [x] Theme and safe area change events
 - [ ] Viewport management
 - [ ] Location access
 - [x] Clipboard access

@@ -109,6 +109,9 @@ let handle = app.on_event("my_event", |value| {
 app.off_event(handle).unwrap();
 ```
 
+## Appearance
+
+Customize colors and react to theme or safe area updates:
 ## Fullscreen and orientation
 
 Control the Mini App display and screen orientation:
@@ -116,6 +119,14 @@ Control the Mini App display and screen orientation:
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 let app = TelegramWebApp::instance().unwrap();
+app.set_header_color("#000000")?;
+app.set_background_color("#ffffff")?;
+app.set_bottom_bar_color("#cccccc")?;
+let theme_handle = app.on_theme_changed(|| {}).unwrap();
+let safe_handle = app.on_safe_area_changed(|| {}).unwrap();
+let content_handle = app.on_content_safe_area_changed(|| {}).unwrap();
+// later: app.off_event(theme_handle)?; etc.
+# Ok::<(), wasm_bindgen::JsValue>(())
 app.request_fullscreen().unwrap();
 app.lock_orientation("portrait").unwrap();
 // later...

@@ -616,6 +616,51 @@ impl TelegramWebApp {
         self.call_nested0("BackButton", "hide")
     }
 
+    /// Call `WebApp.setHeaderColor(color)`.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.set_header_color("#ffffff").unwrap();
+    /// ```
+    pub fn set_header_color(&self, color: &str) -> Result<(), JsValue> {
+        self.call1("setHeaderColor", &color.into())
+    }
+
+    /// Call `WebApp.setBackgroundColor(color)`.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.set_background_color("#ffffff").unwrap();
+    /// ```
+    pub fn set_background_color(&self, color: &str) -> Result<(), JsValue> {
+        self.call1("setBackgroundColor", &color.into())
+    }
+
+    /// Call `WebApp.setBottomBarColor(color)`.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.set_bottom_bar_color("#ffffff").unwrap();
+    /// ```
+    pub fn set_bottom_bar_color(&self, color: &str) -> Result<(), JsValue> {
+        self.call1("setBottomBarColor", &color.into())
+    }
+
     /// Set main button text.
     ///
     /// # Errors
@@ -836,6 +881,96 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn expand_viewport(&self) -> Result<(), JsValue> {
         self.call0("expand")
+    }
+
+    /// Register a callback for theme changes.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_theme_changed<F>(&self, callback: F) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        let cb = Closure::<dyn FnMut()>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"themeChanged".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("themeChanged".to_string()),
+            cb
+        ))
+    }
+
+    /// Register a callback for safe area changes.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_safe_area_changed<F>(&self, callback: F) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        let cb = Closure::<dyn FnMut()>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"safeAreaChanged".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("safeAreaChanged".to_string()),
+            cb
+        ))
+    }
+
+    /// Register a callback for content safe area changes.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_content_safe_area_changed<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        let cb = Closure::<dyn FnMut()>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"contentSafeAreaChanged".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("contentSafeAreaChanged".to_string()),
+            cb
+        ))
     }
 
     /// Register a callback for viewport changes.
@@ -1064,6 +1199,72 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn set_header_color_calls_js() {
+        let webapp = setup_webapp();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"setHeaderColor".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_header_color("#abcdef").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#abcdef"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_background_color_calls_js() {
+        let webapp = setup_webapp();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"setBackgroundColor".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_background_color("#123456").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#123456"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_bar_color_calls_js() {
+        let webapp = setup_webapp();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &webapp,
+            &"setBottomBarColor".into(),
+            cb.as_ref().unchecked_ref()
+        );
+        cb.forget();
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_bottom_bar_color("#654321").unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("#654321"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn viewport_dimensions() {
         let webapp = setup_webapp();
         let _ = Reflect::set(&webapp, &"viewportWidth".into(), &JsValue::from_f64(320.0));
@@ -1167,6 +1368,54 @@ mod tests {
         assert!(Reflect::has(&webapp, &"test".into()).unwrap());
         app.off_event(handle).unwrap();
         assert!(!Reflect::has(&webapp, &"test".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn theme_changed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_theme_changed(|| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"themeChanged".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"themeChanged".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn safe_area_changed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_safe_area_changed(|| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"safeAreaChanged".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"safeAreaChanged".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn content_safe_area_changed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_content_safe_area_changed(|| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"contentSafeAreaChanged".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"contentSafeAreaChanged".into()).unwrap());
     }
 
     #[wasm_bindgen_test]
