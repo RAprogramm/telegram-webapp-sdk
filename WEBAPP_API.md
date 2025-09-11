@@ -19,6 +19,9 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
  - [x] requestContact
+ - [x] setHeaderColor
+ - [x] setBackgroundColor
+ - [x] setBottomBarColor
 - [ ] ready
 - [ ] expand
 - [ ] close
@@ -80,7 +83,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 The following features are not yet covered by the SDK:
 
 - [ ] Init data validation
-- [ ] Theme change events
+- [x] Theme and safe area change events
 - [ ] Viewport management
 - [ ] Location access
 - [ ] Clipboard access
