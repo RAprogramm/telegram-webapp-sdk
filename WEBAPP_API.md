@@ -87,10 +87,10 @@ they are implemented.
 - [x] offClick ([0a42d7b](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0a42d7b))
 
 ### SettingsButton
-- [ ] show
-- [ ] hide
-- [ ] onClick
-- [ ] offClick
+- [x] show
+- [x] hide
+- [x] onClick
+- [x] offClick
 
 ### HapticFeedback
 - [x] impactOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
