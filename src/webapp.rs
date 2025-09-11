@@ -274,6 +274,70 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.requestEmojiStatusAccess(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.request_emoji_status_access(|granted| {
+    ///     let _ = granted;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_emoji_status_access<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"requestEmojiStatusAccess".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("requestEmojiStatusAccess is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
+    /// Call `WebApp.setEmojiStatus(status, callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use js_sys::Object;
+    /// # use js_sys::Reflect;
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let status = Object::new();
+    /// let _ = Reflect::set(&status, &"custom_emoji_id".into(), &"123".into());
+    /// app.set_emoji_status(&status.into(), |success| {
+    ///     let _ = success;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn set_emoji_status<F>(&self, status: &JsValue, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"setEmojiStatus".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("setEmojiStatus is not a function"))?;
+        func.call2(&self.inner, status, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
     /// Call `WebApp.showPopup(params, callback)`.
     ///
     /// # Examples
@@ -1092,6 +1156,56 @@ mod tests {
         .unwrap();
 
         assert!(granted.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn request_emoji_status_access_invokes_callback() {
+        let webapp = setup_webapp();
+        let request = Function::new_with_args("cb", "cb(false);");
+        let _ = Reflect::set(&webapp, &"requestEmojiStatusAccess".into(), &request);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let granted = Rc::new(Cell::new(true));
+        let granted_clone = Rc::clone(&granted);
+
+        app.request_emoji_status_access(move |g| {
+            granted_clone.set(g);
+        })
+        .unwrap();
+
+        assert!(!granted.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_emoji_status_invokes_callback() {
+        let webapp = setup_webapp();
+        let set_status = Function::new_with_args("status, cb", "this.st = status; cb(true);");
+        let _ = Reflect::set(&webapp, &"setEmojiStatus".into(), &set_status);
+
+        let status = Object::new();
+        let _ = Reflect::set(
+            &status,
+            &"custom_emoji_id".into(),
+            &JsValue::from_str("321")
+        );
+
+        let app = TelegramWebApp::instance().unwrap();
+        let success = Rc::new(Cell::new(false));
+        let success_clone = Rc::clone(&success);
+
+        app.set_emoji_status(&status.into(), move |s| {
+            success_clone.set(s);
+        })
+        .unwrap();
+
+        assert!(success.get());
+        let stored = Reflect::get(&webapp, &"st".into()).unwrap();
+        let id = Reflect::get(&stored, &"custom_emoji_id".into())
+            .unwrap()
+            .as_string();
+        assert_eq!(id.as_deref(), Some("321"));
     }
 
     #[wasm_bindgen_test]

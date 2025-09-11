@@ -18,6 +18,8 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [ ] shareURL
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
+ - [x] setEmojiStatus
+ - [x] requestEmojiStatusAccess
  - [x] requestContact
 - [ ] ready
 - [ ] expand
@@ -33,6 +35,8 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] shareURL
 - [x] joinVoiceChat
 - [x] requestWriteAccess
+ - [x] setEmojiStatus
+ - [x] requestEmojiStatusAccess
 - [ ] requestContact
 
 ## Objects
