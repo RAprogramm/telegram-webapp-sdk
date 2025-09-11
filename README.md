@@ -105,6 +105,28 @@ selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
 
+## Init data validation
+
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+
+```rust
+use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+
+let bot_token = "123456:ABC";
+let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
+verify_hmac_sha256(query, bot_token)?;
+
+// For Ed25519-signed data
+# use ed25519_dalek::{Signer, SigningKey};
+# let sk = SigningKey::from_bytes(&[1u8;32]);
+# let pk = sk.verifying_key();
+# let sig = sk.sign(b"a=1\nb=2");
+# let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
+verify_ed25519(&init_data, pk.as_bytes())?;
+
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 ## API coverage
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
