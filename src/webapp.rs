@@ -341,6 +341,36 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Call `WebApp.readTextFromClipboard(callback)`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// app.read_text_from_clipboard(|text| {
+    ///     let _ = text;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn read_text_from_clipboard<F>(&self, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |text: JsValue| {
+            callback(text.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"readTextFromClipboard".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("readTextFromClipboard is not a function"))?;
+        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
+        cb.forget();
+        Ok(())
+    }
+
     /// Call `WebApp.MainButton.show()`.
     ///
     /// # Errors
@@ -654,6 +684,40 @@ impl TelegramWebApp {
         ))
     }
 
+    /// Register a callback for received clipboard text.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_clipboard_text_received<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(JsValue)>, JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |text: JsValue| {
+            callback(text.as_string().unwrap_or_default());
+        });
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"clipboardTextReceived".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("clipboardTextReceived".to_string()),
+            cb
+        ))
+    }
+
     /// Registers a callback for the native back button.
     ///
     /// Returns an [`EventHandle`] that can be passed to
@@ -940,6 +1004,22 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn clipboard_text_received_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_clipboard_text_received(|_| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"clipboardTextReceived".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"clipboardTextReceived".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn open_link_and_telegram_link() {
         let webapp = setup_webapp();
         let open_link = Function::new_with_args("url", "this.open_link = url;");
@@ -1137,6 +1217,25 @@ mod tests {
         .unwrap();
 
         assert_eq!(button.borrow().as_str(), "ok");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn read_text_from_clipboard_invokes_callback() {
+        let webapp = setup_webapp();
+        let read_clip = Function::new_with_args("cb", "cb('clip');");
+        let _ = Reflect::set(&webapp, &"readTextFromClipboard".into(), &read_clip);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let text = Rc::new(RefCell::new(String::new()));
+        let text_clone = Rc::clone(&text);
+
+        app.read_text_from_clipboard(move |t| {
+            *text_clone.borrow_mut() = t;
+        })
+        .unwrap();
+
+        assert_eq!(text.borrow().as_str(), "clip");
     }
 
     #[wasm_bindgen_test]
