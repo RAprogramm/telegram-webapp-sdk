@@ -13,10 +13,21 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
  - [x] openInvoice
  - [x] downloadFile
  - [ ] switchInlineQuery
+ - [x] switchInlineQuery
  - [x] showAlert
  - [x] showConfirm
  - [x] showPopup
+- [ ] shareURL
+- [ ] joinVoiceChat
+- [x] requestWriteAccess
+- [x] requestContact
  - [ ] shareURL
+ - [x] readTextFromClipboard
+  - [ ] switchInlineQuery
+  - [x] showAlert
+  - [x] showConfirm
+  - [x] showPopup
+  - [ ] shareURL
  - [ ] joinVoiceChat
  - [ ] requestWriteAccess
  - [x] requestContact
@@ -85,6 +96,6 @@ The following features are not yet covered by the SDK:
 - [ ] Theme change events
 - [ ] Viewport management
 - [ ] Location access
-- [ ] Clipboard access
+- [x] Clipboard access
 - [ ] Invoice payments
 - [ ] Background events
