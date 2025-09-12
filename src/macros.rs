@@ -14,8 +14,11 @@
 macro_rules! telegram_page {
     ($path:literal, $(#[$meta:meta])* $vis:vis fn $name:ident $($rest:tt)*) => {
         $(#[$meta])*
-        #[::inventory::submit($crate::pages::Page { path: $path, handler: $name })]
         $vis fn $name $($rest)*
+
+        $crate::inventory::submit! {
+            $crate::pages::Page { path: $path, handler: $name }
+        }
     };
 }
 

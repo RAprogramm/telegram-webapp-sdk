@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::{logger, webapp::TelegramWebApp};
+use telegram_webapp_sdk::{logger, telegram_page, webapp::TelegramWebApp};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::{Document, Element, HtmlElement, window};
 

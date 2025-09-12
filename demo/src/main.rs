@@ -4,9 +4,13 @@ pub mod components;
 pub mod pages;
 pub mod router;
 
-use components::dev_menu::setup_dev_menu;
-use router::Router;
+use telegram_webapp_sdk::{telegram_app, telegram_router};
 use wasm_bindgen::prelude::*;
+
+#[rustfmt::skip]
+use components::dev_menu::setup_dev_menu;
+#[rustfmt::skip]
+use router::Router;
 
 telegram_app!(
     pub fn main() -> Result<(), JsValue> {
