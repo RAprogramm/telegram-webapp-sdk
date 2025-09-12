@@ -8,7 +8,7 @@ type RenderFn = fn();
 /// Struct managing routing table
 #[derive(Default)]
 pub struct Router {
-    routes: HashMap<String, RenderFn>
+    routes: HashMap<String, RenderFn>,
 }
 
 impl Router {

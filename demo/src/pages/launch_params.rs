@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 
 use crate::components::{
     display_data::{DisplayDataRow, render_display_data},
-    page_layout::PageLayout
+    page_layout::PageLayout,
 };
 
 /// Renders the Launch Parameters page.
@@ -23,23 +23,23 @@ pub fn render_launch_params_page() {
     let rows = vec![
         DisplayDataRow {
             title: "tgWebAppPlatform".into(),
-            value: lp.tg_web_app_platform.unwrap_or_else(|| "unknown".into())
+            value: lp.tg_web_app_platform.unwrap_or_else(|| "unknown".into()),
         },
         DisplayDataRow {
             title: "tgWebAppVersion".into(),
-            value: lp.tg_web_app_version.unwrap_or_else(|| "unknown".into())
+            value: lp.tg_web_app_version.unwrap_or_else(|| "unknown".into()),
         },
         DisplayDataRow {
             title: "tgWebAppStartParam".into(),
-            value: lp.tg_web_app_start_param.unwrap_or_else(|| "–".into())
+            value: lp.tg_web_app_start_param.unwrap_or_else(|| "–".into()),
         },
         DisplayDataRow {
             title: "tgWebAppShowSettings".into(),
-            value: lp.tg_web_app_show_settings.unwrap_or(false).to_string()
+            value: lp.tg_web_app_show_settings.unwrap_or(false).to_string(),
         },
         DisplayDataRow {
             title: "tgWebAppBotInline".into(),
-            value: lp.tg_web_app_bot_inline.unwrap_or(false).to_string()
+            value: lp.tg_web_app_bot_inline.unwrap_or(false).to_string(),
         },
     ];
 

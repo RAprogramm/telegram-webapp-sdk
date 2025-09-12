@@ -8,13 +8,13 @@ use components::dev_menu::setup_dev_menu;
 use pages::{
     burger_king::render_burger_king_page, index::render_index_page,
     init_data::render_init_data_page, launch_params::render_launch_params_page,
-    theme_params::render_theme_params_page
+    theme_params::render_theme_params_page,
 };
 use router::Router;
 use telegram_webapp_sdk::{
     core::init::init_sdk,
     mock::{config::MockTelegramConfig, data::MockTelegramUser, init::mock_telegram_webapp},
-    utils::check_env::is_telegram_env
+    utils::check_env::is_telegram_env,
 };
 use wasm_bindgen::prelude::*;
 

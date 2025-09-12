@@ -1,6 +1,6 @@
 use telegram_webapp_sdk::{
     logger::info,
-    webapp::{BottomButton, TelegramWebApp}
+    webapp::{BottomButton, TelegramWebApp},
 };
 use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::{HtmlElement, console, window};
@@ -52,14 +52,14 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
             info(&format!("home screen status: {}", status));
         });
         Ok(())
-    })
+    }),
 ];
 
 pub fn setup_dev_menu() {
     // Try to get document; silently return if not available (e.g., not in browser)
     let doc = match window().and_then(|w| w.document()) {
         Some(doc) => doc,
-        None => return
+        None => return,
     };
 
     for (id, handler) in BUTTON_IDS {

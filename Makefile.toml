@@ -1,7 +1,8 @@
 # Makefile.toml for cargo-make
 # Usage:
-#   cargo make             # pretty help (default)
-#   cargo make ci          #  clippy, tests, package
+#   cargo make                 # pretty help (default)
+#   cargo make ci              # format, clippy, tests, package
+#   cargo make tag             # create git tag from Cargo.toml version (no push)
 #   TAG=v0.3.0 cargo make release
 #   CARGO_REGISTRY_TOKEN=... TAG=v0.3.0 cargo make publish
 
@@ -16,6 +17,13 @@ description = "Default task -> help"
 run_task = "help"
 
 # ------- Core checks -------
+
+[tasks.format]
+category = "Format"
+clear = true
+description = "Format code using rustfmt on nightly (optional)"
+script_runner = "bash"
+script = ['cargo +nightly fmt --']
 
 [tasks.clippy]
 category = "Lint"
@@ -64,8 +72,9 @@ clear = true
 script_runner = "bash"
 script = ['''
   set -euo pipefail
+  # Ensure TAG is provided, e.g., TAG=v1.2.3 or refs/tags/v1.2.3
   if [ -z "${TAG:-}" ]; then
-    echo "TAG env var is required, e.g. TAG=v0.3.0"
+    echo "TAG env var is required, e.g. TAG=v1.2.3"
     exit 1
   fi
 ''']
@@ -77,12 +86,20 @@ script_runner = "bash"
 script = [
   '''
   set -euo pipefail
+  # Normalize TAG from refs/tags/vX.Y.Z -> vX.Y.Z
   TAG="${TAG#refs/tags/}"
 
+  # Prefer jq; fallback to sed. Select the root package of the workspace.
   if command -v jq >/dev/null 2>&1; then
-    FILE_VER="$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')"
+    FILE_VER="$(cargo metadata --no-deps --format-version=1 \
+      | jq -r '.workspace_root as $root
+               | .packages[]
+               | select(.manifest_path == ($root + "/Cargo.toml"))
+               | .version')"
   else
-    FILE_VER="$(cargo metadata --no-deps --format-version=1 | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' | head -n1)"
+    META="$(cargo metadata --no-deps --format-version=1)"
+    # Best-effort sed fallback: first "version" occurrence
+    FILE_VER="$(printf "%s" "$META" | sed -n 's/.*\"version\":\"\\([^\"]*\\)\".*/\\1/p' | head -n1)"
   fi
 
   if [ -z "${FILE_VER}" ]; then
@@ -99,7 +116,23 @@ script = [
 ''',
 ]
 dependencies = ["check_tag_env"]
-description = "Ensure git tag matches Cargo.toml version"
+description = "Ensure git tag matches Cargo.toml version (workspace root package)"
+
+[tasks.ensure_git_tag_exists]
+clear = true
+script_runner = "bash"
+script = ['''
+  set -euo pipefail
+  # Verify tag exists in the local repo
+  T="${TAG#refs/tags/}"
+  if ! git rev-parse -q --verify "refs/tags/${T}" >/dev/null; then
+    echo "Git tag '${T}' not found locally. Create and push it first:"
+    echo "  cargo make tag && git push origin ${T}"
+    exit 1
+  fi
+''']
+dependencies = ["check_tag_env"]
+description = "Ensure the git tag exists locally"
 
 [tasks.check_token]
 clear = true
@@ -123,7 +156,12 @@ script = ['''
   set -euo pipefail
   cargo publish --locked --token "${CARGO_REGISTRY_TOKEN}"
 ''']
-dependencies = ["check_token", "ensure_tag_matches_version", "ci"]
+dependencies = [
+  "check_token",
+  "ensure_tag_matches_version",
+  "ensure_git_tag_exists",
+  "ci",
+]
 description = "Publish crate to crates.io after checks and tag/version verification"
 
 [tasks.tag]
@@ -134,10 +172,23 @@ script = [
   '''
   set -euo pipefail
 
+  # Prefer jq; fallback to sed. Select the root package of the workspace.
   if command -v jq >/dev/null 2>&1; then
-    VER="$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')"
+    VER="$(cargo metadata --no-deps --format-version=1 \
+      | jq -r '.workspace_root as $root
+               | .packages[]
+               | select(.manifest_path == ($root + "/Cargo.toml"))
+               | .version')"
+    NAME="$(cargo metadata --no-deps --format-version=1 \
+      | jq -r '.workspace_root as $root
+               | .packages[]
+               | select(.manifest_path == ($root + "/Cargo.toml"))
+               | .name')"
   else
-    VER="$(cargo metadata --no-deps --format-version=1 | sed -n 's/.*"version":"\([^"]*\)".*/\1/p' | head -n1)"
+    META="$(cargo metadata --no-deps --format-version=1)"
+    # Fallback: first name/version occurrences
+    VER="$(printf "%s" "$META" | sed -n 's/.*\"version\":\"\\([^\"]*\\)\".*/\\1/p' | head -n1)"
+    NAME="$(printf "%s" "$META" | sed -n 's/.*\"name\":\"\\([^\"]*\\)\".*/\\1/p' | head -n1)"
   fi
 
   if [ -z "${VER}" ]; then
@@ -147,16 +198,18 @@ script = [
 
   TAG="v${VER}"
 
-  if git rev-parse "${TAG}" >/dev/null 2>&1; then
+  if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
     echo "Tag ${TAG} already exists."
     exit 1
   fi
 
-  git tag "${TAG}"
-  echo "Created tag ${TAG}. You can push it with: git push origin ${TAG}"
+  # Lightweight tag with message for traceability
+  git tag -a "${TAG}" -m "${NAME:-crate} ${TAG}"
+  echo "Created tag ${TAG}. Push it with:"
+  echo "  git push origin ${TAG}"
 ''',
 ]
-description = "Create git tag vX.Y.Z from Cargo.toml version (does not push)"
+description = "Create annotated git tag vX.Y.Z from Cargo.toml version (does not push)"
 
 [tasks.release]
 category = "Release"
@@ -164,14 +217,7 @@ clear = true
 dependencies = ["publish"]
 description = "Run checks and publish the crate (requires TAG and token)"
 
-# ------- Extras -------
-
-[tasks.format]
-category = "Format"
-clear = true
-description = "Format code using rustfmt on nightly (optional)"
-script_runner = "bash"
-script = ['cargo +nightly fmt --']
+# ------- Hooks -------
 
 [tasks.install-hooks]
 clear = true
@@ -207,13 +253,23 @@ script = [
   fi
 
   hr() { printf "%s\n" "──────────────────────────────────────────────────────────────────────────────"; }
-  row() { printf "  %b%s%b  %b%s%b\n" "$GREEN" "$1" "$RESET" "$DIM" "$2" "$RESET"; }
+  row() { printf "  %b%-28s%b %b%s%b\n" "$GREEN" "$1" "$RESET" "$DIM" "$2" "$RESET"; }
 
+  # Prefer jq; fallback to sed. Root package only.
   if command -v jq >/dev/null 2>&1; then
     META="$(cargo metadata --no-deps --format-version=1)"
-    VER="$(printf "%s" "$META" | jq -r '.packages[0].version')"
-    MSRV="$(printf "%s" "$META" | jq -r '.packages[0].rust_version // "unknown"')"
-    NAME="$(printf "%s" "$META" | jq -r '.packages[0].name')"
+    VER="$(printf "%s" "$META" | jq -r '.workspace_root as $root
+                                          | .packages[]
+                                          | select(.manifest_path == ($root + "/Cargo.toml"))
+                                          | .version')"
+    MSRV="$(printf "%s" "$META" | jq -r '.workspace_root as $root
+                                          | .packages[]
+                                          | select(.manifest_path == ($root + "/Cargo.toml"))
+                                          | .rust_version // "unknown"')"
+    NAME="$(printf "%s" "$META" | jq -r '.workspace_root as $root
+                                          | .packages[]
+                                          | select(.manifest_path == ($root + "/Cargo.toml"))
+                                          | .name')"
   else
     META="$(cargo metadata --no-deps --format-version=1)"
     VER="$(printf "%s" "$META" | sed -n 's/.*\"version\":\"\\([^\"]*\\)\".*/\\1/p' | head -n1)"
@@ -230,28 +286,24 @@ script = [
   hr
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Common commands" "$RESET"
-  row "cargo make ci"                  "Run format, clippy, tests, and packaging"
-  row "cargo make tag"                 "Create git tag v${VER} from Cargo.toml (no push)"
-  row "TAG=v${VER} cargo make release" "Run checks and publish to crates.io"
+  row "cargo make ci"                    "Run format, clippy, tests, and packaging"
+  row "cargo make tag"                   "Create git tag v${VER} from Cargo.toml (no push)"
+  row "TAG=v${VER} cargo make release"   "Run checks and publish to crates.io"
   row "ALL_FEATURES=false cargo make ci" "Run CI without --all-features"
   echo
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Formatting" "$RESET"
-  row "cargo make format"              "Format with nightly rustfmt (unstable features)"
+  row "cargo make format"                "Format with nightly rustfmt (unstable features)"
   echo
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Lint & Tests" "$RESET"
-  row "cargo make clippy"              "Run clippy --workspace --all-targets -D warnings"
-  row "cargo make test"                "Run tests --workspace"
+  row "cargo make clippy"                "Run clippy --workspace --all-targets -D warnings"
+  row "cargo make test"                  "Run tests --workspace"
   echo
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Packaging & Release" "$RESET"
-  row "cargo make package"             "Dry-run packaging (--locked)"
-  row "cargo make publish"             "Publish to crates.io (requires TAG and token)"
-  echo
-
-  printf "%b%s%b\n" "$BOLD$MAGENTA" "Hooks & Utilities" "$RESET"
-  row "cargo make install-hooks"       "Install .hooks/pre-commit"
+  row "cargo make package"               "Dry-run packaging (--locked)"
+  row "cargo make publish"               "Publish to crates.io (requires TAG and token)"
   echo
 
   printf "%b%s%b\n" "$BOLD$DIM" "Environment variables:" "$RESET"

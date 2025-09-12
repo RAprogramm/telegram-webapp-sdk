@@ -13,12 +13,12 @@ pub fn render_index_page() {
     page.append(&nav_link(
         "TON Connect",
         Some("Connect your TON wallet"),
-        "/ton-connect" // пока не реализовано, просто пример
+        "/ton-connect", // пока не реализовано, просто пример
     ));
     page.append(&nav_link(
         "Burger King Demo",
         Some("Order burgers via Telegram"),
-        "/burger-king"
+        "/burger-king",
     ));
 
     let app_data_header = section_header("Application Launch Data");
@@ -26,17 +26,17 @@ pub fn render_index_page() {
     page.append(&nav_link(
         "Init Data",
         Some("User data, chat information, technical data"),
-        "/init-data"
+        "/init-data",
     ));
     page.append(&nav_link(
         "Launch Parameters",
         Some("Platform identifier, Mini Apps version, etc."),
-        "/launch-params"
+        "/launch-params",
     ));
     page.append(&nav_link(
         "Theme Parameters",
         Some("Telegram application palette information"),
-        "/theme-params"
+        "/theme-params",
     ));
 }
 
