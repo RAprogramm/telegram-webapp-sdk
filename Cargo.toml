@@ -45,6 +45,9 @@ ed25519-dalek = "2"
 thiserror = "2"
 masterror = "0.3"
 urlencoding = { version = "2", optional = true }
+inventory = { version = "0.3", optional = true }
+telegram-webapp-sdk-macros = { path = "telegram-webapp-sdk-macros", optional = true }
+toml = "0.8"
 
 [dependencies.yew]
 version = "0.21"
@@ -60,12 +63,13 @@ features = ["csr"]
 
 [features]
 default = []
+macros = ["dep:telegram-webapp-sdk-macros", "dep:inventory"]
 yew = ["dep:yew"]
 leptos = ["dep:leptos"]
 mock = ["dep:urlencoding"]
 
 [workspace]
-members = ["demo"]
+members = ["demo", "telegram-webapp-sdk-macros"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

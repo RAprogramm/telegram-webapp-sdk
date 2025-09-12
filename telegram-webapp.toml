@@ -1,0 +1,27 @@
+# Example configuration for mock Telegram environment
+
+[user]
+id = 777
+first_name = "Alice"
+username = "alice_dev"
+is_premium = true
+
+auth_date = "1234567890"
+hash = "fakehash"
+bg_color = "#ffffff"
+text_color = "#000000"
+hint_color = "#888888"
+link_color = "#2689bf"
+button_color = "#0088cc"
+button_text_color = "#ffffff"
+secondary_bg_color = "#f0f0f0"
+header_bg_color = "#1d1f21"
+bottom_bar_bg_color = "#1f2226"
+accent_text_color = "#2eaee3"
+section_bg_color = "#222529"
+section_header_text_color = "#c8c9cb"
+section_separator_color = "#2a2c30"
+subtitle_text_color = "#909398"
+destructive_text_color = "#e33e3e"
+platform = "web"
+version = "6.0"
