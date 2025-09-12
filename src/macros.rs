@@ -1,43 +1,43 @@
 //! Telegram WebApp SDK macros.
 //!
 //! This module provides declarative macros for building Telegram WebApp
-//! applications. They allow you to:
+//! applications. They let you:
 //!
-//! * Register routable pages using [`telegram_page!`].
-//! * Define the application entry point with Telegram SDK initialization using
-//!   [`telegram_app!`].
-//! * Build and start a router that automatically collects all registered pages
-//!   using [`telegram_router!`].
+//! * Register routable pages using [`telegram_page!`]
+//! * Define the WASM application entry point with Telegram SDK initialization
+//!   using [`telegram_app!`]
+//! * Build and start a router that collects all registered pages via
+//!   `inventory` using [`telegram_router!`]
 //!
 //! ## Requirements
 //!
 //! 1. A `Page` type and a global `inventory` collection in your crate, for
 //!    example:
 //!
-//! ```no_run
+//! ```ignore
 //! pub mod pages {
-//!     /// Handler type for a page: a simple `fn()`.
+//!     /// Handler type for a page: a plain `fn()`.
 //!     pub type Handler = fn();
 //!
 //!     /// Routable page descriptor.
 //!     #[derive(Copy, Clone)]
 //!     pub struct Page {
-//!         pub path:    &'static str,
-//!         pub handler: Handler
+//!         pub path: &'static str,
+//!         pub handler: Handler;
 //!     }
 //!
 //!     // Collect all `Page` items via `inventory`.
 //!     inventory::collect!(Page);
 //!
-//!     /// Iterate over all collected pages.
+//!     /// Iterate over all collected pages as a real `Iterator`.
 //!     pub fn iter() -> impl Iterator<Item = &'static Page> {
-//!         inventory::iter::<Page>
+//!         inventory::iter::<Page>.into_iter()
 //!     }
 //! }
 //! ```
 //!
 //! 2. A `Router` type must be available in scope when using
-//!    [`telegram_router!`], with the following API:
+//!    [`telegram_router!`] with API:
 //!
 //! ```ignore
 //! impl Router {
@@ -54,7 +54,7 @@
 //! * `mock::init::mock_telegram_webapp(cfg) -> Result<_, _>`
 //! * `core::init::init_sdk() -> Result<(), wasm_bindgen::JsValue>`
 //!
-//! 4. Add the following dependencies to `Cargo.toml`:
+//! 4. `Cargo.toml`:
 //!
 //! ```toml
 //! [dependencies]
@@ -62,9 +62,9 @@
 //! wasm-bindgen = "0.2"
 //! ```
 //!
-//! ## Example
+//! ## Quick example
 //!
-//! ```no_run
+//! ```ignore
 //! use wasm_bindgen::prelude::JsValue;
 //!
 //! // Register a page.
@@ -88,21 +88,22 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-/// Registers a routable page.
+/// Register a routable page.
 ///
 /// Expands into:
-/// * A function definition with the provided visibility, name, and body.
-/// * An `inventory::submit!` registration wrapped in a hidden module, so the
-///   compiler treats it as a valid item in any context.
+/// * A function definition with the provided visibility, name, and body
+/// * A single registration item that submits a [`pages::Page`] to `inventory`,
+///   wrapped in a hidden module to remain a valid item in any context
 ///
-/// # Handler signature
+/// ### Handler signature
 ///
 /// The handler must be a plain function `fn()` with no arguments. If you need
-/// state or context, encapsulate it externally instead of passing arguments.
+/// state or context, encapsulate it externally (e.g. closures, singletons, DI),
+/// not as handler parameters.
 ///
-/// # Example
+/// ### Example
 ///
-/// ```no_run
+/// ```ignore
 /// use telegram_webapp_sdk::telegram_page;
 ///
 /// telegram_page!(
@@ -133,24 +134,24 @@ macro_rules! telegram_page {
     };
 }
 
-/// Defines the WASM application entry point with Telegram SDK initialization.
+/// Define the WASM application entry point with Telegram SDK initialization.
 ///
 /// The generated function is annotated with `#[wasm_bindgen(start)]`.
 /// It performs:
 ///
-/// * Environment detection with `utils::check_env::is_telegram_env()`.
-/// * Debug-only mock initialization if outside Telegram.
-/// * SDK initialization via `core::init::init_sdk()?`.
+/// * Environment detection via `utils::check_env::is_telegram_env()`
+/// * Debug-only mock initialization when not in Telegram
+/// * SDK initialization via `core::init::init_sdk()?`
 ///
 /// After these steps, the provided function body is executed.
 ///
-/// # Return type
+/// ### Return type
 ///
 /// The function may return either `()` or `Result<(), wasm_bindgen::JsValue>`.
 ///
-/// # Example
+/// ### Example
 ///
-/// ```no_run
+/// ```ignore
 /// use telegram_webapp_sdk::telegram_app;
 /// use wasm_bindgen::JsValue;
 ///
@@ -166,7 +167,7 @@ macro_rules! telegram_page {
 macro_rules! telegram_app {
     ($(#[$meta:meta])* $vis:vis fn $name:ident($($arg:tt)*) $(-> $ret:ty)? $body:block) => {
         $(#[$meta])*
-        #[::wasm_bindgen::prelude::wasm_bindgen(start)]
+        #[wasm_bindgen::prelude::wasm_bindgen(start)]
         $vis fn $name($($arg)*) $(-> $ret)? {
             if !$crate::utils::check_env::is_telegram_env() {
                 #[cfg(debug_assertions)]
@@ -180,7 +181,7 @@ macro_rules! telegram_app {
     };
 }
 
-/// Builds and starts a router from all registered pages.
+/// Build and start a router from all registered pages.
 ///
 /// This macro expects a `Router` type in scope with methods:
 ///
@@ -188,19 +189,15 @@ macro_rules! telegram_app {
 /// * `fn register(self, path: &str, handler: fn()) -> Self`
 /// * `fn start(self)`
 ///
-/// # Example
+/// ### Example
 ///
-/// ```no_run
+/// ```ignore
 /// use telegram_webapp_sdk::{telegram_page, telegram_router};
 ///
 /// struct Router;
 /// impl Router {
-///     fn new() -> Self {
-///         Router
-///     }
-///     fn register(self, _path: &str, _handler: fn()) -> Self {
-///         self
-///     }
+///     fn new() -> Self { Router }
+///     fn register(self, _path: &str, _handler: fn()) -> Self { self }
 ///     fn start(self) {}
 /// }
 ///
