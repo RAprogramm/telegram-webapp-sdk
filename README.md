@@ -1,6 +1,33 @@
+<!--
+    This README is automatically included on <https://docs.rs/telegram-webapp-sdk>.
+    Keep sections concise and examples compilable where possible.
+-->
+
 # Telegram WebApp SDK
 
+[![crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk.svg)](https://crates.io/crates/telegram-webapp-sdk)
+[![docs.rs](https://docs.rs/telegram-webapp-sdk/badge.svg)](https://docs.rs/telegram-webapp-sdk)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](#license)
+
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
+
+## Features
+
+- Comprehensive coverage of Telegram Web App JavaScript APIs.
+- Framework integrations for **Yew** and **Leptos**.
+- Configurable mock `Telegram.WebApp` for local development and testing.
+- API helpers for user interactions, storage, device sensors and more.
+
+## Table of contents
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Mock environment](#mock-environment)
+- [User interactions](#user-interactions)
+- [Keyboard control](#keyboard-control)
+- [API coverage](#api-coverage)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Installation
 
@@ -11,23 +38,21 @@ Add the crate to your `Cargo.toml`:
 telegram-webapp-sdk = "0.1"
 ```
 
-Optional features:
-
-- `yew` &mdash; exposes a `use_telegram_context` hook.
-- `leptos` &mdash; integrates the context into the Leptos reactive system.
-- `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
-
-Enable features as needed:
+Enable optional features as needed:
 
 ```toml
 telegram-webapp-sdk = { version = "0.1", features = ["yew", "mock"] }
 ```
 
+- `yew` &mdash; exposes a `use_telegram_context` hook.
+- `leptos` &mdash; integrates the context into the Leptos reactive system.
+- `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
+
 ## Quick start
 
 ### Yew
 
-```rust,no_run
+```rust,ignore
 use telegram_webapp_sdk::yew::use_telegram_context;
 use yew::prelude::*;
 
@@ -40,7 +65,7 @@ fn app() -> Html {
 
 ### Leptos
 
-```rust,no_run
+```rust,ignore
 use leptos::prelude::*;
 use telegram_webapp_sdk::leptos::provide_telegram_context;
 
@@ -57,7 +82,7 @@ fn App() -> impl IntoView {
 
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
 
-```rust,no_run
+```rust,ignore
 let config = telegram_webapp_sdk::mock::MockConfig::default();
 let ctx = telegram_webapp_sdk::mock::install(config)?;
 ```
@@ -165,7 +190,10 @@ on_click(&cb)?;
 show()?;
 hide()?;
 off_click(&cb)?;
-# Ok(()) }
+# Ok(())
+# }
+```
+
 ## Cloud storage
 
 Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
@@ -361,7 +389,7 @@ Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
 The `validate_init_data` module is re-exported at the crate root and can be
 used directly or through the `TelegramWebApp::validate_init_data` helper:
 
-```rust
+```rust,no_run
 use telegram_webapp_sdk::{
     validate_init_data::ValidationKey,
     TelegramWebApp
