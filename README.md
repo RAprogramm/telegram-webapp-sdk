@@ -199,6 +199,37 @@ app.off_event(handle)?;
 # }
 ```
 
+### Background events
+
+Some Telegram events may fire while the Mini App is in the background. Register
+callbacks for these with `on_background_event`:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::{BackgroundEvent, TelegramWebApp};
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let handle = app.on_background_event(BackgroundEvent::MainButtonClicked, |_| {})?;
+app.off_event(handle)?;
+# Ok(())
+# }
+```
+
+Supported background events:
+
+| Event | Payload |
+|-------|---------|
+| `mainButtonClicked` | none |
+| `backButtonClicked` | none |
+| `settingsButtonClicked` | none |
+| `writeAccessRequested` | `bool` granted flag |
+| `contactRequested` | `bool` shared flag |
+| `phoneRequested` | `bool` shared flag |
+| `invoiceClosed` | status `String` |
+| `popupClosed` | object `{ button_id: Option<String> }` |
+| `qrTextReceived` | scanned text `String` |
+| `clipboardTextReceived` | clipboard text `String` |
+
 ## Appearance
 
 Customize colors and react to theme or safe area updates:
