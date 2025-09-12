@@ -216,6 +216,37 @@ app.off_event(handle)?;
 # }
 ```
 
+### Background events
+
+Some Telegram events may fire while the Mini App is in the background. Register
+callbacks for these with `on_background_event`:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::{BackgroundEvent, TelegramWebApp};
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let handle = app.on_background_event(BackgroundEvent::MainButtonClicked, |_| {})?;
+app.off_event(handle)?;
+# Ok(())
+# }
+```
+
+Supported background events:
+
+| Event | Payload |
+|-------|---------|
+| `mainButtonClicked` | none |
+| `backButtonClicked` | none |
+| `settingsButtonClicked` | none |
+| `writeAccessRequested` | `bool` granted flag |
+| `contactRequested` | `bool` shared flag |
+| `phoneRequested` | `bool` shared flag |
+| `invoiceClosed` | status `String` |
+| `popupClosed` | object `{ button_id: Option<String> }` |
+| `qrTextReceived` | scanned text `String` |
+| `clipboardTextReceived` | clipboard text `String` |
+
 ## Appearance
 
 Customize colors and react to theme or safe area updates:
@@ -326,14 +357,19 @@ Callbacks for sensor lifecycle events are available through `on_started`,
 gyroscope, and device orientation sensors.
 ## Init data validation
 
-Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
+The `validate_init_data` module is re-exported at the crate root and can be
+used directly or through the `TelegramWebApp::validate_init_data` helper:
 
 ```rust
-use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+use telegram_webapp_sdk::{
+    validate_init_data::ValidationKey,
+    TelegramWebApp
+};
 
 let bot_token = "123456:ABC";
 let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
-verify_hmac_sha256(query, bot_token)?;
+TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token))?;
 
 // For Ed25519-signed data
 # use ed25519_dalek::{Signer, SigningKey};
@@ -341,7 +377,10 @@ verify_hmac_sha256(query, bot_token)?;
 # let pk = sk.verifying_key();
 # let sig = sk.sign(b"a=1\nb=2");
 # let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
-verify_ed25519(&init_data, pk.as_bytes())?;
+TelegramWebApp::validate_init_data(
+    &init_data,
+    ValidationKey::Ed25519PublicKey(pk.as_bytes())
+)?;
 
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```

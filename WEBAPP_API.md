@@ -142,14 +142,29 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
+## Background events
+
+| Event | Payload |
+|-------|---------|
+| `mainButtonClicked` | none |
+| `backButtonClicked` | none |
+| `settingsButtonClicked` | none |
+| `writeAccessRequested` | `bool` granted flag |
+| `contactRequested` | `bool` shared flag |
+| `phoneRequested` | `bool` shared flag |
+| `invoiceClosed` | status `String` |
+| `popupClosed` | object `{ button_id: Option<String> }` |
+| `qrTextReceived` | scanned text `String` |
+| `clipboardTextReceived` | clipboard text `String` |
+
 ## Remaining WebApp Features
 
 The following features are not yet covered by the SDK:
 
-- [ ] Init data validation
+- [x] Init data validation (unreleased)
 - [x] Theme and safe area change events ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
 - [ ] Viewport management
 - [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
 - [x] Location access ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [x] Invoice payments (unreleased)
-- [ ] Background events
+- [x] Background events (unreleased)
