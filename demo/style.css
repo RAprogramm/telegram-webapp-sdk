@@ -129,3 +129,23 @@ footer#dev-menu button:hover {
   border: 1px solid #555;
   border-radius: 50%;
 }
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  margin: 0.5rem 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.menu-item button {
+  padding: 0.5rem 1rem;
+  background-color: #e31e24;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+

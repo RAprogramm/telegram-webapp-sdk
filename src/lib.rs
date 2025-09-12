@@ -1,3 +1,6 @@
+#![doc = include_str!("../README.md")]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 pub mod api;
 pub mod core;
 pub mod logger;
@@ -6,6 +9,7 @@ pub mod logger;
 pub mod mock;
 pub mod utils;
 pub mod webapp;
+pub use utils::validate_init_data;
 pub use webapp::TelegramWebApp;
 
 #[cfg(feature = "yew")]

@@ -3,7 +3,11 @@ use serde_wasm_bindgen::to_value;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
-use crate::{core::types::download_file_params::DownloadFileParams, logger};
+use crate::{
+    core::types::download_file_params::DownloadFileParams,
+    logger,
+    validate_init_data::{self, ValidationKey}
+};
 
 /// Handle returned when registering callbacks.
 pub struct EventHandle<T: ?Sized> {
@@ -63,6 +67,49 @@ impl BottomButton {
     }
 }
 
+/// Background events delivered by Telegram when the Mini App runs in the
+/// background.
+#[derive(Clone, Copy, Debug)]
+pub enum BackgroundEvent {
+    /// The main button was clicked. Payload: [`JsValue::UNDEFINED`].
+    MainButtonClicked,
+    /// The back button was clicked. Payload: [`JsValue::UNDEFINED`].
+    BackButtonClicked,
+    /// The settings button was clicked. Payload: [`JsValue::UNDEFINED`].
+    SettingsButtonClicked,
+    /// User responded to a write access request. Payload: `bool`.
+    WriteAccessRequested,
+    /// User responded to a contact request. Payload: `bool`.
+    ContactRequested,
+    /// User responded to a phone number request. Payload: `bool`.
+    PhoneRequested,
+    /// An invoice was closed. Payload: status string.
+    InvoiceClosed,
+    /// A popup was closed. Payload: object containing `button_id`.
+    PopupClosed,
+    /// Text was received from the QR scanner. Payload: scanned text.
+    QrTextReceived,
+    /// Text was read from the clipboard. Payload: clipboard text.
+    ClipboardTextReceived
+}
+
+impl BackgroundEvent {
+    const fn as_str(self) -> &'static str {
+        match self {
+            BackgroundEvent::MainButtonClicked => "mainButtonClicked",
+            BackgroundEvent::BackButtonClicked => "backButtonClicked",
+            BackgroundEvent::SettingsButtonClicked => "settingsButtonClicked",
+            BackgroundEvent::WriteAccessRequested => "writeAccessRequested",
+            BackgroundEvent::ContactRequested => "contactRequested",
+            BackgroundEvent::PhoneRequested => "phoneRequested",
+            BackgroundEvent::InvoiceClosed => "invoiceClosed",
+            BackgroundEvent::PopupClosed => "popupClosed",
+            BackgroundEvent::QrTextReceived => "qrTextReceived",
+            BackgroundEvent::ClipboardTextReceived => "clipboardTextReceived"
+        }
+    }
+}
+
 /// Safe wrapper around `window.Telegram.WebApp`
 #[derive(Clone)]
 pub struct TelegramWebApp {
@@ -93,6 +140,36 @@ impl TelegramWebApp {
         Ok(Self {
             inner
         })
+    }
+
+    /// Validate an `initData` payload using either HMAC-SHA256 or Ed25519.
+    ///
+    /// Pass [`ValidationKey::BotToken`] to verify the `hash` parameter using
+    /// the bot token. Use [`ValidationKey::Ed25519PublicKey`] to verify the
+    /// `signature` parameter with an Ed25519 public key.
+    ///
+    /// # Errors
+    /// Returns [`validate_init_data::ValidationError`] if validation fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::{TelegramWebApp, validate_init_data::ValidationKey};
+    /// let bot_token = "123456:ABC";
+    /// let query = "a=1&b=2&hash=9e5e8d7c0b1f9f3a";
+    /// TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token)).unwrap();
+    /// ```
+    pub fn validate_init_data(
+        init_data: &str,
+        key: ValidationKey
+    ) -> Result<(), validate_init_data::ValidationError> {
+        match key {
+            ValidationKey::BotToken(token) => {
+                validate_init_data::verify_hmac_sha256(init_data, token)
+            }
+            ValidationKey::Ed25519PublicKey(pk) => {
+                validate_init_data::verify_ed25519(init_data, pk)
+            }
+        }
     }
 
     /// Call `WebApp.sendData(data)`.
@@ -1082,6 +1159,39 @@ impl TelegramWebApp {
         ))
     }
 
+    /// Register a callback for a background event.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_background_event<F>(
+        &self,
+        event: BackgroundEvent,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(JsValue)>, JsValue>
+    where
+        F: 'static + Fn(JsValue)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &event.as_str().into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some(event.as_str().to_string()),
+            cb
+        ))
+    }
+
     /// Deregister a previously registered event handler.
     ///
     /// # Errors
@@ -1327,6 +1437,50 @@ impl TelegramWebApp {
             self.inner.clone(),
             "offEvent",
             Some("clipboardTextReceived".to_string()),
+            cb
+        ))
+    }
+
+    /// Register a callback for invoice payment result.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let handle = app
+    ///     .on_invoice_closed(|status| {
+    ///         let _ = status;
+    ///     })
+    ///     .unwrap();
+    /// app.off_event(handle).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_invoice_closed<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(String)>, JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(String)>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"invoiceClosed".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("invoiceClosed".to_string()),
             cb
         ))
     }
@@ -1805,6 +1959,48 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn background_event_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app
+            .on_background_event(BackgroundEvent::MainButtonClicked, |_| {})
+            .unwrap();
+        assert!(Reflect::has(&webapp, &"mainButtonClicked".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"mainButtonClicked".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn background_event_delivers_data() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let received = Rc::new(RefCell::new(String::new()));
+        let received_clone = Rc::clone(&received);
+        let _handle = app
+            .on_background_event(BackgroundEvent::InvoiceClosed, move |v| {
+                *received_clone.borrow_mut() = v.as_string().unwrap_or_default();
+            })
+            .unwrap();
+
+        let cb = Reflect::get(&webapp, &"invoiceClosed".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        let _ = cb.call1(&JsValue::NULL, &JsValue::from_str("paid"));
+        assert_eq!(received.borrow().as_str(), "paid");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn theme_changed_register_and_remove() {
         let webapp = setup_webapp();
         let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
@@ -1911,6 +2107,47 @@ mod tests {
                 .as_deref(),
             Some(url)
         );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoice_closed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_invoice_closed(|_| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"invoiceClosed".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"invoiceClosed".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoice_closed_invokes_callback() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this.cb = cb;");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let status = Rc::new(RefCell::new(String::new()));
+        let status_clone = Rc::clone(&status);
+        app.on_invoice_closed(move |s| {
+            *status_clone.borrow_mut() = s;
+        })
+        .unwrap();
+
+        let cb = Reflect::get(&webapp, &"cb".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        cb.call1(&webapp, &"paid".into()).unwrap();
+        assert_eq!(status.borrow().as_str(), "paid");
+        cb.call1(&webapp, &"failed".into()).unwrap();
+        assert_eq!(status.borrow().as_str(), "failed");
     }
 
     #[wasm_bindgen_test]

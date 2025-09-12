@@ -1,6 +1,33 @@
+<!--
+    This README is automatically included on <https://docs.rs/telegram-webapp-sdk>.
+    Keep sections concise and examples compilable where possible.
+-->
+
 # Telegram WebApp SDK
 
+[![crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk.svg)](https://crates.io/crates/telegram-webapp-sdk)
+[![docs.rs](https://docs.rs/telegram-webapp-sdk/badge.svg)](https://docs.rs/telegram-webapp-sdk)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](#license)
+
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
+
+## Features
+
+- Comprehensive coverage of Telegram Web App JavaScript APIs.
+- Framework integrations for **Yew** and **Leptos**.
+- Configurable mock `Telegram.WebApp` for local development and testing.
+- API helpers for user interactions, storage, device sensors and more.
+
+## Table of contents
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Mock environment](#mock-environment)
+- [User interactions](#user-interactions)
+- [Keyboard control](#keyboard-control)
+- [API coverage](#api-coverage)
+- [Changelog](#changelog)
+- [License](#license)
 
 ## Installation
 
@@ -11,23 +38,21 @@ Add the crate to your `Cargo.toml`:
 telegram-webapp-sdk = "0.1"
 ```
 
-Optional features:
-
-- `yew` &mdash; exposes a `use_telegram_context` hook.
-- `leptos` &mdash; integrates the context into the Leptos reactive system.
-- `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
-
-Enable features as needed:
+Enable optional features as needed:
 
 ```toml
 telegram-webapp-sdk = { version = "0.1", features = ["yew", "mock"] }
 ```
 
+- `yew` &mdash; exposes a `use_telegram_context` hook.
+- `leptos` &mdash; integrates the context into the Leptos reactive system.
+- `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
+
 ## Quick start
 
 ### Yew
 
-```rust,no_run
+```rust,ignore
 use telegram_webapp_sdk::yew::use_telegram_context;
 use yew::prelude::*;
 
@@ -40,7 +65,7 @@ fn app() -> Html {
 
 ### Leptos
 
-```rust,no_run
+```rust,ignore
 use leptos::prelude::*;
 use telegram_webapp_sdk::leptos::provide_telegram_context;
 
@@ -57,7 +82,7 @@ fn App() -> impl IntoView {
 
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
 
-```rust,no_run
+```rust,ignore
 let config = telegram_webapp_sdk::mock::MockConfig::default();
 let ctx = telegram_webapp_sdk::mock::install(config)?;
 ```
@@ -113,6 +138,23 @@ app.disable_closing_confirmation()?;
 # Ok(())
 # }
 ```
+## Invoice payments
+
+Open invoices and react to the final payment status:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let handle = app.on_invoice_closed(|status| {
+    let _ = status;
+})?;
+app.open_invoice("https://invoice", |_status| {})?;
+app.off_event(handle)?;
+# Ok(())
+# }
+```
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:
@@ -148,7 +190,10 @@ on_click(&cb)?;
 show()?;
 hide()?;
 off_click(&cb)?;
-# Ok(()) }
+# Ok(())
+# }
+```
+
 ## Cloud storage
 
 Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
@@ -198,6 +243,37 @@ app.off_event(handle)?;
 # Ok(())
 # }
 ```
+
+### Background events
+
+Some Telegram events may fire while the Mini App is in the background. Register
+callbacks for these with `on_background_event`:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::{BackgroundEvent, TelegramWebApp};
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let handle = app.on_background_event(BackgroundEvent::MainButtonClicked, |_| {})?;
+app.off_event(handle)?;
+# Ok(())
+# }
+```
+
+Supported background events:
+
+| Event | Payload |
+|-------|---------|
+| `mainButtonClicked` | none |
+| `backButtonClicked` | none |
+| `settingsButtonClicked` | none |
+| `writeAccessRequested` | `bool` granted flag |
+| `contactRequested` | `bool` shared flag |
+| `phoneRequested` | `bool` shared flag |
+| `invoiceClosed` | status `String` |
+| `popupClosed` | object `{ button_id: Option<String> }` |
+| `qrTextReceived` | scanned text `String` |
+| `clipboardTextReceived` | clipboard text `String` |
 
 ## Appearance
 
@@ -309,14 +385,19 @@ Callbacks for sensor lifecycle events are available through `on_started`,
 gyroscope, and device orientation sensors.
 ## Init data validation
 
-Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
+The `validate_init_data` module is re-exported at the crate root and can be
+used directly or through the `TelegramWebApp::validate_init_data` helper:
 
-```rust
-use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+```rust,no_run
+use telegram_webapp_sdk::{
+    validate_init_data::ValidationKey,
+    TelegramWebApp
+};
 
 let bot_token = "123456:ABC";
 let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
-verify_hmac_sha256(query, bot_token)?;
+TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token))?;
 
 // For Ed25519-signed data
 # use ed25519_dalek::{Signer, SigningKey};
@@ -324,7 +405,10 @@ verify_hmac_sha256(query, bot_token)?;
 # let pk = sk.verifying_key();
 # let sig = sk.sign(b"a=1\nb=2");
 # let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
-verify_ed25519(&init_data, pk.as_bytes())?;
+TelegramWebApp::validate_init_data(
+    &init_data,
+    ValidationKey::Ed25519PublicKey(pk.as_bytes())
+)?;
 
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
