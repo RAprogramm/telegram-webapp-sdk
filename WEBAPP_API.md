@@ -151,5 +151,5 @@ The following features are not yet covered by the SDK:
 - [ ] Viewport management
 - [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
 - [x] Location access ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [ ] Invoice payments
+- [x] Invoice payments (unreleased)
 - [ ] Background events

@@ -1331,6 +1331,50 @@ impl TelegramWebApp {
         ))
     }
 
+    /// Register a callback for invoice payment result.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let handle = app
+    ///     .on_invoice_closed(|status| {
+    ///         let _ = status;
+    ///     })
+    ///     .unwrap();
+    /// app.off_event(handle).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_invoice_closed<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(String)>, JsValue>
+    where
+        F: 'static + Fn(String)
+    {
+        let cb = Closure::<dyn FnMut(String)>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &"invoiceClosed".into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some("invoiceClosed".to_string()),
+            cb
+        ))
+    }
+
     /// Registers a callback for the native back button.
     ///
     /// Returns an [`EventHandle`] that can be passed to
@@ -1911,6 +1955,47 @@ mod tests {
                 .as_deref(),
             Some(url)
         );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoice_closed_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app.on_invoice_closed(|_| {}).unwrap();
+        assert!(Reflect::has(&webapp, &"invoiceClosed".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"invoiceClosed".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoice_closed_invokes_callback() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this.cb = cb;");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let status = Rc::new(RefCell::new(String::new()));
+        let status_clone = Rc::clone(&status);
+        app.on_invoice_closed(move |s| {
+            *status_clone.borrow_mut() = s;
+        })
+        .unwrap();
+
+        let cb = Reflect::get(&webapp, &"cb".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        cb.call1(&webapp, &"paid".into()).unwrap();
+        assert_eq!(status.borrow().as_str(), "paid");
+        cb.call1(&webapp, &"failed".into()).unwrap();
+        assert_eq!(status.borrow().as_str(), "failed");
     }
 
     #[wasm_bindgen_test]
