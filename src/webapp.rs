@@ -149,6 +149,21 @@ impl TelegramWebApp {
         self.call0("disableClosingConfirmation")
     }
 
+    /// Returns whether closing confirmation is currently enabled.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let _ = app.is_closing_confirmation_enabled();
+    /// ```
+    pub fn is_closing_confirmation_enabled(&self) -> bool {
+        Reflect::get(&self.inner, &"isClosingConfirmationEnabled".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
     /// Call `WebApp.requestFullscreen()`.
     ///
     /// # Examples

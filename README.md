@@ -107,6 +107,7 @@ use telegram_webapp_sdk::webapp::TelegramWebApp;
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
 app.enable_closing_confirmation()?;
+assert!(app.is_closing_confirmation_enabled());
 // later
 app.disable_closing_confirmation()?;
 # Ok(())
