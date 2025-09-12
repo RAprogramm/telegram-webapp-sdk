@@ -1,7 +1,7 @@
 # Makefile.toml for cargo-make
 # Usage:
 #   cargo make             # pretty help (default)
-#   cargo make ci          # fmt, clippy, tests, package
+#   cargo make ci          #  clippy, tests, package
 #   TAG=v0.3.0 cargo make release
 #   CARGO_REGISTRY_TOKEN=... TAG=v0.3.0 cargo make publish
 
@@ -55,7 +55,7 @@ description = "Verify that the crate can be packaged cleanly"
 [tasks.ci]
 category = "Meta"
 dependencies = ["format", "clippy", "test", "package"]
-description = "Run fmt, clippy, tests, and packaging checks"
+description = "Run format, clippy, tests, and packaging checks"
 
 # ------- Release gatekeeping -------
 
@@ -171,15 +171,7 @@ category = "Format"
 clear = true
 description = "Format code using rustfmt on nightly (optional)"
 script_runner = "bash"
-script = ['''
-  set -euo pipefail
-  if ! rustup toolchain list | grep -q "^nightly"; then
-    echo "Installing nightly toolchain for rustfmt..."
-    rustup toolchain install nightly >/dev/null
-  fi
-  rustup component add rustfmt --toolchain nightly >/dev/null
-  cargo +nightly fmt --
-''']
+script = ['cargo +nightly fmt --']
 
 [tasks.install-hooks]
 clear = true
@@ -238,7 +230,7 @@ script = [
   hr
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Common commands" "$RESET"
-  row "cargo make ci"                  "Run fmt, clippy, tests, and packaging"
+  row "cargo make ci"                  "Run format, clippy, tests, and packaging"
   row "cargo make tag"                 "Create git tag v${VER} from Cargo.toml (no push)"
   row "TAG=v${VER} cargo make release" "Run checks and publish to crates.io"
   row "ALL_FEATURES=false cargo make ci" "Run CI without --all-features"
