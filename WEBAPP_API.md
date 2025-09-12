@@ -142,6 +142,21 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
+## Background events
+
+| Event | Payload |
+|-------|---------|
+| `mainButtonClicked` | none |
+| `backButtonClicked` | none |
+| `settingsButtonClicked` | none |
+| `writeAccessRequested` | `bool` granted flag |
+| `contactRequested` | `bool` shared flag |
+| `phoneRequested` | `bool` shared flag |
+| `invoiceClosed` | status `String` |
+| `popupClosed` | object `{ button_id: Option<String> }` |
+| `qrTextReceived` | scanned text `String` |
+| `clipboardTextReceived` | clipboard text `String` |
+
 ## Remaining WebApp Features
 
 The following features are not yet covered by the SDK:
@@ -152,30 +167,4 @@ The following features are not yet covered by the SDK:
 - [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
 - [x] Location access ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [ ] Invoice payments
-- [ ] Background events
-
-### Init data validation
-
-```rust
-use telegram_webapp_sdk::{
-    validate_init_data::ValidationKey,
-    TelegramWebApp
-};
-
-let bot_token = "123456:ABC";
-let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
-TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token))?;
-
-// For Ed25519-signed data
-# use ed25519_dalek::{Signer, SigningKey};
-# let sk = SigningKey::from_bytes(&[1u8;32]);
-# let pk = sk.verifying_key();
-# let sig = sk.sign(b"a=1\nb=2");
-# let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
-TelegramWebApp::validate_init_data(
-    &init_data,
-    ValidationKey::Ed25519PublicKey(pk.as_bytes())
-)?;
-
-# Ok::<(), telegram_webapp_sdk::validate_init_data::ValidationError>(())
-```
+- [x] Background events (unreleased)

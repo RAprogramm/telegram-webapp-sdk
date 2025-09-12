@@ -67,6 +67,49 @@ impl BottomButton {
     }
 }
 
+/// Background events delivered by Telegram when the Mini App runs in the
+/// background.
+#[derive(Clone, Copy, Debug)]
+pub enum BackgroundEvent {
+    /// The main button was clicked. Payload: [`JsValue::UNDEFINED`].
+    MainButtonClicked,
+    /// The back button was clicked. Payload: [`JsValue::UNDEFINED`].
+    BackButtonClicked,
+    /// The settings button was clicked. Payload: [`JsValue::UNDEFINED`].
+    SettingsButtonClicked,
+    /// User responded to a write access request. Payload: `bool`.
+    WriteAccessRequested,
+    /// User responded to a contact request. Payload: `bool`.
+    ContactRequested,
+    /// User responded to a phone number request. Payload: `bool`.
+    PhoneRequested,
+    /// An invoice was closed. Payload: status string.
+    InvoiceClosed,
+    /// A popup was closed. Payload: object containing `button_id`.
+    PopupClosed,
+    /// Text was received from the QR scanner. Payload: scanned text.
+    QrTextReceived,
+    /// Text was read from the clipboard. Payload: clipboard text.
+    ClipboardTextReceived
+}
+
+impl BackgroundEvent {
+    const fn as_str(self) -> &'static str {
+        match self {
+            BackgroundEvent::MainButtonClicked => "mainButtonClicked",
+            BackgroundEvent::BackButtonClicked => "backButtonClicked",
+            BackgroundEvent::SettingsButtonClicked => "settingsButtonClicked",
+            BackgroundEvent::WriteAccessRequested => "writeAccessRequested",
+            BackgroundEvent::ContactRequested => "contactRequested",
+            BackgroundEvent::PhoneRequested => "phoneRequested",
+            BackgroundEvent::InvoiceClosed => "invoiceClosed",
+            BackgroundEvent::PopupClosed => "popupClosed",
+            BackgroundEvent::QrTextReceived => "qrTextReceived",
+            BackgroundEvent::ClipboardTextReceived => "clipboardTextReceived"
+        }
+    }
+}
+
 /// Safe wrapper around `window.Telegram.WebApp`
 #[derive(Clone)]
 pub struct TelegramWebApp {
@@ -1116,6 +1159,39 @@ impl TelegramWebApp {
         ))
     }
 
+    /// Register a callback for a background event.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`off_event`](Self::off_event).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn on_background_event<F>(
+        &self,
+        event: BackgroundEvent,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut(JsValue)>, JsValue>
+    where
+        F: 'static + Fn(JsValue)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(callback);
+        let f = Reflect::get(&self.inner, &"onEvent".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onEvent is not a function"))?;
+        func.call2(
+            &self.inner,
+            &event.as_str().into(),
+            cb.as_ref().unchecked_ref()
+        )?;
+        Ok(EventHandle::new(
+            self.inner.clone(),
+            "offEvent",
+            Some(event.as_str().to_string()),
+            cb
+        ))
+    }
+
     /// Deregister a previously registered event handler.
     ///
     /// # Errors
@@ -1835,6 +1911,48 @@ mod tests {
         assert!(Reflect::has(&webapp, &"test".into()).unwrap());
         app.off_event(handle).unwrap();
         assert!(!Reflect::has(&webapp, &"test".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn background_event_register_and_remove() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let handle = app
+            .on_background_event(BackgroundEvent::MainButtonClicked, |_| {})
+            .unwrap();
+        assert!(Reflect::has(&webapp, &"mainButtonClicked".into()).unwrap());
+        app.off_event(handle).unwrap();
+        assert!(!Reflect::has(&webapp, &"mainButtonClicked".into()).unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn background_event_delivers_data() {
+        let webapp = setup_webapp();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let received = Rc::new(RefCell::new(String::new()));
+        let received_clone = Rc::clone(&received);
+        let _handle = app
+            .on_background_event(BackgroundEvent::InvoiceClosed, move |v| {
+                *received_clone.borrow_mut() = v.as_string().unwrap_or_default();
+            })
+            .unwrap();
+
+        let cb = Reflect::get(&webapp, &"invoiceClosed".into())
+            .unwrap()
+            .dyn_into::<Function>()
+            .unwrap();
+        let _ = cb.call1(&JsValue::NULL, &JsValue::from_str("paid"));
+        assert_eq!(received.borrow().as_str(), "paid");
     }
 
     #[wasm_bindgen_test]
