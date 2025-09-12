@@ -113,6 +113,23 @@ app.disable_closing_confirmation()?;
 # Ok(())
 # }
 ```
+## Invoice payments
+
+Open invoices and react to the final payment status:
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+let handle = app.on_invoice_closed(|status| {
+    let _ = status;
+})?;
+app.open_invoice("https://invoice", |_status| {})?;
+app.off_event(handle)?;
+# Ok(())
+# }
+```
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:
