@@ -24,7 +24,7 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     ("main-button", |tg| {
         // These setters are infallible in the SDK; wrap in Ok to fit the Handler type.
         let _ = tg.set_bottom_button_text(BottomButton::Main, "Clicked!");
-        tg.show_bottom_button(BottomButton::Main);
+        let _ = tg.show_bottom_button(BottomButton::Main);
         Ok(())
     }),
     // Checks expansion state and acts accordingly
@@ -72,11 +72,12 @@ pub fn setup_dev_menu() {
 
             // Create JS callback that invokes our handler, logging errors to console
             let cb = Closure::<dyn FnMut()>::new(move || {
-                if let Some(tg) = TelegramWebApp::instance() {
-                    if let Err(err) = handler(&tg) {
-                        // Log JS/WASM error object to developer console
-                        console::error_1(&err);
-                    }
+                // Collapse nested ifs via let-chains to satisfy clippy::collapsible-if
+                if let Some(tg) = TelegramWebApp::instance()
+                    && let Err(err) = handler(&tg)
+                {
+                    // Log JS/WASM error object to developer console
+                    console::error_1(&err);
                 }
             });
 

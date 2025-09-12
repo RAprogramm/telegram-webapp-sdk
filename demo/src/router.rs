@@ -6,6 +6,7 @@ use web_sys::{Event, EventTarget, window};
 type RenderFn = fn();
 
 /// Struct managing routing table
+#[derive(Default)]
 pub struct Router {
     routes: HashMap<String, RenderFn>
 }
@@ -13,9 +14,7 @@ pub struct Router {
 impl Router {
     /// Creates a new router instance
     pub fn new() -> Self {
-        Self {
-            routes: HashMap::new()
-        }
+        Self::default()
     }
 
     /// Registers a path and its render function
@@ -32,10 +31,10 @@ impl Router {
             let closure = Closure::<dyn FnMut(_)>::new({
                 let router = self.routes.clone();
                 move |_event: Event| {
-                    if let Some(path) = current_path() {
-                        if let Some(page) = router.get(&path) {
-                            page();
-                        }
+                    if let Some(path) = current_path()
+                        && let Some(page) = router.get(&path)
+                    {
+                        page();
                     }
                 }
             });
@@ -62,13 +61,13 @@ impl Router {
 
 /// Navigates to given path and pushes state
 pub fn navigate(path: &str) {
-    if let Some(w) = window() {
-        if let Ok(history) = w.history() {
-            let _ = history.push_state_with_url(&JsValue::NULL, "", Some(path));
-            // Trigger route manually
-            if let Some(event) = web_sys::CustomEvent::new("popstate").ok() {
-                let _ = w.dispatch_event(&event);
-            }
+    if let Some(w) = window()
+        && let Ok(history) = w.history()
+    {
+        let _ = history.push_state_with_url(&JsValue::NULL, "", Some(path));
+        // Trigger route manually
+        if let Ok(event) = web_sys::CustomEvent::new("popstate") {
+            let _ = w.dispatch_event(&event);
         }
     }
 }

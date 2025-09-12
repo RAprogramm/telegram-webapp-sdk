@@ -42,10 +42,10 @@ pub fn render_index_page() {
 
 /// Clears the `#app-root` container before rendering a page.
 pub fn clear_app_root() {
-    if let Some(document) = web_sys::window().and_then(|w| w.document()) {
-        if let Some(root) = document.get_element_by_id("app-root") {
-            root.set_inner_html("");
-        }
+    if let Some(document) = web_sys::window().and_then(|w| w.document())
+        && let Some(root) = document.get_element_by_id("app-root")
+    {
+        root.set_inner_html("");
     }
 }
 
