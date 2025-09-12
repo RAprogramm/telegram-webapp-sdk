@@ -161,7 +161,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 
 The following features are not yet covered by the SDK:
 
-- [ ] Init data validation
+- [x] Init data validation (unreleased)
 - [x] Theme and safe area change events ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
 - [ ] Viewport management
 - [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))

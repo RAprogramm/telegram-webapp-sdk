@@ -340,14 +340,19 @@ Callbacks for sensor lifecycle events are available through `on_started`,
 gyroscope, and device orientation sensors.
 ## Init data validation
 
-Validate the integrity of the `Telegram.WebApp.initData` payload on the server:
+Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
+The `validate_init_data` module is re-exported at the crate root and can be
+used directly or through the `TelegramWebApp::validate_init_data` helper:
 
 ```rust
-use telegram_webapp_sdk::utils::validate_init_data::{verify_hmac_sha256, verify_ed25519};
+use telegram_webapp_sdk::{
+    validate_init_data::ValidationKey,
+    TelegramWebApp
+};
 
 let bot_token = "123456:ABC";
 let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
-verify_hmac_sha256(query, bot_token)?;
+TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token))?;
 
 // For Ed25519-signed data
 # use ed25519_dalek::{Signer, SigningKey};
@@ -355,7 +360,10 @@ verify_hmac_sha256(query, bot_token)?;
 # let pk = sk.verifying_key();
 # let sig = sk.sign(b"a=1\nb=2");
 # let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
-verify_ed25519(&init_data, pk.as_bytes())?;
+TelegramWebApp::validate_init_data(
+    &init_data,
+    ValidationKey::Ed25519PublicKey(pk.as_bytes())
+)?;
 
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```

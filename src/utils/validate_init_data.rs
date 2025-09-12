@@ -24,6 +24,15 @@ pub enum ValidationError {
     InvalidPublicKey
 }
 
+/// Key material used to validate Telegram init data.
+#[derive(Clone, Copy, Debug)]
+pub enum ValidationKey<'a> {
+    /// Validate using a bot token and HMAC-SHA256.
+    BotToken(&'a str),
+    /// Validate using an Ed25519 public key.
+    Ed25519PublicKey(&'a [u8; 32])
+}
+
 /// Validates the `hash` parameter of the init data using HMAC-SHA256.
 ///
 /// The `init_data` string must be the exact value of
@@ -37,7 +46,7 @@ pub enum ValidationError {
 /// # Examples
 /// ```
 /// use hmac_sha256::{HMAC, Hash};
-/// use telegram_webapp_sdk::utils::validate_init_data::verify_hmac_sha256;
+/// use telegram_webapp_sdk::validate_init_data::verify_hmac_sha256;
 /// let token = "123456:ABC";
 /// let check_string = "auth_date=1\nuser=alice";
 /// let secret = Hash::hash(format!("WebAppData{token}").as_bytes());
@@ -73,7 +82,7 @@ pub fn verify_hmac_sha256(init_data: &str, bot_token: &str) -> Result<(), Valida
 /// # Examples
 /// ```
 /// use ed25519_dalek::{Signer, SigningKey};
-/// use telegram_webapp_sdk::utils::validate_init_data::verify_ed25519;
+/// use telegram_webapp_sdk::validate_init_data::verify_ed25519;
 ///
 /// // generate test key
 /// let sk = SigningKey::from_bytes(&[1u8; 32]);
