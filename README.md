@@ -5,9 +5,12 @@
 
 # Telegram WebApp SDK
 
-[![crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk.svg)](https://crates.io/crates/telegram-webapp-sdk)
-[![docs.rs](https://docs.rs/telegram-webapp-sdk/badge.svg)](https://docs.rs/telegram-webapp-sdk)
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](#license)
+[![Crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
+[![docs.rs](https://img.shields.io/docsrs/telegram-webapp-sdk)](https://docs.rs/telegram-webapp-sdk)
+[![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
+![MSRV](https://img.shields.io/badge/MSRV-1.89-blue)
+![License](https://img.shields.io/badge/License-MIT%20or%20Apache--2.0-informational)
+[![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml?query=branch%3Amain)
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
