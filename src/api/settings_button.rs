@@ -1,5 +1,5 @@
 use js_sys::{Function, Reflect};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;
 
 /// Show the Telegram Settings Button.
@@ -125,10 +125,12 @@ mod tests {
         let func = Function::new_no_args("this.called = true;");
         let _ = Reflect::set(&button, &"show".into(), &func);
         assert!(show().is_ok());
-        assert!(Reflect::get(&button, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&button, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
     }
 
     #[wasm_bindgen_test]
@@ -138,10 +140,12 @@ mod tests {
         let func = Function::new_no_args("this.called = true;");
         let _ = Reflect::set(&button, &"hide".into(), &func);
         assert!(hide().is_ok());
-        assert!(Reflect::get(&button, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&button, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
     }
 
     #[wasm_bindgen_test]

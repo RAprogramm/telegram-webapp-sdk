@@ -1,5 +1,5 @@
 use js_sys::{Function, Reflect};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;
 
 /// Calls `Telegram.WebApp.BiometricManager.init()`.
@@ -291,10 +291,12 @@ mod tests {
         let func = Function::new_no_args("this.called = true;");
         let _ = Reflect::set(&biom, &"init".into(), &func);
         assert!(init().is_ok());
-        assert!(Reflect::get(&biom, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&biom, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
     }
 
     #[wasm_bindgen_test]
@@ -311,10 +313,12 @@ mod tests {
         let func = Function::new_with_args("key", "this.called = true; this.key = key;");
         let _ = Reflect::set(&biom, &"requestAccess".into(), &func);
         assert!(request_access("abc", None, None).is_ok());
-        assert!(Reflect::get(&biom, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&biom, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
         assert_eq!(
             Reflect::get(&biom, &"key".into())
                 .unwrap()
@@ -338,10 +342,12 @@ mod tests {
         let func = Function::new_with_args("key", "this.called = true; this.key = key;");
         let _ = Reflect::set(&biom, &"authenticate".into(), &func);
         assert!(authenticate("abc", None, None).is_ok());
-        assert!(Reflect::get(&biom, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&biom, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
         assert_eq!(
             Reflect::get(&biom, &"key".into())
                 .unwrap()
@@ -395,10 +401,12 @@ mod tests {
         let func = Function::new_no_args("this.called = true;");
         let _ = Reflect::set(&biom, &"openSettings".into(), &func);
         assert!(open_settings().is_ok());
-        assert!(Reflect::get(&biom, &"called".into())
-            .unwrap()
-            .as_bool()
-            .unwrap());
+        assert!(
+            Reflect::get(&biom, &"called".into())
+                .unwrap()
+                .as_bool()
+                .unwrap()
+        );
     }
 
     #[wasm_bindgen_test]

@@ -1,3 +1,5 @@
+#![cfg(target_arch = "wasm32")]
+
 use std::{cell::Cell, rc::Rc};
 
 use js_sys::{Object, Reflect};
@@ -56,5 +58,26 @@ fn disable_closing_confirmation_calls_js() -> Result<(), JsValue> {
     let app = TelegramWebApp::try_instance()?;
     app.disable_closing_confirmation()?;
     assert!(called.get());
+    Ok(())
+}
+
+#[wasm_bindgen_test]
+fn is_closing_confirmation_enabled_reflects_js() -> Result<(), JsValue> {
+    let webapp = setup_webapp()?;
+    Reflect::set(
+        &webapp,
+        &"isClosingConfirmationEnabled".into(),
+        &JsValue::TRUE
+    )?;
+
+    let app = TelegramWebApp::try_instance()?;
+    assert!(app.is_closing_confirmation_enabled());
+
+    Reflect::set(
+        &webapp,
+        &"isClosingConfirmationEnabled".into(),
+        &JsValue::FALSE
+    )?;
+    assert!(!app.is_closing_confirmation_enabled());
     Ok(())
 }

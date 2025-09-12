@@ -39,6 +39,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] checkHomeScreenStatus ([e709edb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/e709edb))
 - [x] enableClosingConfirmation ([8fe4dec](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8fe4dec))
 - [x] disableClosingConfirmation ([8fe4dec](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8fe4dec))
+- [x] isClosingConfirmationEnabled (unreleased)
 - [x] requestFullscreen ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
 - [x] exitFullscreen ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
 - [x] lockOrientation ([4364008](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4364008))
