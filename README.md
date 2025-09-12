@@ -202,13 +202,15 @@ off_click(&cb)?;
 Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::cloud_storage::{get_item, set_item};
+use js_sys::Reflect;
+use telegram_webapp_sdk::api::cloud_storage::{get_items, set_items};
 use wasm_bindgen_futures::JsFuture;
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-JsFuture::from(set_item("counter", "1")?).await?;
-let value = JsFuture::from(get_item("counter")?).await?;
-assert_eq!(value.as_string(), Some("1".into()));
+JsFuture::from(set_items(&[("counter", "1")])?).await?;
+let obj = JsFuture::from(get_items(&["counter"])?).await?;
+let value = Reflect::get(&obj, &"counter".into())?.as_string();
+assert_eq!(value, Some("1".into()));
 # Ok(())
 # }
 ```

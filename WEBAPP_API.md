@@ -124,7 +124,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] setItem ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 - [x] removeItem ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 - [x] getItems ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
-- [ ] setItems
+- [x] setItems
 - [x] removeItems ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 - [x] getKeys ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 - [x] clear ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))

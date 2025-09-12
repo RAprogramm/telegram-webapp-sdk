@@ -101,6 +101,31 @@ pub fn get_items(keys: &[&str]) -> Result<Promise, JsValue> {
     func.call1(&storage, &array.into())?.dyn_into::<Promise>()
 }
 
+/// Calls `Telegram.WebApp.CloudStorage.setItems()`.
+///
+/// # Errors
+/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// the call fails.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::api::cloud_storage::set_items;
+/// use wasm_bindgen_futures::JsFuture;
+/// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+/// JsFuture::from(set_items(&[("a", "1"), ("b", "2")])?).await?;
+/// # Ok(())
+/// # }
+/// ```
+pub fn set_items(items: &[(&str, &str)]) -> Result<Promise, JsValue> {
+    let storage = cloud_storage_object()?;
+    let func = Reflect::get(&storage, &JsValue::from_str("setItems"))?.dyn_into::<Function>()?;
+    let obj = js_sys::Object::new();
+    for (key, value) in items {
+        Reflect::set(&obj, &JsValue::from_str(key), &JsValue::from_str(value))?;
+    }
+    func.call1(&storage, &obj.into())?.dyn_into::<Promise>()
+}
+
 /// Calls `Telegram.WebApp.CloudStorage.removeItems()`.
 ///
 /// # Errors
@@ -287,6 +312,32 @@ mod tests {
     fn get_items_err() {
         let _ = setup_cloud_storage();
         assert!(get_items(&["a"]).is_err());
+    }
+
+    #[wasm_bindgen_test(async)]
+    async fn set_items_ok() {
+        let storage = setup_cloud_storage();
+        let func =
+            Function::new_with_args("items", "this.called = items; return Promise.resolve();");
+        let _ = Reflect::set(&storage, &"setItems".into(), &func);
+        JsFuture::from(set_items(&[("a", "1"), ("b", "2")]).unwrap())
+            .await
+            .unwrap();
+        let called = Reflect::get(&storage, &"called".into()).unwrap();
+        assert_eq!(
+            Reflect::get(&called, &"a".into()).unwrap().as_string(),
+            Some("1".into())
+        );
+        assert_eq!(
+            Reflect::get(&called, &"b".into()).unwrap().as_string(),
+            Some("2".into())
+        );
+    }
+
+    #[wasm_bindgen_test]
+    fn set_items_err() {
+        let _ = setup_cloud_storage();
+        assert!(set_items(&[("a", "1")]).is_err());
     }
 
     #[wasm_bindgen_test(async)]
