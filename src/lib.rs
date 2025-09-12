@@ -6,6 +6,7 @@ pub mod logger;
 pub mod mock;
 pub mod utils;
 pub mod webapp;
+pub use utils::validate_init_data;
 pub use webapp::TelegramWebApp;
 
 #[cfg(feature = "yew")]
