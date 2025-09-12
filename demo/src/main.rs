@@ -6,8 +6,9 @@ pub mod router;
 
 use components::dev_menu::setup_dev_menu;
 use pages::{
-    index::render_index_page, init_data::render_init_data_page,
-    launch_params::render_launch_params_page, theme_params::render_theme_params_page
+    burger_king::render_burger_king_page, index::render_index_page,
+    init_data::render_init_data_page, launch_params::render_launch_params_page,
+    theme_params::render_theme_params_page
 };
 use router::Router;
 use telegram_webapp_sdk::{
@@ -60,6 +61,7 @@ pub fn main() -> Result<(), JsValue> {
         .register("/init-data", render_init_data_page)
         .register("/launch-params", render_launch_params_page)
         .register("/theme-params", render_theme_params_page)
+        .register("/burger-king", render_burger_king_page)
         .start();
 
     Ok(())
