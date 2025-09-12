@@ -15,6 +15,11 @@ pub fn render_index_page() {
         Some("Connect your TON wallet"),
         "/ton-connect" // пока не реализовано, просто пример
     ));
+    page.append(&nav_link(
+        "Burger King Demo",
+        Some("Order burgers via Telegram"),
+        "/burger-king"
+    ));
 
     let app_data_header = section_header("Application Launch Data");
     page.append(&app_data_header);
