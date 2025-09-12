@@ -25,27 +25,23 @@
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.1", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.2", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
 
 ```rust,ignore
-use telegram_webapp_sdk::{telegram_app, telegram_page, telegram_router};
-
-#[telegram_page("/")]
-fn index() {
+telegram_page!("/", fn index() {
     // render page
-}
+});
 
-#[telegram_app]
-fn main() -> Result<(), wasm_bindgen::JsValue> {
+telegram_app!(fn main() -> Result<(), wasm_bindgen::JsValue> {
     telegram_router!();
     Ok(())
-}
+});
 ```
 
-When running outside Telegram in debug builds, `#[telegram_app]` loads mock
+When running outside Telegram in debug builds, `telegram_app!` loads mock
 settings from `telegram-webapp.toml`.
 - Configurable mock `Telegram.WebApp` for local development and testing.
 - API helpers for user interactions, storage, device sensors and more.
@@ -67,16 +63,16 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-telegram-webapp-sdk = "0.1"
+telegram-webapp-sdk = "0.2"
 ```
 
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.1", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.2", features = ["macros", "yew", "mock"] }
 ```
 
-- `macros` &mdash; enables `#[telegram_app]`, `#[telegram_page]`, and `telegram_router!`.
+- `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
 - `yew` &mdash; exposes a `use_telegram_context` hook.
 - `leptos` &mdash; integrates the context into the Leptos reactive system.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
