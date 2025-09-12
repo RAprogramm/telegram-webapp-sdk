@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  checks:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      all-features: true
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read MSRV from Cargo.toml
+        id: msrv
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+          RV=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].rust_version // empty')
+          if [ -z "$RV" ]; then
+            echo "rust-version is not set in Cargo.toml"
+            exit 1
+          fi
+          if [[ "$RV" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            RV="${RV}.0"
+          fi
+          echo "msrv=${RV}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag matches Cargo.toml version
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          FILE_VER=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')
+          if [ "v${FILE_VER}" != "${TAG}" ]; then
+            echo "Tag ${TAG} != Cargo.toml version v${FILE_VER}"
+            exit 1
+          fi
+
+      - name: Install Rust (${{ steps.msrv.outputs.msrv }})
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ steps.msrv.outputs.msrv }}
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo +${{ steps.msrv.outputs.msrv }} publish --locked --token "$CARGO_REGISTRY_TOKEN"

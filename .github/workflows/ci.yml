@@ -1,37 +1,12 @@
 name: CI
 
 on:
-  pull_request:
   push:
+    branches: [ "main" ]
+  pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          components: clippy
-          override: true
-      - name: Install nightly rustfmt
-        run: rustup toolchain install nightly -c rustfmt
-      - name: Install wasm target
-        run: rustup target add wasm32-unknown-unknown
-      - name: Install wasm-pack
-        run: |
-          curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.12.1/wasm-pack-v0.12.1-x86_64-unknown-linux-musl.tar.gz -o wasm-pack.tar.gz
-          tar -xzf wasm-pack.tar.gz
-          sudo mv wasm-pack-v0.12.1-x86_64-unknown-linux-musl/wasm-pack /usr/local/bin/
-      - name: Format
-        run: cargo +nightly fmt -- --check
-      - name: Clippy
-        run: cargo clippy -D warnings
-      - name: Build
-        run: cargo build --all-targets
-      - name: Test
-        run: cargo test --all
-      - name: Wasm tests
-        run: wasm-pack test --headless --chrome
+  ci:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      all-features: true

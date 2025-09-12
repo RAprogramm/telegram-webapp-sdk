@@ -1,0 +1,102 @@
+name: Reusable CI
+
+on:
+  workflow_call:
+    inputs:
+      all-features:
+        type: boolean
+        default: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_LOCKED: "true"   # don't mutate Cargo.lock during CI
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Read MSRV (rust-version) from Cargo.toml
+      - name: Read MSRV from Cargo.toml
+        id: msrv
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+          RV=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].rust_version // empty')
+          if [ -z "$RV" ]; then
+            echo "rust-version is not set in Cargo.toml"
+            exit 1
+          fi
+          [[ "$RV" =~ ^[0-9]+\.[0-9]+$ ]] && RV="${RV}.0"
+          echo "msrv=${RV}" >> "$GITHUB_OUTPUT"
+          echo "Using MSRV: $RV"
+
+      # Install MSRV for clippy/tests/package
+      - name: Install Rust (${{ steps.msrv.outputs.msrv }})
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ steps.msrv.outputs.msrv }}
+          components: clippy
+
+      # Pin nightly for rustfmt because unstable_features = true in .rustfmt.toml
+      - name: Install nightly rustfmt
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly-2025-08-01
+          components: rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      # Ensure Cargo.lock is present when CARGO_LOCKED=1
+      - name: Verify lockfile is committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f Cargo.lock ]; then
+            echo "CARGO_LOCKED=1 but Cargo.lock is missing. Commit it or drop CARGO_LOCKED."
+            exit 1
+          fi
+
+      - name: Check formatting (nightly rustfmt)
+        run: cargo +nightly-2025-08-01 fmt --all -- --check
+
+      - name: Clippy (MSRV)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.all-features }}" = "true" ]; then
+            cargo +${{ steps.msrv.outputs.msrv }} clippy --workspace --all-targets --all-features -- -D warnings
+          else
+            cargo +${{ steps.msrv.outputs.msrv }} clippy --workspace --all-targets -- -D warnings
+          fi
+
+      - name: Tests (MSRV)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.all-features }}" = "true" ]; then
+            cargo +${{ steps.msrv.outputs.msrv }} test --workspace --all-features --no-fail-fast
+          else
+            cargo +${{ steps.msrv.outputs.msrv }} test --workspace --no-fail-fast
+          fi
+
+      - name: Ensure tree is clean before package
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet; then
+            echo "Working tree is dirty:"
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Package (dry-run)
+        run: cargo +${{ steps.msrv.outputs.msrv }} package --locked
