@@ -6,7 +6,7 @@ use crate::components::rgb::RGB; // ← your swatch component
 /// A single row in a key/value display list.
 pub struct DisplayDataRow {
     pub title: String,
-    pub value: String,
+    pub value: String
 }
 
 /// Renders a `<section>` with a header and rows of title + value.

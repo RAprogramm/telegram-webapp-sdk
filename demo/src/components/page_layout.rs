@@ -2,7 +2,7 @@ use web_sys::{Document, Element, window};
 
 /// Struct representing a basic page layout
 pub struct PageLayout {
-    pub root: Element,
+    pub root: Element
 }
 
 impl PageLayout {
@@ -19,7 +19,9 @@ impl PageLayout {
 
         root.set_inner_html("");
 
-        Self { root }
+        Self {
+            root
+        }
     }
 
     pub fn with_header(title: &str, header: &str) -> Self {

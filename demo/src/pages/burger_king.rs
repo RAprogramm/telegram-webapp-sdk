@@ -7,9 +7,9 @@ use crate::components::page_layout::PageLayout;
 /// Represents a single menu item in the Burger King demo.
 #[derive(Clone, Debug, PartialEq)]
 struct MenuItem {
-    id: u32,
-    name: &'static str,
-    price_cents: u32,
+    id:          u32,
+    name:        &'static str,
+    price_cents: u32
 }
 
 impl MenuItem {
@@ -28,26 +28,26 @@ pub fn render_burger_king_page() {
 
     let items = [
         MenuItem {
-            id: 1,
-            name: "Whopper",
-            price_cents: 599,
+            id:          1,
+            name:        "Whopper",
+            price_cents: 599
         },
         MenuItem {
-            id: 2,
-            name: "Cheeseburger",
-            price_cents: 299,
+            id:          2,
+            name:        "Cheeseburger",
+            price_cents: 299
         },
         MenuItem {
-            id: 3,
-            name: "Chicken Nuggets",
-            price_cents: 399,
-        },
+            id:          3,
+            name:        "Chicken Nuggets",
+            price_cents: 399
+        }
     ];
 
     for item in &items {
         match render_item(item) {
             Ok(el) => page.append(&el),
-            Err(err) => logger::error(&format!("render_item failed: {:?}", err)),
+            Err(err) => logger::error(&format!("render_item failed: {:?}", err))
         }
     }
 }
@@ -100,9 +100,9 @@ mod tests {
     #[test]
     fn payload_is_valid() {
         let item = MenuItem {
-            id: 7,
-            name: "Test",
-            price_cents: 1234,
+            id:          7,
+            name:        "Test",
+            price_cents: 1234
         };
         assert_eq!(
             item.payload(),

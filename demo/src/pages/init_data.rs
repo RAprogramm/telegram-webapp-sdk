@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 
 use crate::components::{
     display_data::{DisplayDataRow, render_display_data},
-    page_layout::PageLayout,
+    page_layout::PageLayout
 };
 
 /// Renders the Init Data page
@@ -16,15 +16,15 @@ pub fn render_init_data_page() {
         if let Some(user) = &ctx.init_data.user {
             rows.push(DisplayDataRow {
                 title: "id".into(),
-                value: user.id.to_string(),
+                value: user.id.to_string()
             });
             rows.push(DisplayDataRow {
                 title: "username".into(),
-                value: user.username.clone().unwrap_or_default(),
+                value: user.username.clone().unwrap_or_default()
             });
             rows.push(DisplayDataRow {
                 title: "language".into(),
-                value: user.language_code.clone().unwrap_or_default(),
+                value: user.language_code.clone().unwrap_or_default()
             });
         }
 
@@ -43,8 +43,8 @@ pub fn render_init_data_page() {
                 "User",
                 &[DisplayDataRow {
                     title: "error".into(),
-                    value: "init_data not available".into(),
-                }],
+                    value: "init_data not available".into()
+                }]
             ) {
                 Ok(fallback) => layout.append(&fallback),
                 Err(err) => {
