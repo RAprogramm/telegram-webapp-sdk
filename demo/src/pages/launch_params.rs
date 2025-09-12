@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::core::context::get_launch_params;
+use telegram_webapp_sdk::{core::context::get_launch_params, telegram_page};
 use wasm_bindgen::JsValue;
 
 use crate::components::{

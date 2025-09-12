@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::core::safe_context::get_context;
+use telegram_webapp_sdk::{core::safe_context::get_context, telegram_page};
 use wasm_bindgen::JsValue;
 
 use crate::components::{

@@ -9,6 +9,8 @@ pub mod logger;
 pub mod mock;
 pub mod utils;
 pub mod webapp;
+#[cfg(feature = "macros")]
+pub use inventory;
 pub use utils::validate_init_data;
 pub use webapp::TelegramWebApp;
 #[cfg(feature = "macros")]
