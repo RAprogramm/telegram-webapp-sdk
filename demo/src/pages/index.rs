@@ -1,8 +1,10 @@
+use telegram_webapp_sdk::telegram_page;
 use web_sys::Element;
 
 use crate::components::{nav_link::nav_link, page_layout::PageLayout};
 
 /// Renders the index (home) page with navigation links.
+#[telegram_page("/")]
 pub fn render_index_page() {
     clear_app_root();
 

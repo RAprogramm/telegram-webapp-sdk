@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::core::safe_context::get_context;
+use telegram_webapp_sdk::{core::safe_context::get_context, telegram_page};
 use wasm_bindgen::JsValue;
 
 use crate::components::{
@@ -7,6 +7,7 @@ use crate::components::{
 };
 
 /// Renders the Init Data page
+#[telegram_page("/init-data")]
 pub fn render_init_data_page() {
     let layout = PageLayout::new("Init Data");
 

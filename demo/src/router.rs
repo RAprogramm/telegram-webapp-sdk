@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use telegram_webapp_sdk::pages::Page;
 use wasm_bindgen::prelude::*;
 use web_sys::{Event, EventTarget, window};
 
@@ -23,6 +24,15 @@ impl Router {
         self
     }
 
+    /// Builds router from registered pages
+    pub fn from_pages(pages: impl Iterator<Item = &'static Page>) -> Self {
+        let mut router = Self::new();
+        for page in pages {
+            router = router.register(page.path, page.handler);
+        }
+        router
+    }
+
     /// Starts the router: renders initial route and listens to popstate
     pub fn start(&self) {
         self.render_current();
@@ -40,9 +50,11 @@ impl Router {
             });
 
             let target: EventTarget = w.into();
-            target
+            if let Err(err) = target
                 .add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref())
-                .unwrap();
+            {
+                log(&format!("failed to add event listener: {err:?}"));
+            }
             closure.forget(); // Safe leak
         }
     }

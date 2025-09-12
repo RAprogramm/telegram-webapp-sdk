@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct MockTelegramUser {
     pub id:                 u64,
     pub first_name:         String,

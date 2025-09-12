@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::core::context::get_launch_params;
+use telegram_webapp_sdk::{core::context::get_launch_params, telegram_page};
 use wasm_bindgen::JsValue;
 
 use crate::components::{
@@ -7,6 +7,7 @@ use crate::components::{
 };
 
 /// Renders the Launch Parameters page.
+#[telegram_page("/launch-params")]
 pub fn render_launch_params_page() {
     super::index::clear_app_root();
 

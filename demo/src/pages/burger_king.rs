@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::{logger, webapp::TelegramWebApp};
+use telegram_webapp_sdk::{logger, telegram_page, webapp::TelegramWebApp};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::{Document, Element, HtmlElement, window};
 
@@ -23,6 +23,7 @@ impl MenuItem {
 }
 
 /// Render Burger King menu page with order buttons.
+#[telegram_page("/burger-king")]
 pub fn render_burger_king_page() {
     let page = PageLayout::with_header("Burger King Demo", "Burger King Menu");
 

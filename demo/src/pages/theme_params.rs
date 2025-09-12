@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::core::safe_context::get_context;
+use telegram_webapp_sdk::{core::safe_context::get_context, telegram_page};
 use wasm_bindgen::JsValue;
 
 use crate::components::{
@@ -7,6 +7,7 @@ use crate::components::{
 };
 
 /// Renders the Theme Parameters page.
+#[telegram_page("/theme-params")]
 pub fn render_theme_params_page() {
     super::index::clear_app_root();
 
