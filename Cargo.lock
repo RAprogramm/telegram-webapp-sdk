@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "demo"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "masterror",
  "telegram-webapp-sdk",
@@ -2332,7 +2332,7 @@ dependencies = [
 
 [[package]]
 name = "telegram-webapp-sdk"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "base64",
  "ed25519-dalek",
@@ -2348,7 +2348,6 @@ dependencies = [
  "serde-wasm-bindgen 0.6.5",
  "serde_json",
  "serde_urlencoded",
- "telegram-webapp-sdk-macros",
  "thiserror 2.0.16",
  "toml 0.8.23",
  "urlencoding",
@@ -2357,15 +2356,6 @@ dependencies = [
  "wasm-bindgen-test",
  "web-sys",
  "yew",
-]
-
-[[package]]
-name = "telegram-webapp-sdk-macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.106",
 ]
 
 [[package]]

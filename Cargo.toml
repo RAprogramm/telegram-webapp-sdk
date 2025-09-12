@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.1.1"
+version = "0.2.0"
 rust-version = "1.89"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
@@ -46,7 +46,6 @@ thiserror = "2"
 masterror = "0.3"
 urlencoding = { version = "2", optional = true }
 inventory = { version = "0.3", optional = true }
-telegram-webapp-sdk-macros = { path = "telegram-webapp-sdk-macros", optional = true }
 toml = "0.8"
 
 [dependencies.yew]
@@ -63,13 +62,13 @@ features = ["csr"]
 
 [features]
 default = []
-macros = ["dep:telegram-webapp-sdk-macros", "dep:inventory"]
+macros = ["dep:inventory"]
 yew = ["dep:yew"]
 leptos = ["dep:leptos"]
 mock = ["dep:urlencoding"]
 
 [workspace]
-members = ["demo", "telegram-webapp-sdk-macros"]
+members = ["demo"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

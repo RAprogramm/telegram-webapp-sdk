@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-09-12
+### Changed
+- Integrated macros into the main crate; `telegram-webapp-sdk-macros` crate removed.
+- Replaced attribute macros with declarative macros `telegram_app!`, `telegram_page!`, and `telegram_router!`.
+
 ## [0.1.1] - 2025-09-12
 ### Added
 - Implemented `CloudStorage.setItems`.

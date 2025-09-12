@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::{logger, telegram_page, webapp::TelegramWebApp};
+use telegram_webapp_sdk::{logger, webapp::TelegramWebApp};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::{Document, Element, HtmlElement, window};
 
@@ -22,36 +22,38 @@ impl MenuItem {
     }
 }
 
-/// Render Burger King menu page with order buttons.
-#[telegram_page("/burger-king")]
-pub fn render_burger_king_page() {
-    let page = PageLayout::with_header("Burger King Demo", "Burger King Menu");
+telegram_page!(
+    "/burger-king",
+    /// Render Burger King menu page with order buttons.
+    pub fn render_burger_king_page() {
+        let page = PageLayout::with_header("Burger King Demo", "Burger King Menu");
 
-    let items = [
-        MenuItem {
-            id:          1,
-            name:        "Whopper",
-            price_cents: 599
-        },
-        MenuItem {
-            id:          2,
-            name:        "Cheeseburger",
-            price_cents: 299
-        },
-        MenuItem {
-            id:          3,
-            name:        "Chicken Nuggets",
-            price_cents: 399
-        }
-    ];
+        let items = [
+            MenuItem {
+                id:          1,
+                name:        "Whopper",
+                price_cents: 599
+            },
+            MenuItem {
+                id:          2,
+                name:        "Cheeseburger",
+                price_cents: 299
+            },
+            MenuItem {
+                id:          3,
+                name:        "Chicken Nuggets",
+                price_cents: 399
+            }
+        ];
 
-    for item in &items {
-        match render_item(item) {
-            Ok(el) => page.append(&el),
-            Err(err) => logger::error(&format!("render_item failed: {:?}", err))
+        for item in &items {
+            match render_item(item) {
+                Ok(el) => page.append(&el),
+                Err(err) => logger::error(&format!("render_item failed: {:?}", err))
+            }
         }
     }
-}
+);
 
 fn render_item(item: &MenuItem) -> Result<Element, JsValue> {
     let document = document()?;
