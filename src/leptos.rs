@@ -14,7 +14,7 @@ use crate::core::{context::TelegramContext, safe_context::get_context};
 ///
 /// ```no_run
 /// use leptos::prelude::*;
-/// use telegram_webapp_sdk::leptos::provide_telegram_context;
+/// use telegram_webapp_sdk::{core::context::TelegramContext, leptos::provide_telegram_context};
 ///
 /// #[component]
 /// fn App() -> impl IntoView {

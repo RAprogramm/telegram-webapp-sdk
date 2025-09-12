@@ -184,7 +184,7 @@ mod tests {
     async fn clear_calls_js() {
         let storage = setup_device_storage();
         let func = Function::new_no_args(
-            "Object.keys(this).forEach(k => delete this[k]); return Promise.resolve();",
+            "Object.keys(this).forEach(k => delete this[k]); return Promise.resolve();"
         );
         let _ = Reflect::set(&storage, &"clear".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));

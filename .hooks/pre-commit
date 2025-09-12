@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "🔧 Ensuring nightly rustfmt is available..."
+if ! rustup toolchain list | grep -q "^nightly"; then
+  rustup toolchain install nightly >/dev/null
+fi
+rustup component add rustfmt --toolchain nightly >/dev/null
+
+echo "🧹 Checking formatting with rustfmt..."
+cargo +nightly fmt --all -- --check
+
+echo "🔍 Running clippy (all features, all targets)..."
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+echo "🧪 Running tests (all features)..."
+cargo test --workspace --all-features
+
+# Uncomment if you want to validate SQLx offline data
+# echo "📦 Validating SQLx prepare..."
+# cargo sqlx prepare --check --workspace
+
+echo "✅ All checks passed!"
+

@@ -11,6 +11,10 @@ documentation = "https://docs.rs/telegram-webapp-sdk"
 keywords = ["telegram", "webapp", "wasm"]
 categories = ["web-programming", "wasm"]
 
+[workspace.package]
+rust-version = "1.89"
+
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
