@@ -102,28 +102,47 @@ impl TelegramThemeParams {
     /// );
     /// ```
     pub fn into_css_vars(self) -> HashMap<String, String> {
+        self.css_vars_impl()
+    }
+
+    /// Returns all theme parameters as CSS custom properties without
+    /// consuming `self`.
+    pub fn css_vars(&self) -> HashMap<String, String> {
+        self.css_vars_impl()
+    }
+
+    fn css_vars_impl(&self) -> HashMap<String, String> {
         let mut vars: HashMap<String, String> = HashMap::with_capacity(16);
-        let mut push = |key: &str, value: Option<String>| {
+        let mut push = |key: &str, value: Option<&String>| {
             if let Some(v) = value {
-                vars.insert(format!("--tg-theme-{}", key), v);
+                vars.insert(format!("--tg-theme-{key}"), v.clone());
             }
         };
 
-        push("bg-color", self.bg_color);
-        push("text-color", self.text_color);
-        push("hint-color", self.hint_color);
-        push("link-color", self.link_color);
-        push("button-color", self.button_color);
-        push("button-text-color", self.button_text_color);
-        push("secondary-bg-color", self.secondary_bg_color);
-        push("header-bg-color", self.header_bg_color);
-        push("bottom-bar-bg-color", self.bottom_bar_bg_color);
-        push("accent-text-color", self.accent_text_color);
-        push("section-bg-color", self.section_bg_color);
-        push("section-header-text-color", self.section_header_text_color);
-        push("section-separator-color", self.section_separator_color);
-        push("subtitle-text-color", self.subtitle_text_color);
-        push("destructive-text-color", self.destructive_text_color);
+        push("bg-color", self.bg_color.as_ref());
+        push("text-color", self.text_color.as_ref());
+        push("hint-color", self.hint_color.as_ref());
+        push("link-color", self.link_color.as_ref());
+        push("button-color", self.button_color.as_ref());
+        push("button-text-color", self.button_text_color.as_ref());
+        push("secondary-bg-color", self.secondary_bg_color.as_ref());
+        push("header-bg-color", self.header_bg_color.as_ref());
+        push("bottom-bar-bg-color", self.bottom_bar_bg_color.as_ref());
+        push("accent-text-color", self.accent_text_color.as_ref());
+        push("section-bg-color", self.section_bg_color.as_ref());
+        push(
+            "section-header-text-color",
+            self.section_header_text_color.as_ref()
+        );
+        push(
+            "section-separator-color",
+            self.section_separator_color.as_ref()
+        );
+        push("subtitle-text-color", self.subtitle_text_color.as_ref());
+        push(
+            "destructive-text-color",
+            self.destructive_text_color.as_ref()
+        );
 
         vars
     }
@@ -171,10 +190,7 @@ impl TelegramThemeParams {
     /// Returns all non‐empty theme parameters as a vector of
     /// `(css_variable_name, color_value)` pairs.
     pub fn to_map(&self) -> Vec<(String, String)> {
-        self.clone() // clone our struct
-            .into_css_vars() // move into a HashMap<String,String>
-            .into_iter() // turn that into an iterator of (String,String)
-            .collect() // collect into a Vec
+        self.css_vars_impl().into_iter().collect()
     }
 }
 
