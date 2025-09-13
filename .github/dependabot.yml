@@ -4,28 +4,27 @@ version: 2
 updates:
   # 1) Rust / Cargo (workspace)
   - package-ecosystem: "cargo"
-    # Укажи каталоги, где лежат Cargo.toml. Глоб в directories поддерживается.
     directories:
-      - "/"            # корень с workspace Cargo.toml
-      - "/api-server"  # если здесь есть Cargo.toml
-      - "/client"      # если фронт — Rust/WASM crate
-      - "/crates/*"    # все под-крейты
+      - "/"            # корень с workspace Cargo.toml (оставь только реально существующие)
+      - "/api-server"
+      - "/client"
+      - "/crates/*"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
       timezone: "Asia/Ho_Chi_Minh"
     open-pull-requests-limit: 10
-    versioning-strategy: "increase-if-necessary"
+    versioning-strategy: "auto"      # для Cargo допустимо только: auto | lockfile-only
     cooldown:
-      default-days: 1           # минимум 1
+      default-days: 1
       semver-minor-days: 2
       semver-patch-days: 2
     commit-message:
       prefix: "deps(cargo)"
       include: "scope"
     pull-request-branch-name:
-      separator: "-"            # допустимые: "-", "_", "/"
+      separator: "-"
     groups:
       cargo-minor-patch:
         applies-to: "version-updates"
