@@ -50,7 +50,7 @@ impl<T: ?Sized> EventHandle<T> {
 }
 
 /// Identifies which bottom button to operate on.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum BottomButton {
     /// Primary bottom button.
     Main,
