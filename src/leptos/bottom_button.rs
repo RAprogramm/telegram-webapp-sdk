@@ -1,9 +1,16 @@
+use std::{cell::RefCell, collections::HashMap};
+
 use leptos::prelude::*;
 
 use crate::{
     logger,
-    webapp::{BottomButton as WebBottomButton, TelegramWebApp}
+    webapp::{BottomButton as WebBottomButton, EventHandle, TelegramWebApp}
 };
+
+thread_local! {
+    static BUTTON_HANDLES: RefCell<HashMap<WebBottomButton, EventHandle<dyn FnMut()>>> =
+        RefCell::new(HashMap::new());
+}
 
 /// Leptos component that controls a Telegram bottom button.
 ///
@@ -92,26 +99,29 @@ where
     }
 
     // Register click callback if provided and keep handle for cleanup.
-    let cb_handle = on_click.and_then(|cb| {
-        TelegramWebApp::instance().and_then(|app| {
+    if let Some(cb) = on_click {
+        if let Some(app) = TelegramWebApp::instance() {
             match app.set_bottom_button_callback(button, cb) {
-                Ok(handle) => Some(handle),
-                Err(err) => {
-                    logger::error(&format!("set_bottom_button_callback failed: {err:?}"));
-                    None
-                }
+                Ok(handle) => BUTTON_HANDLES.with(|handles| {
+                    handles.borrow_mut().insert(button, handle);
+                }),
+                Err(err) => logger::error(&format!("set_bottom_button_callback failed: {err:?}"))
             }
-        })
-    });
+        } else {
+            logger::error("TelegramWebApp instance not available");
+        }
+    }
 
     // Cleanup: remove callback and hide button when component unmounts.
     on_cleanup(move || {
         if let Some(app) = TelegramWebApp::instance() {
-            if let Some(handle) = cb_handle {
-                if let Err(err) = app.remove_bottom_button_callback(handle) {
-                    logger::error(&format!("remove_bottom_button_callback failed: {err:?}"));
+            BUTTON_HANDLES.with(|handles| {
+                if let Some(handle) = handles.borrow_mut().remove(&button) {
+                    if let Err(err) = app.remove_bottom_button_callback(handle) {
+                        logger::error(&format!("remove_bottom_button_callback failed: {err:?}"));
+                    }
                 }
-            }
+            });
             if let Err(err) = app.hide_bottom_button(button) {
                 logger::error(&format!("hide_bottom_button failed: {err:?}"));
             }
