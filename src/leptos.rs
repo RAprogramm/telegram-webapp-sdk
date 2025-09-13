@@ -1,3 +1,5 @@
+pub mod bottom_button;
+pub use bottom_button::BottomButton;
 use leptos::prelude::provide_context;
 use wasm_bindgen::JsValue;
 
