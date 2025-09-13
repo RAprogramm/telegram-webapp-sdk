@@ -107,6 +107,21 @@ fn App() -> impl IntoView {
 }
 ```
 
+The SDK also provides a `BottomButton` component for Leptos to control Telegram bottom buttons:
+
+```rust,ignore
+use leptos::prelude::*;
+use telegram_webapp_sdk::leptos::{provide_telegram_context, BottomButton};
+use telegram_webapp_sdk::webapp::BottomButton as Btn;
+
+#[component]
+fn App() -> impl IntoView {
+    provide_telegram_context().expect("context");
+    let (text, _set_text) = signal("Send".to_owned());
+    view! { <BottomButton button=Btn::Main text /> }
+}
+```
+
 ## Mock environment
 
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
