@@ -116,10 +116,10 @@ where
     on_cleanup(move || {
         if let Some(app) = TelegramWebApp::instance() {
             BUTTON_HANDLES.with(|handles| {
-                if let Some(handle) = handles.borrow_mut().remove(&button) {
-                    if let Err(err) = app.remove_bottom_button_callback(handle) {
-                        logger::error(&format!("remove_bottom_button_callback failed: {err:?}"));
-                    }
+                if let Some(handle) = handles.borrow_mut().remove(&button)
+                    && let Err(err) = app.remove_bottom_button_callback(handle)
+                {
+                    logger::error(&format!("remove_bottom_button_callback failed: {err:?}"));
                 }
             });
             if let Err(err) = app.hide_bottom_button(button) {
