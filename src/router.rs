@@ -1,8 +1,7 @@
 //! Simple in-memory page router.
 //!
-//! Collects [`crate::pages::Page`] items and executes their handlers in
-//! registration order. Used by [`telegram_router!`](crate::telegram_router)
-//! macro by default.
+//! Collects page definitions and executes their handlers in registration
+//! order. Used by the `telegram_router!` macro by default.
 //!
 //! # Examples
 //!
@@ -14,7 +13,15 @@
 //! Router::new().register("/", index).start();
 //! ```
 
+#[cfg(feature = "macros")]
 use crate::pages::Page;
+#[cfg(not(feature = "macros"))]
+#[derive(Copy, Clone)]
+struct Page {
+    #[allow(dead_code)]
+    path:    &'static str,
+    handler: fn()
+}
 
 /// Sequential router executing registered page handlers.
 #[derive(Default)]

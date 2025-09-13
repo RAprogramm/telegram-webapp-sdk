@@ -1,5 +1,5 @@
 use telegram_webapp_sdk::{logger, telegram_button, telegram_page, webapp::TelegramWebApp};
-use wasm_bindgen::{JsValue, prelude::Closure};
+use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::{Document, Element, window};
 
 use crate::components::page_layout::PageLayout;
