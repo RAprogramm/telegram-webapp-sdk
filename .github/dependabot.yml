@@ -1,48 +1,36 @@
 # .github/dependabot.yml
 version: 2
 
-# Общее ограничение на шум
-open-pull-requests-limit: 10
-
-# Группы для нескольких экосистем (опционально, но удобно для Docker+Terraform и пр.)
-# Оставлено пустым. Добавишь — если понадобится.
-# multi-ecosystem-groups: {}
-
 updates:
   # 1) Rust / Cargo (workspace)
   - package-ecosystem: "cargo"
-    # Укажи все места с Cargo.toml. Глоб поддерживается.
+    # Укажи каталоги, где лежат Cargo.toml. Глоб в directories поддерживается.
     directories:
       - "/"            # корень с workspace Cargo.toml
-      - "/api-server"  # если тут есть Cargo.toml
-      - "/client"      # твой Yew/WASM-артефакт (если это Rust crate)
+      - "/api-server"  # если здесь есть Cargo.toml
+      - "/client"      # если фронт — Rust/WASM crate
       - "/crates/*"    # все под-крейты
     schedule:
       interval: "weekly"
       day: "monday"
       time: "09:00"
       timezone: "Asia/Ho_Chi_Minh"
-    # Немного рациональности — не спамим мажорами сразу
+    open-pull-requests-limit: 10
     versioning-strategy: "increase-if-necessary"
-    # Слегка притормаживаем волну мелких релизов
     cooldown:
-      default-days: 0
+      default-days: 1           # минимум 1
       semver-minor-days: 2
       semver-patch-days: 2
     commit-message:
       prefix: "deps(cargo)"
-      include: "scope"    # добавит deps / deps-dev в заголовке
+      include: "scope"
     pull-request-branch-name:
-      separator: "-"      # dependabot/cargo/serde → dependabot-cargo-serde
+      separator: "-"            # допустимые: "-", "_", "/"
     groups:
       cargo-minor-patch:
         applies-to: "version-updates"
         update-types: ["minor", "patch"]
-        patterns: ["*"]   # группируем всё минор/патч в один PR
-    # Пример точечного игнора (раскомментируй при надобности)
-    # ignore:
-    #   - dependency-name: "sqlx"
-    #     update-types: ["version-update:semver-major"]
+        patterns: ["*"]
 
   # 2) GitHub Actions
   - package-ecosystem: "github-actions"
@@ -52,10 +40,11 @@ updates:
       day: "monday"
       time: "09:10"
       timezone: "Asia/Ho_Chi_Minh"
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "deps(ci)"
 
-  # 3) Docker (если есть Dockerfile в корне)
+  # 3) Docker
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -63,9 +52,6 @@ updates:
       day: "monday"
       time: "09:20"
       timezone: "Asia/Ho_Chi_Minh"
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "deps(docker)"
-    # Пример группировки по образам (включишь при нужде)
-    # groups:
-    #   base-images:
-    #     patterns: ["debian*", "ubuntu*", "alpine*"]
