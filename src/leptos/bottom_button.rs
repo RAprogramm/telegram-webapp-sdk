@@ -8,8 +8,9 @@ use crate::{
 /// Leptos component that controls a Telegram bottom button.
 ///
 /// The component shows the selected bottom button and keeps its text and
-/// colors in sync with the provided reactive signals. An optional callback can
-/// be registered for click events.
+/// colors in sync with the provided reactive signals. An optional click
+/// callback can be registered and is automatically removed when the component
+/// unmounts.
 ///
 /// # Examples
 ///
@@ -90,23 +91,32 @@ where
         });
     }
 
-    // Register click callback if provided.
-    if let Some(cb) = on_click {
-        Effect::new(move |_| {
-            if let Some(app) = TelegramWebApp::instance()
-                && let Err(err) = app.set_bottom_button_callback(button, cb.clone())
-            {
-                logger::error(&format!("set_bottom_button_callback failed: {err:?}"));
+    // Register click callback if provided and keep handle for cleanup.
+    let cb_handle = on_click.and_then(|cb| {
+        TelegramWebApp::instance().and_then(|app| {
+            match app.set_bottom_button_callback(button, cb) {
+                Ok(handle) => Some(handle),
+                Err(err) => {
+                    logger::error(&format!("set_bottom_button_callback failed: {err:?}"));
+                    None
+                }
             }
-        });
-    }
+        })
+    });
 
-    // Cleanup: hide button when component unmounts.
+    // Cleanup: remove callback and hide button when component unmounts.
     on_cleanup(move || {
-        if let Some(app) = TelegramWebApp::instance()
-            && let Err(err) = app.hide_bottom_button(button)
-        {
-            logger::error(&format!("hide_bottom_button failed: {err:?}"));
+        if let Some(app) = TelegramWebApp::instance() {
+            if let Some(handle) = cb_handle {
+                if let Err(err) = app.remove_bottom_button_callback(handle) {
+                    logger::error(&format!("remove_bottom_button_callback failed: {err:?}"));
+                }
+            }
+            if let Err(err) = app.hide_bottom_button(button) {
+                logger::error(&format!("hide_bottom_button failed: {err:?}"));
+            }
+        } else {
+            logger::error("TelegramWebApp instance not available");
         }
     });
 
@@ -194,6 +204,20 @@ mod tests {
         .unwrap();
         on_click_cb.forget();
 
+        let off_click_cb = {
+            let click_fn = Rc::clone(&click_fn);
+            Closure::<dyn FnMut(JsValue)>::new(move |_f: JsValue| {
+                *click_fn.borrow_mut() = None;
+            })
+        };
+        Reflect::set(
+            &button,
+            &"offClick".into(),
+            off_click_cb.as_ref().unchecked_ref()
+        )
+        .unwrap();
+        off_click_cb.forget();
+
         Reflect::set(&webapp, &"MainButton".into(), &button).unwrap();
         Reflect::set(&tg, &"WebApp".into(), &webapp).unwrap();
         Reflect::set(&win, &"Telegram".into(), &tg).unwrap();
@@ -227,6 +251,7 @@ mod tests {
 
         assert!(show_called.get());
         assert!(hide_called.get());
+        assert!(click_fn.borrow().is_none());
         let stored = texts.borrow();
         assert_eq!(stored.as_slice(), ["Start", "Next"]);
     }

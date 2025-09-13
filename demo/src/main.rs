@@ -5,7 +5,6 @@ pub mod pages;
 pub mod router;
 
 use components::dev_menu::setup_dev_menu;
-use router::Router;
 use telegram_webapp_sdk::{telegram_app, telegram_router};
 use wasm_bindgen::prelude::*;
 
