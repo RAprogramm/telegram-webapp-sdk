@@ -46,6 +46,33 @@ settings from `telegram-webapp.toml`.
 - Configurable mock `Telegram.WebApp` for local development and testing.
 - API helpers for user interactions, storage, device sensors and more.
 
+## Router
+
+The `macros` feature ships with a minimal in-memory [`Router`](src/router.rs)
+that collects pages registered via `telegram_page!`. The
+[`telegram_router!`](src/macros.rs) macro builds this router and runs all page
+handlers:
+
+```rust,ignore
+telegram_page!("/", pub fn index() {});
+
+// Uses the default Router
+telegram_router!();
+```
+
+Provide a custom router type to the macro if additional behavior is required:
+
+```rust,ignore
+struct CustomRouter;
+impl CustomRouter {
+    fn new() -> Self { CustomRouter }
+    fn register(self, _path: &str, _handler: fn()) -> Self { self }
+    fn start(self) {}
+}
+
+telegram_router!(CustomRouter);
+```
+
 ## Table of contents
 
 - [Installation](#installation)

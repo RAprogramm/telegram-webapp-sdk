@@ -36,8 +36,8 @@
 //! }
 //! ```
 //!
-//! 2. A `Router` type must be available in scope when using
-//!    [`telegram_router!`] with API:
+//! 2. [`telegram_router!`] uses [`crate::router::Router`] by default. To supply
+//!    a custom router type, ensure it exposes:
 //!
 //! ```ignore
 //! impl Router {
@@ -92,8 +92,9 @@
 ///
 /// Expands into:
 /// * A function definition with the provided visibility, name, and body
-/// * A single registration item that submits a [`pages::Page`] to `inventory`,
-///   wrapped in a hidden module to remain a valid item in any context
+/// * A single registration item that submits a [`crate::pages::Page`] to
+///   `inventory`, wrapped in a hidden module to remain a valid item in any
+///   context
 ///
 /// ### Handler signature
 ///
@@ -183,32 +184,45 @@ macro_rules! telegram_app {
 
 /// Build and start a router from all registered pages.
 ///
-/// This macro expects a `Router` type in scope with methods:
+/// By default it uses [`crate::router::Router`]. A custom router type can be
+/// supplied as the first argument. The router type must expose:
 ///
 /// * `fn new() -> Self`
 /// * `fn register(self, path: &str, handler: fn()) -> Self`
 /// * `fn start(self)`
 ///
-/// ### Example
+/// ### Examples
+///
+/// Using the default router:
 ///
 /// ```ignore
 /// use telegram_webapp_sdk::{telegram_page, telegram_router};
 ///
-/// struct Router;
-/// impl Router {
-///     fn new() -> Self { Router }
+/// telegram_page!("/", pub fn index() {});
+/// telegram_router!();
+/// ```
+///
+/// Providing a custom router type:
+///
+/// ```ignore
+/// use telegram_webapp_sdk::telegram_router;
+///
+/// struct CustomRouter;
+/// impl CustomRouter {
+///     fn new() -> Self { CustomRouter }
 ///     fn register(self, _path: &str, _handler: fn()) -> Self { self }
 ///     fn start(self) {}
 /// }
 ///
-/// telegram_page!("/", pub fn index() {});
-///
-/// telegram_router!();
+/// telegram_router!(CustomRouter);
 /// ```
 #[macro_export]
 macro_rules! telegram_router {
-    () => {{
-        let mut router = Router::new();
+    () => {
+        $crate::telegram_router!($crate::router::Router);
+    };
+    ($router:ty) => {{
+        let mut router = <$router>::new();
         for page in $crate::pages::iter() {
             router = router.register(page.path, page.handler);
         }
