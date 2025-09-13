@@ -3,6 +3,9 @@ use yew::prelude::{hook, use_memo};
 
 use crate::core::{context::TelegramContext, safe_context::get_context};
 
+pub mod bottom_button;
+pub use bottom_button::BottomButton;
+
 /// Yew hook that exposes the global [`TelegramContext`].
 ///
 /// # Errors
