@@ -1,10 +1,71 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# .github/dependabot.yml
 version: 2
+
+# Общее ограничение на шум
+open-pull-requests-limit: 10
+
+# Группы для нескольких экосистем (опционально, но удобно для Docker+Terraform и пр.)
+# Оставлено пустым. Добавишь — если понадобится.
+# multi-ecosystem-groups: {}
+
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # 1) Rust / Cargo (workspace)
+  - package-ecosystem: "cargo"
+    # Укажи все места с Cargo.toml. Глоб поддерживается.
+    directories:
+      - "/"            # корень с workspace Cargo.toml
+      - "/api-server"  # если тут есть Cargo.toml
+      - "/client"      # твой Yew/WASM-артефакт (если это Rust crate)
+      - "/crates/*"    # все под-крейты
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Ho_Chi_Minh"
+    # Немного рациональности — не спамим мажорами сразу
+    versioning-strategy: "increase-if-necessary"
+    # Слегка притормаживаем волну мелких релизов
+    cooldown:
+      default-days: 0
+      semver-minor-days: 2
+      semver-patch-days: 2
+    commit-message:
+      prefix: "deps(cargo)"
+      include: "scope"    # добавит deps / deps-dev в заголовке
+    pull-request-branch-name:
+      separator: "-"      # dependabot/cargo/serde → dependabot-cargo-serde
+    groups:
+      cargo-minor-patch:
+        applies-to: "version-updates"
+        update-types: ["minor", "patch"]
+        patterns: ["*"]   # группируем всё минор/патч в один PR
+    # Пример точечного игнора (раскомментируй при надобности)
+    # ignore:
+    #   - dependency-name: "sqlx"
+    #     update-types: ["version-update:semver-major"]
+
+  # 2) GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:10"
+      timezone: "Asia/Ho_Chi_Minh"
+    commit-message:
+      prefix: "deps(ci)"
+
+  # 3) Docker (если есть Dockerfile в корне)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:20"
+      timezone: "Asia/Ho_Chi_Minh"
+    commit-message:
+      prefix: "deps(docker)"
+    # Пример группировки по образам (включишь при нужде)
+    # groups:
+    #   base-images:
+    #     patterns: ["debian*", "ubuntu*", "alpine*"]
