@@ -1,6 +1,6 @@
-use telegram_webapp_sdk::{logger, telegram_page, webapp::TelegramWebApp};
-use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
-use web_sys::{Document, Element, HtmlElement, window};
+use telegram_webapp_sdk::{logger, telegram_button, telegram_page, webapp::TelegramWebApp};
+use wasm_bindgen::{JsValue, prelude::Closure};
+use web_sys::{Document, Element, window};
 
 use crate::components::page_layout::PageLayout;
 
@@ -68,9 +68,7 @@ fn render_item(item: &MenuItem) -> Result<Element, JsValue> {
     ));
     container.append_child(&label)?;
 
-    let button = document.create_element("button")?;
-    button.set_inner_html("Order");
-    let button_el: HtmlElement = button.clone().dyn_into()?;
+    let button_el = telegram_button!(document, "Order", class = "order-button")?;
 
     let item_clone = item.clone();
     let click = Closure::<dyn FnMut()>::new(move || {

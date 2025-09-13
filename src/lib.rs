@@ -18,6 +18,8 @@ mod macros;
 #[cfg(feature = "macros")]
 pub mod pages;
 #[cfg(feature = "macros")]
+#[allow(unused_imports)]
+pub use crate::macros::*;
 pub mod router;
 
 #[cfg(feature = "yew")]

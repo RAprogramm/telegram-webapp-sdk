@@ -1,4 +1,4 @@
-use telegram_webapp_sdk::telegram_page;
+use telegram_webapp_sdk::{telegram_image, telegram_page};
 use web_sys::Element;
 
 use crate::components::{nav_link::nav_link, page_layout::PageLayout};
@@ -10,6 +10,16 @@ telegram_page!(
         clear_app_root();
 
         let page = PageLayout::new("Telegram WebApp SDK Demo");
+
+        let document = web_sys::window().unwrap().document().unwrap();
+        let logo = telegram_image!(
+            document,
+            "https://telegram.org/img/t_logo.png",
+            class = "logo",
+            alt = "Telegram logo"
+        )
+        .unwrap();
+        page.append(logo.as_ref());
 
         let features_header = section_header("Features");
         page.append(&features_header);
