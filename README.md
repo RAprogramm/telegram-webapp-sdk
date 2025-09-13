@@ -46,6 +46,33 @@ settings from `telegram-webapp.toml`.
 - Configurable mock `Telegram.WebApp` for local development and testing.
 - API helpers for user interactions, storage, device sensors and more.
 
+## Router
+
+The `macros` feature ships with a minimal in-memory [`Router`](src/router.rs)
+that collects pages registered via `telegram_page!`. The
+[`telegram_router!`](src/macros.rs) macro builds this router and runs all page
+handlers:
+
+```rust,ignore
+telegram_page!("/", pub fn index() {});
+
+// Uses the default Router
+telegram_router!();
+```
+
+Provide a custom router type to the macro if additional behavior is required:
+
+```rust,ignore
+struct CustomRouter;
+impl CustomRouter {
+    fn new() -> Self { CustomRouter }
+    fn register(self, _path: &str, _handler: fn()) -> Self { self }
+    fn start(self) {}
+}
+
+telegram_router!(CustomRouter);
+```
+
 ## Table of contents
 
 - [Installation](#installation)
@@ -73,7 +100,7 @@ telegram-webapp-sdk = { version = "0.2", features = ["macros", "yew", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
-- `yew` &mdash; exposes a `use_telegram_context` hook.
+- `yew` &mdash; exposes a `use_telegram_context` hook and a `BottomButton` component.
 - `leptos` &mdash; integrates the context into the Leptos reactive system.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
 
@@ -89,6 +116,19 @@ use yew::prelude::*;
 fn app() -> Html {
     let ctx = use_telegram_context().expect("context");
     html! { <span>{ ctx.init_data.auth_date }</span> }
+}
+```
+
+Use [`BottomButton`](https://docs.rs/telegram-webapp-sdk/latest/telegram_webapp_sdk/yew/struct.BottomButton.html) to control the main button:
+
+```rust,ignore
+use telegram_webapp_sdk::yew::BottomButton;
+use yew::prelude::*;
+
+#[function_component(App)]
+fn app() -> Html {
+    let on_click = Callback::from(|_| {});
+    html! { <BottomButton text="Send" color="#000" text_color="#fff" {on_click} /> }
 }
 ```
 
