@@ -17,6 +17,9 @@ pub use webapp::TelegramWebApp;
 mod macros;
 #[cfg(feature = "macros")]
 pub mod pages;
+#[cfg(feature = "macros")]
+#[allow(unused_imports)]
+pub use crate::macros::*;
 
 #[cfg(feature = "yew")]
 pub mod yew;

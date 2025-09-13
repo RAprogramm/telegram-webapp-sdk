@@ -215,3 +215,84 @@ macro_rules! telegram_router {
         router.start();
     }};
 }
+
+/// Create a `<button>` element.
+///
+/// Generates a [`web_sys::HtmlElement`] with the provided text, optional CSS
+/// class and arbitrary attributes. The macro evaluates to
+/// `Result<web_sys::HtmlElement, wasm_bindgen::JsValue>` so it can be used with
+/// the `?` operator inside functions returning `Result`.
+///
+/// # Examples
+///
+/// ```ignore
+/// use telegram_webapp_sdk::telegram_button;
+/// use wasm_bindgen::JsValue;
+///
+/// # fn example() -> Result<(), JsValue> {
+/// let document = web_sys::window()
+///     .and_then(|w| w.document())
+///     .ok_or_else(|| JsValue::from_str("no document"))?;
+/// let button = telegram_button!(document, "Click", class = "primary", "type" = "button")?;
+/// assert_eq!(button.tag_name(), "BUTTON");
+/// # Ok(())
+/// # }
+/// ```
+#[macro_export]
+macro_rules! telegram_button {
+    ($doc:expr, $text:expr $(, class = $class:expr)? $(, $attr:literal = $value:expr)* $(,)?) => {{
+        || -> Result<web_sys::HtmlElement, wasm_bindgen::JsValue> {
+            use wasm_bindgen::JsCast;
+            let element = $doc.create_element("button")?;
+            element.set_inner_html($text);
+            $(element.set_class_name($class);)?
+            $(
+                element.set_attribute($attr, $value)?;
+            )*
+            element
+                .dyn_into::<web_sys::HtmlElement>()
+                .map_err(wasm_bindgen::JsValue::from)
+        }()
+    }};
+}
+
+/// Create an `<img>` element.
+///
+/// Generates a [`web_sys::HtmlImageElement`] with the provided `src`, optional
+/// CSS class, `alt` text and additional attributes. Like
+/// [`telegram_button!`], this macro yields a `Result` for ergonomic error
+/// propagation.
+///
+/// # Examples
+///
+/// ```ignore
+/// use telegram_webapp_sdk::telegram_image;
+/// use wasm_bindgen::JsValue;
+///
+/// # fn example() -> Result<(), JsValue> {
+/// let document = web_sys::window()
+///     .and_then(|w| w.document())
+///     .ok_or_else(|| JsValue::from_str("no document"))?;
+/// let image = telegram_image!(document, "/logo.png", class = "logo", alt = "Logo")?;
+/// assert_eq!(image.tag_name(), "IMG");
+/// # Ok(())
+/// # }
+/// ```
+#[macro_export]
+macro_rules! telegram_image {
+    ($doc:expr, $src:expr $(, class = $class:expr)? $(, alt = $alt:expr)? $(, $attr:literal = $value:expr)* $(,)?) => {{
+        || -> Result<web_sys::HtmlImageElement, wasm_bindgen::JsValue> {
+            use wasm_bindgen::JsCast;
+            let element = $doc.create_element("img")?;
+            element.set_attribute("src", $src)?;
+            $(element.set_class_name($class);)?
+            $(element.set_attribute("alt", $alt)?;)?
+            $(
+                element.set_attribute($attr, $value)?;
+            )*
+            element
+                .dyn_into::<web_sys::HtmlImageElement>()
+                .map_err(wasm_bindgen::JsValue::from)
+        }()
+    }};
+}
