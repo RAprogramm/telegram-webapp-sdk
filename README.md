@@ -11,6 +11,10 @@
 ![MSRV](https://img.shields.io/badge/MSRV-1.89-blue)
 ![License](https://img.shields.io/badge/License-MIT%20or%20Apache--2.0-informational)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
+<!-- webapp_api_badges:start -->
+[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-7.10-blue)](https://core.telegram.org/bots/webapps)
+[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%287a2555c%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c)
+<!-- webapp_api_badges:end -->
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
@@ -25,7 +29,7 @@
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.2.1", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -96,7 +100,7 @@ telegram-webapp-sdk = "0.2"
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.2.1", features = ["macros", "yew", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
@@ -500,6 +504,10 @@ TelegramWebApp::validate_init_data(
 ```
 
 ## API coverage
+
+<!-- webapp_api_summary:start -->
+**WebApp API coverage:** version `7.10` matches the latest Telegram WebApp API release `7.10`. Synced in commit [7a2555c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7a2555c) (recorded on 2025-09-11).
+<!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
 

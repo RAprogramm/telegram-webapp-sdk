@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "demo"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "inventory",
  "masterror",
@@ -2324,7 +2324,7 @@ dependencies = [
 
 [[package]]
 name = "telegram-webapp-sdk"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64",
  "ed25519-dalek",

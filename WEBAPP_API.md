@@ -1,5 +1,14 @@
 # Telegram WebApp API Coverage
 
+<!--
+[webapp_api_status]
+latest_version = "7.10"
+covered_version = "7.10"
+coverage_commit = "7a2555c"
+coverage_date = "2025-09-11"
+source_url = "https://core.telegram.org/bots/webapps"
+-->
+
 This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as they are implemented.
 
 ## Methods
