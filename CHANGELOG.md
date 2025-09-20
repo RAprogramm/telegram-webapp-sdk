@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-09-20
+### Changed
+- `update_readme` now discovers the latest Telegram WebApp API version directly
+  from the upstream Bot API source, ensuring badges and summaries always report
+  the current release.
+- `WEBAPP_API.md` metadata includes an explicit probe URL for version
+  discovery and tracks the latest Bot API release 9.2.
+
+## [0.2.1] - 2025-09-20
+### Added
+- `update_readme` maintenance tool to sync Telegram WebApp API version badges
+  and summary in the README from `WEBAPP_API.md` metadata.
+
+### Changed
+- README now displays Telegram WebApp API coverage status and the commit that
+  implements the tracked version.
+
 ## [0.2.0] - 2025-09-12
 ### Changed
 - Integrated macros into the main crate; `telegram-webapp-sdk-macros` crate removed.
