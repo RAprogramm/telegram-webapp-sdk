@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use masterror::Error;
 use regex::Regex;
 use reqwest::{blocking::Client, header::ACCEPT};
-use thiserror::Error;
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);

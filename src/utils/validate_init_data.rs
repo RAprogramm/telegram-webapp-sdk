@@ -1,8 +1,8 @@
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64_STANDARD};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use hmac_sha256::{HMAC, Hash};
+use masterror::Error;
 use percent_encoding::percent_decode_str;
-use thiserror::Error;
 
 /// Errors that can occur when validating Telegram init data.
 #[derive(Debug, Error, PartialEq, Eq)]

@@ -2,9 +2,9 @@ mod version_probe;
 
 use std::{env, fs, path::PathBuf};
 
+use masterror::Error;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use serde::Deserialize;
-use thiserror::Error;
 use version_probe::{VersionDiscoveryError, discover_latest_version};
 
 const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
