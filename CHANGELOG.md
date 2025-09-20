@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-09-20
+### Added
+- Introduced `deny.toml` to codify `cargo deny` policies for advisories, license
+  vetting, and source validation so security checks can run reproducibly.
+
+### Changed
+- Raised crate version to `0.2.4`.
+
+## [0.2.3] - 2025-09-20
+### Added
+- Support for additional bottom button capabilities (`enable`, `disable`,
+  `showProgress`, `hideProgress`, `setParams`, state accessors) covering the
+  latest Telegram WebApp SDK behavior.
+- New `BottomButtonParams` and `SecondaryButtonParams` helpers for ergonomic
+  parameter updates, plus `SecondaryButtonPosition` and safe area accessors.
+- `TelegramWebApp` utilities for safe area queries, fullscreen/activity state,
+  vertical swipe detection and version checks.
+- Optional `open_link` configuration via `OpenLinkOptions`.
+
+### Changed
+- Raised crate version to `0.2.3`.
+- Updated documentation to reflect expanded API coverage.
+
 ## [0.2.2] - 2025-09-20
 ### Changed
 - `update_readme` now discovers the latest Telegram WebApp API version directly

@@ -3,9 +3,9 @@
 <!--
 [webapp_api_status]
 latest_version = "9.2"
-covered_version = "7.10"
-coverage_commit = "7a2555c"
-coverage_date = "2025-09-11"
+covered_version = "9.2"
+coverage_commit = "92abbf7"
+coverage_date = "2025-09-20"
 source_url = "https://core.telegram.org/bots/webapps"
 latest_version_probe_url = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp"
 -->
@@ -45,6 +45,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] setHeaderColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
 - [x] setBackgroundColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
 - [x] setBottomBarColor ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
+- [x] isVersionAtLeast ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 - [x] addToHomeScreen ([e709edb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/e709edb))
 - [x] checkHomeScreenStatus ([e709edb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/e709edb))
 - [x] enableClosingConfirmation ([8fe4dec](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8fe4dec))
@@ -65,6 +66,15 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] setTextColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] onClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] offClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
+- [x] enable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] disable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] showProgress ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] hideProgress ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] setParams ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isVisible ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isActive ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isProgressVisible ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] hasShineEffect ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 
 ### MainButton
 - [x] show ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
@@ -72,6 +82,18 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] setText ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
 - [x] onClick ([0a42d7b](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0a42d7b))
 - [x] offClick ([0a42d7b](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0a42d7b))
+- [x] enable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] disable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] showProgress ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] hideProgress ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] setParams ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isVisible ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isActive ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isProgressVisible ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+
+### SecondaryButton
+- [x] setParams ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] position ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 
 ### BackButton
 - [x] show ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
@@ -89,6 +111,15 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] impactOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] notificationOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] selectionChanged ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
+
+## Properties
+
+- [x] isActive ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isFullscreen ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isOrientationLocked ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] isVerticalSwipesEnabled ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] safeAreaInset ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] contentSafeAreaInset ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 
 ## Sensors
 
