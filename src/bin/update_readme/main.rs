@@ -1,14 +1,18 @@
+mod version_probe;
+
 use std::{env, fs, path::PathBuf};
 
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use serde::Deserialize;
 use thiserror::Error;
+use version_probe::{VersionDiscoveryError, discover_latest_version};
 
 const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
 const BADGES_END: &str = "<!-- webapp_api_badges:end -->";
 const SUMMARY_START: &str = "<!-- webapp_api_summary:start -->";
 const SUMMARY_END: &str = "<!-- webapp_api_summary:end -->";
 const DEFAULT_SOURCE_URL: &str = "https://core.telegram.org/bots/webapps";
+const DEFAULT_VERSION_PROBE_URL: &str = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp";
 const BADGE_LINK_LABEL: &str = "Telegram WebApp API";
 
 const BADGE_ENCODE_SET: &AsciiSet = &NON_ALPHANUMERIC.remove(b'-').remove(b'_').remove(b'.');
@@ -35,7 +39,9 @@ enum ReadmeUpdateError {
     #[error("repository field missing in Cargo.toml")]
     RepositoryMissing,
     #[error("failed to write README.md: {0}")]
-    WriteReadme(std::io::Error)
+    WriteReadme(std::io::Error),
+    #[error("failed to determine latest WebApp API version: {0}")]
+    LatestVersion(VersionDiscoveryError)
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,25 +52,28 @@ struct WebAppApiStatusTable {
 
 #[derive(Debug, Deserialize)]
 struct WebAppApiStatusRaw {
-    latest_version:      String,
-    covered_version:     String,
-    coverage_commit:     String,
+    latest_version:           String,
+    covered_version:          String,
+    coverage_commit:          String,
     #[serde(default)]
-    coverage_date:       Option<String>,
+    coverage_date:            Option<String>,
     #[serde(default)]
-    source_url:          Option<String>,
+    source_url:               Option<String>,
     #[serde(default)]
-    coverage_commit_url: Option<String>
+    coverage_commit_url:      Option<String>,
+    #[serde(default)]
+    latest_version_probe_url: Option<String>
 }
 
 #[derive(Debug)]
 struct WebAppApiStatus {
-    latest_version:      String,
-    covered_version:     String,
-    coverage_commit:     String,
-    coverage_date:       Option<String>,
-    source_url:          String,
-    coverage_commit_url: Option<String>
+    latest_version:           String,
+    covered_version:          String,
+    coverage_commit:          String,
+    coverage_date:            Option<String>,
+    source_url:               String,
+    coverage_commit_url:      Option<String>,
+    latest_version_probe_url: String
 }
 
 #[derive(Debug, Deserialize)]
@@ -105,7 +114,16 @@ fn run() -> Result<(), ReadmeUpdateError> {
             source
         })?;
 
-    let status = parse_status(&webapp_api_content)?;
+    let mut status = parse_status(&webapp_api_content)?;
+    let latest_source_version = discover_latest_version(status.latest_version_probe_url.as_str())
+        .map_err(ReadmeUpdateError::LatestVersion)?;
+    if status.latest_version != latest_source_version {
+        eprintln!(
+            "WEBAPP_API.md declares latest version {} but source reports {}. Using source version.",
+            status.latest_version, latest_source_version
+        );
+    }
+    status.latest_version = latest_source_version;
     let repository = parse_repository(&cargo_toml_content)?;
     let commit_url = status.coverage_commit_url.clone().unwrap_or_else(|| {
         format!(
@@ -145,14 +163,17 @@ fn parse_status(content: &str) -> Result<WebAppApiStatus, ReadmeUpdateError> {
                     });
                 }
                 return Ok(WebAppApiStatus {
-                    latest_version:      status_raw.latest_version,
-                    covered_version:     status_raw.covered_version,
-                    coverage_commit:     status_raw.coverage_commit,
-                    coverage_date:       status_raw.coverage_date,
-                    source_url:          status_raw
+                    latest_version:           status_raw.latest_version,
+                    covered_version:          status_raw.covered_version,
+                    coverage_commit:          status_raw.coverage_commit,
+                    coverage_date:            status_raw.coverage_date,
+                    source_url:               status_raw
                         .source_url
                         .unwrap_or_else(|| DEFAULT_SOURCE_URL.to_owned()),
-                    coverage_commit_url: status_raw.coverage_commit_url
+                    coverage_commit_url:      status_raw.coverage_commit_url,
+                    latest_version_probe_url: status_raw
+                        .latest_version_probe_url
+                        .unwrap_or_else(|| DEFAULT_VERSION_PROBE_URL.to_owned())
                 });
             }
             search = &after_start[end_offset + 3..];
@@ -282,6 +303,17 @@ mod tests {
         assert_eq!(status.coverage_commit, "7a2555c");
         assert_eq!(status.coverage_date.as_deref(), Some("2025-09-11"));
         assert_eq!(status.source_url, "https://example.com");
+        assert_eq!(status.latest_version_probe_url, DEFAULT_VERSION_PROBE_URL);
+    }
+
+    #[test]
+    fn parse_status_reads_custom_probe_url() {
+        let markdown = "<!--\n[webapp_api_status]\nlatest_version = \"7.10\"\ncovered_version = \"7.10\"\ncoverage_commit = \"7a2555c\"\nlatest_version_probe_url = \"https://example.com/version.txt\"\n-->\n7a2555c";
+        let status = parse_status(markdown).expect("status");
+        assert_eq!(
+            status.latest_version_probe_url,
+            "https://example.com/version.txt"
+        );
     }
 
     #[test]
@@ -303,12 +335,13 @@ mod tests {
     #[test]
     fn render_badges_encodes_values() {
         let status = WebAppApiStatus {
-            latest_version:      "7.10".to_owned(),
-            covered_version:     "7.10".to_owned(),
-            coverage_commit:     "abcdef123456".to_owned(),
-            coverage_date:       None,
-            source_url:          "https://example.com".to_owned(),
-            coverage_commit_url: None
+            latest_version:           "7.10".to_owned(),
+            covered_version:          "7.10".to_owned(),
+            coverage_commit:          "abcdef123456".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
         };
         let badges = render_badges(&status, "https://repo/commit/abcdef1");
         assert!(badges.contains("abcdef1"));

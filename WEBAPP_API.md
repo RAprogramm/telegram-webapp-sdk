@@ -2,11 +2,12 @@
 
 <!--
 [webapp_api_status]
-latest_version = "7.10"
+latest_version = "9.2"
 covered_version = "7.10"
 coverage_commit = "7a2555c"
 coverage_date = "2025-09-11"
 source_url = "https://core.telegram.org/bots/webapps"
+latest_version_probe_url = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp"
 -->
 
 This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as they are implemented.
