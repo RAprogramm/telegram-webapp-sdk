@@ -1,4 +1,5 @@
 use js_sys::{Function, Object, Reflect};
+use serde::Serialize;
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
@@ -65,6 +66,164 @@ impl BottomButton {
             BottomButton::Secondary => "SecondaryButton"
         }
     }
+}
+
+/// Position of the secondary bottom button.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{SecondaryButtonPosition, TelegramWebApp};
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     match app.secondary_button_position() {
+///         Some(SecondaryButtonPosition::Top) => {}
+///         _ => {}
+///     }
+/// }
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SecondaryButtonPosition {
+    /// Displayed above the main button.
+    Top,
+    /// Displayed to the left of the main button.
+    Left,
+    /// Displayed below the main button.
+    Bottom,
+    /// Displayed to the right of the main button.
+    Right
+}
+
+impl SecondaryButtonPosition {
+    fn from_js_value(value: JsValue) -> Option<Self> {
+        let as_str = value.as_string()?;
+        match as_str.as_str() {
+            "top" => Some(Self::Top),
+            "left" => Some(Self::Left),
+            "bottom" => Some(Self::Bottom),
+            "right" => Some(Self::Right),
+            _ => None
+        }
+    }
+}
+
+/// Safe area insets reported by Telegram.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{SafeAreaInset, TelegramWebApp};
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     if let Some(SafeAreaInset {
+///         top,
+///         bottom,
+///         ..
+///     }) = app.safe_area_inset()
+///     {
+///         let _ = (top, bottom);
+///     }
+/// }
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SafeAreaInset {
+    /// Distance from the top edge in CSS pixels.
+    pub top:    f64,
+    /// Distance from the bottom edge in CSS pixels.
+    pub bottom: f64,
+    /// Distance from the left edge in CSS pixels.
+    pub left:   f64,
+    /// Distance from the right edge in CSS pixels.
+    pub right:  f64
+}
+
+impl SafeAreaInset {
+    fn from_js(value: JsValue) -> Option<Self> {
+        let object = value.dyn_into::<Object>().ok()?;
+        let top = Reflect::get(&object, &"top".into()).ok()?.as_f64()?;
+        let bottom = Reflect::get(&object, &"bottom".into()).ok()?.as_f64()?;
+        let left = Reflect::get(&object, &"left".into()).ok()?.as_f64()?;
+        let right = Reflect::get(&object, &"right".into()).ok()?.as_f64()?;
+        Some(Self {
+            top,
+            bottom,
+            left,
+            right
+        })
+    }
+}
+
+/// Parameters accepted by bottom buttons when updating state via `setParams`.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{BottomButton, BottomButtonParams, TelegramWebApp};
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     let params = BottomButtonParams {
+///         text: Some("Send"),
+///         is_active: Some(true),
+///         ..Default::default()
+///     };
+///     let _ = app.set_bottom_button_params(BottomButton::Main, &params);
+/// }
+/// ```
+#[derive(Debug, Default, Serialize)]
+pub struct BottomButtonParams<'a> {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text:             Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color:            Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_color:       Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_active:        Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_visible:       Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_shine_effect: Option<bool>
+}
+
+/// Additional parameters supported by the secondary button.
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{
+///     SecondaryButtonParams, SecondaryButtonPosition, TelegramWebApp
+/// };
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     let params = SecondaryButtonParams {
+///         common:   Default::default(),
+///         position: Some(SecondaryButtonPosition::Top)
+///     };
+///     let _ = app.set_secondary_button_params(&params);
+/// }
+/// ```
+#[derive(Debug, Default, Serialize)]
+pub struct SecondaryButtonParams<'a> {
+    #[serde(flatten)]
+    pub common:   BottomButtonParams<'a>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub position: Option<SecondaryButtonPosition>
+}
+
+/// Options supported by [`TelegramWebApp::open_link`].
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{OpenLinkOptions, TelegramWebApp};
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     let options = OpenLinkOptions {
+///         try_instant_view: Some(true)
+///     };
+///     let _ = app.open_link("https://example.com", Some(&options));
+/// }
+/// ```
+#[derive(Debug, Default, Serialize)]
+pub struct OpenLinkOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub try_instant_view: Option<bool>
 }
 
 /// Background events delivered by Telegram when the Mini App runs in the
@@ -363,12 +522,22 @@ impl TelegramWebApp {
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.open_link("https://example.com").unwrap();
+    /// app.open_link("https://example.com", None).unwrap();
     /// ```
-    pub fn open_link(&self, url: &str) -> Result<(), JsValue> {
-        Reflect::get(&self.inner, &"openLink".into())?
-            .dyn_into::<Function>()?
-            .call1(&self.inner, &url.into())?;
+    pub fn open_link(&self, url: &str, options: Option<&OpenLinkOptions>) -> Result<(), JsValue> {
+        let f = Reflect::get(&self.inner, &"openLink".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("openLink is not a function"))?;
+        match options {
+            Some(opts) => {
+                let value = to_value(opts).map_err(|err| JsValue::from_str(&err.to_string()))?;
+                func.call2(&self.inner, &url.into(), &value)?;
+            }
+            None => {
+                func.call1(&self.inner, &url.into())?;
+            }
+        }
         Ok(())
     }
 
@@ -385,6 +554,25 @@ impl TelegramWebApp {
             .dyn_into::<Function>()?
             .call1(&self.inner, &url.into())?;
         Ok(())
+    }
+
+    /// Returns whether the WebApp version is at least the provided value.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_version_at_least("9.0");
+    /// }
+    /// ```
+    pub fn is_version_at_least(&self, version: &str) -> Result<bool, JsValue> {
+        let f = Reflect::get(&self.inner, &"isVersionAtLeast".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("isVersionAtLeast is not a function"))?;
+        let result = func.call1(&self.inner, &version.into())?;
+        Ok(result.as_bool().unwrap_or(false))
     }
 
     /// Call `WebApp.openInvoice(url, callback)`.
@@ -823,6 +1011,12 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    fn bottom_button_property(&self, button: BottomButton, property: &str) -> Option<JsValue> {
+        self.bottom_button_object(button)
+            .ok()
+            .and_then(|object| Reflect::get(&object, &property.into()).ok())
+    }
+
     /// Hide the on-screen keyboard.
     /// Call `WebApp.hideKeyboard()`.
     ///
@@ -1000,6 +1194,236 @@ impl TelegramWebApp {
         self.bottom_button_method(button, "setTextColor", Some(&color.into()))
     }
 
+    /// Enable a bottom button, allowing user interaction.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.enable_bottom_button(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn enable_bottom_button(&self, button: BottomButton) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "enable", None)
+    }
+
+    /// Disable a bottom button, preventing user interaction.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.disable_bottom_button(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn disable_bottom_button(&self, button: BottomButton) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "disable", None)
+    }
+
+    /// Show the circular loading indicator on a bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.show_bottom_button_progress(BottomButton::Main, false);
+    /// }
+    /// ```
+    pub fn show_bottom_button_progress(
+        &self,
+        button: BottomButton,
+        leave_active: bool
+    ) -> Result<(), JsValue> {
+        let leave_active = JsValue::from_bool(leave_active);
+        self.bottom_button_method(button, "showProgress", Some(&leave_active))
+    }
+
+    /// Hide the loading indicator on a bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.hide_bottom_button_progress(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn hide_bottom_button_progress(&self, button: BottomButton) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "hideProgress", None)
+    }
+
+    /// Returns whether the specified bottom button is currently visible.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_bottom_button_visible(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn is_bottom_button_visible(&self, button: BottomButton) -> bool {
+        self.bottom_button_property(button, "isVisible")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns whether the specified bottom button is active (enabled).
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_bottom_button_active(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn is_bottom_button_active(&self, button: BottomButton) -> bool {
+        self.bottom_button_property(button, "isActive")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns whether the progress indicator is visible on the button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_bottom_button_progress_visible(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn is_bottom_button_progress_visible(&self, button: BottomButton) -> bool {
+        self.bottom_button_property(button, "isProgressVisible")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns the current text displayed on the button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.bottom_button_text(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn bottom_button_text(&self, button: BottomButton) -> Option<String> {
+        self.bottom_button_property(button, "text")?.as_string()
+    }
+
+    /// Returns the current text color of the button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.bottom_button_text_color(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn bottom_button_text_color(&self, button: BottomButton) -> Option<String> {
+        self.bottom_button_property(button, "textColor")?
+            .as_string()
+    }
+
+    /// Returns the current background color of the button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.bottom_button_color(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn bottom_button_color(&self, button: BottomButton) -> Option<String> {
+        self.bottom_button_property(button, "color")?.as_string()
+    }
+
+    /// Returns whether the shine effect is enabled on the button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.bottom_button_has_shine_effect(BottomButton::Main);
+    /// }
+    /// ```
+    pub fn bottom_button_has_shine_effect(&self, button: BottomButton) -> bool {
+        self.bottom_button_property(button, "hasShineEffect")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Update bottom button state via `setParams`.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, BottomButtonParams, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let params = BottomButtonParams {
+    ///         text: Some("Send"),
+    ///         ..Default::default()
+    ///     };
+    ///     let _ = app.set_bottom_button_params(BottomButton::Main, &params);
+    /// }
+    /// ```
+    pub fn set_bottom_button_params(
+        &self,
+        button: BottomButton,
+        params: &BottomButtonParams<'_>
+    ) -> Result<(), JsValue> {
+        let value = to_value(params).map_err(|err| JsValue::from_str(&err.to_string()))?;
+        self.bottom_button_method(button, "setParams", Some(&value))
+    }
+
+    /// Update secondary button state via `setParams`, including position.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{
+    ///     SecondaryButtonParams, SecondaryButtonPosition, TelegramWebApp
+    /// };
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let params = SecondaryButtonParams {
+    ///         position: Some(SecondaryButtonPosition::Left),
+    ///         ..Default::default()
+    ///     };
+    ///     let _ = app.set_secondary_button_params(&params);
+    /// }
+    /// ```
+    pub fn set_secondary_button_params(
+        &self,
+        params: &SecondaryButtonParams<'_>
+    ) -> Result<(), JsValue> {
+        let value = to_value(params).map_err(|err| JsValue::from_str(&err.to_string()))?;
+        self.bottom_button_method(BottomButton::Secondary, "setParams", Some(&value))
+    }
+
+    /// Returns the configured position of the secondary button, if available.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{SecondaryButtonPosition, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.secondary_button_position();
+    /// }
+    /// ```
+    pub fn secondary_button_position(&self) -> Option<SecondaryButtonPosition> {
+        self.bottom_button_property(BottomButton::Secondary, "position")
+            .and_then(SecondaryButtonPosition::from_js_value)
+    }
+
     /// Set callback for `onClick()` on a bottom button.
     ///
     /// Returns an [`EventHandle`] that can be used to remove the callback.
@@ -1089,6 +1513,124 @@ impl TelegramWebApp {
     /// Set text color for the secondary bottom button.
     pub fn set_secondary_button_text_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text_color(BottomButton::Secondary, color)
+    }
+
+    /// Enable the main bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.enable_main_button();
+    /// }
+    /// ```
+    pub fn enable_main_button(&self) -> Result<(), JsValue> {
+        self.enable_bottom_button(BottomButton::Main)
+    }
+
+    /// Enable the secondary bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.enable_secondary_button();
+    /// }
+    /// ```
+    pub fn enable_secondary_button(&self) -> Result<(), JsValue> {
+        self.enable_bottom_button(BottomButton::Secondary)
+    }
+
+    /// Disable the main bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.disable_main_button();
+    /// }
+    /// ```
+    pub fn disable_main_button(&self) -> Result<(), JsValue> {
+        self.disable_bottom_button(BottomButton::Main)
+    }
+
+    /// Disable the secondary bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.disable_secondary_button();
+    /// }
+    /// ```
+    pub fn disable_secondary_button(&self) -> Result<(), JsValue> {
+        self.disable_bottom_button(BottomButton::Secondary)
+    }
+
+    /// Show progress on the main bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.show_main_button_progress(false);
+    /// }
+    /// ```
+    pub fn show_main_button_progress(&self, leave_active: bool) -> Result<(), JsValue> {
+        self.show_bottom_button_progress(BottomButton::Main, leave_active)
+    }
+
+    /// Show progress on the secondary bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.show_secondary_button_progress(false);
+    /// }
+    /// ```
+    pub fn show_secondary_button_progress(&self, leave_active: bool) -> Result<(), JsValue> {
+        self.show_bottom_button_progress(BottomButton::Secondary, leave_active)
+    }
+
+    /// Hide progress indicator from the main bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.hide_main_button_progress();
+    /// }
+    /// ```
+    pub fn hide_main_button_progress(&self) -> Result<(), JsValue> {
+        self.hide_bottom_button_progress(BottomButton::Main)
+    }
+
+    /// Hide progress indicator from the secondary bottom button.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.hide_secondary_button_progress();
+    /// }
+    /// ```
+    pub fn hide_secondary_button_progress(&self) -> Result<(), JsValue> {
+        self.hide_bottom_button_progress(BottomButton::Secondary)
+    }
+
+    /// Update the main button state via
+    /// [`set_bottom_button_params`](Self::set_bottom_button_params).
+    pub fn set_main_button_params(&self, params: &BottomButtonParams<'_>) -> Result<(), JsValue> {
+        self.set_bottom_button_params(BottomButton::Main, params)
     }
 
     /// Legacy alias for [`Self::set_bottom_button_callback`] with
@@ -1278,6 +1820,107 @@ impl TelegramWebApp {
             .ok()
             .and_then(|v| v.as_bool())
             .unwrap_or(false)
+    }
+
+    /// Returns whether the mini app is currently active (visible to the user).
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_active();
+    /// }
+    /// ```
+    pub fn is_active(&self) -> bool {
+        Reflect::get(&self.inner, &"isActive".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns whether the app is displayed in fullscreen mode.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_fullscreen();
+    /// }
+    /// ```
+    pub fn is_fullscreen(&self) -> bool {
+        Reflect::get(&self.inner, &"isFullscreen".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns whether the orientation is locked.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_orientation_locked();
+    /// }
+    /// ```
+    pub fn is_orientation_locked(&self) -> bool {
+        Reflect::get(&self.inner, &"isOrientationLocked".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    /// Returns whether vertical swipes are currently enabled.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_vertical_swipes_enabled();
+    /// }
+    /// ```
+    pub fn is_vertical_swipes_enabled(&self) -> bool {
+        Reflect::get(&self.inner, &"isVerticalSwipesEnabled".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
+    fn safe_area_from_property(&self, property: &str) -> Option<SafeAreaInset> {
+        let value = Reflect::get(&self.inner, &property.into()).ok()?;
+        SafeAreaInset::from_js(value)
+    }
+
+    /// Returns the safe area insets reported by Telegram.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.safe_area_inset();
+    /// }
+    /// ```
+    pub fn safe_area_inset(&self) -> Option<SafeAreaInset> {
+        self.safe_area_from_property("safeAreaInset")
+    }
+
+    /// Returns the content safe area insets reported by Telegram.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.content_safe_area_inset();
+    /// }
+    /// ```
+    pub fn content_safe_area_inset(&self) -> Option<SafeAreaInset> {
+        self.safe_area_from_property("contentSafeAreaInset")
     }
 
     /// Call `WebApp.expand()` to expand the viewport.
@@ -1749,6 +2392,188 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn enable_bottom_button_calls_js() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let called = Rc::new(Cell::new(false));
+        let called_clone = Rc::clone(&called);
+
+        let enable_cb = Closure::<dyn FnMut()>::new(move || {
+            called_clone.set(true);
+        });
+        let _ = Reflect::set(
+            &button,
+            &"enable".into(),
+            enable_cb.as_ref().unchecked_ref()
+        );
+        enable_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.enable_bottom_button(BottomButton::Main).unwrap();
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn show_bottom_button_progress_passes_flag() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |arg: JsValue| {
+            *rc_clone.borrow_mut() = arg.as_bool();
+        });
+        let _ = Reflect::set(&button, &"showProgress".into(), cb.as_ref().unchecked_ref());
+        cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.show_bottom_button_progress(BottomButton::Main, true)
+            .unwrap();
+        assert_eq!(*received.borrow(), Some(true));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_button_params_serializes() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let received = Rc::new(RefCell::new(Object::new()));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+            let obj = value.dyn_into::<Object>().expect("object");
+            rc_clone.replace(obj);
+        });
+        let _ = Reflect::set(&button, &"setParams".into(), cb.as_ref().unchecked_ref());
+        cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let params = BottomButtonParams {
+            text:             Some("Send"),
+            color:            Some("#ffffff"),
+            text_color:       Some("#000000"),
+            is_active:        Some(true),
+            is_visible:       Some(true),
+            has_shine_effect: Some(false)
+        };
+        app.set_bottom_button_params(BottomButton::Main, &params)
+            .unwrap();
+
+        let stored = received.borrow();
+        assert_eq!(
+            Reflect::get(&stored, &"text".into()).unwrap().as_string(),
+            Some("Send".to_string())
+        );
+        assert_eq!(
+            Reflect::get(&stored, &"color".into()).unwrap().as_string(),
+            Some("#ffffff".to_string())
+        );
+        assert_eq!(
+            Reflect::get(&stored, &"text_color".into())
+                .unwrap()
+                .as_string(),
+            Some("#000000".to_string())
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_secondary_button_params_serializes_position() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let received = Rc::new(RefCell::new(Object::new()));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+            let obj = value.dyn_into::<Object>().expect("object");
+            rc_clone.replace(obj);
+        });
+        let _ = Reflect::set(&button, &"setParams".into(), cb.as_ref().unchecked_ref());
+        cb.forget();
+
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let params = SecondaryButtonParams {
+            common:   BottomButtonParams {
+                text: Some("Next"),
+                ..Default::default()
+            },
+            position: Some(SecondaryButtonPosition::Left)
+        };
+        app.set_secondary_button_params(&params).unwrap();
+
+        let stored = received.borrow();
+        assert_eq!(
+            Reflect::get(&stored, &"text".into()).unwrap().as_string(),
+            Some("Next".to_string())
+        );
+        assert_eq!(
+            Reflect::get(&stored, &"position".into())
+                .unwrap()
+                .as_string(),
+            Some("left".to_string())
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn bottom_button_getters_return_values() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let _ = Reflect::set(&button, &"text".into(), &"Label".into());
+        let _ = Reflect::set(&button, &"textColor".into(), &"#111111".into());
+        let _ = Reflect::set(&button, &"color".into(), &"#222222".into());
+        let _ = Reflect::set(&button, &"isVisible".into(), &JsValue::TRUE);
+        let _ = Reflect::set(&button, &"isActive".into(), &JsValue::TRUE);
+        let _ = Reflect::set(&button, &"isProgressVisible".into(), &JsValue::FALSE);
+        let _ = Reflect::set(&button, &"hasShineEffect".into(), &JsValue::TRUE);
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert_eq!(
+            app.bottom_button_text(BottomButton::Main),
+            Some("Label".into())
+        );
+        assert_eq!(
+            app.bottom_button_text_color(BottomButton::Main),
+            Some("#111111".into())
+        );
+        assert_eq!(
+            app.bottom_button_color(BottomButton::Main),
+            Some("#222222".into())
+        );
+        assert!(app.is_bottom_button_visible(BottomButton::Main));
+        assert!(app.is_bottom_button_active(BottomButton::Main));
+        assert!(!app.is_bottom_button_progress_visible(BottomButton::Main));
+        assert!(app.bottom_button_has_shine_effect(BottomButton::Main));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn secondary_button_position_is_parsed() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let _ = Reflect::set(&button, &"position".into(), &"right".into());
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert_eq!(
+            app.secondary_button_position(),
+            Some(SecondaryButtonPosition::Right)
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn set_header_color_calls_js() {
         let webapp = setup_webapp();
         let received = Rc::new(RefCell::new(None));
@@ -1826,6 +2651,63 @@ mod tests {
         let app = TelegramWebApp::instance().unwrap();
         assert_eq!(app.viewport_width(), Some(320.0));
         assert_eq!(app.viewport_stable_height(), Some(480.0));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn version_check_invokes_js() {
+        let webapp = setup_webapp();
+        let cb = Function::new_with_args("v", "return v === '9.0';");
+        let _ = Reflect::set(&webapp, &"isVersionAtLeast".into(), &cb);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert!(app.is_version_at_least("9.0").unwrap());
+        assert!(!app.is_version_at_least("9.1").unwrap());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn safe_area_insets_are_parsed() {
+        let webapp = setup_webapp();
+        let safe_area = Object::new();
+        let _ = Reflect::set(&safe_area, &"top".into(), &JsValue::from_f64(1.0));
+        let _ = Reflect::set(&safe_area, &"bottom".into(), &JsValue::from_f64(2.0));
+        let _ = Reflect::set(&safe_area, &"left".into(), &JsValue::from_f64(3.0));
+        let _ = Reflect::set(&safe_area, &"right".into(), &JsValue::from_f64(4.0));
+        let _ = Reflect::set(&webapp, &"safeAreaInset".into(), &safe_area);
+
+        let content_safe = Object::new();
+        let _ = Reflect::set(&content_safe, &"top".into(), &JsValue::from_f64(5.0));
+        let _ = Reflect::set(&content_safe, &"bottom".into(), &JsValue::from_f64(6.0));
+        let _ = Reflect::set(&content_safe, &"left".into(), &JsValue::from_f64(7.0));
+        let _ = Reflect::set(&content_safe, &"right".into(), &JsValue::from_f64(8.0));
+        let _ = Reflect::set(&webapp, &"contentSafeAreaInset".into(), &content_safe);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let inset = app.safe_area_inset().expect("safe area");
+        assert_eq!(inset.top, 1.0);
+        assert_eq!(inset.bottom, 2.0);
+        assert_eq!(inset.left, 3.0);
+        assert_eq!(inset.right, 4.0);
+
+        let content = app.content_safe_area_inset().expect("content area");
+        assert_eq!(content.top, 5.0);
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn activity_flags_are_reported() {
+        let webapp = setup_webapp();
+        let _ = Reflect::set(&webapp, &"isActive".into(), &JsValue::TRUE);
+        let _ = Reflect::set(&webapp, &"isFullscreen".into(), &JsValue::TRUE);
+        let _ = Reflect::set(&webapp, &"isOrientationLocked".into(), &JsValue::FALSE);
+        let _ = Reflect::set(&webapp, &"isVerticalSwipesEnabled".into(), &JsValue::TRUE);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert!(app.is_active());
+        assert!(app.is_fullscreen());
+        assert!(!app.is_orientation_locked());
+        assert!(app.is_vertical_swipes_enabled());
     }
 
     #[wasm_bindgen_test]
@@ -2090,7 +2972,7 @@ mod tests {
 
         let app = TelegramWebApp::instance().unwrap();
         let url = "https://example.com";
-        app.open_link(url).unwrap();
+        app.open_link(url, None).unwrap();
         app.open_telegram_link(url).unwrap();
 
         assert_eq!(
