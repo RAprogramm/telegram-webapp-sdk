@@ -23,13 +23,15 @@
 - Comprehensive coverage of Telegram Web App JavaScript APIs.
 - Framework integrations for **Yew** and **Leptos**.
 - Optional macros for automatic initialization and routing.
+- Biometric authentication helpers, viewport metrics, and theme utilities in
+  step with the Telegram WebApp API 9.2 feature set.
 
 ## Macros
 
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.4", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.2.8", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -84,6 +86,9 @@ telegram_router!(CustomRouter);
 - [Mock environment](#mock-environment)
 - [User interactions](#user-interactions)
 - [Keyboard control](#keyboard-control)
+- [Appearance](#appearance)
+- [Viewport](#viewport)
+- [Biometric authentication](#biometric-authentication)
 - [API coverage](#api-coverage)
 - [Changelog](#changelog)
 - [License](#license)
@@ -100,7 +105,7 @@ telegram-webapp-sdk = "0.2"
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.4", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.2.8", features = ["macros", "yew", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
@@ -368,6 +373,55 @@ Supported background events:
 ## Appearance
 
 Customize colors and react to theme or safe area updates:
+
+```rust,no_run
+use telegram_webapp_sdk::api::theme::get_theme_params;
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+app.set_header_color("#0a0a0a")?;
+app.set_background_color("#ffffff")?;
+app.set_bottom_bar_color("#2481cc")?;
+
+let params = get_theme_params()?;
+let _ = params.bg_color;
+
+let theme_handle = app.on_theme_changed(|| {
+    let _ = get_theme_params();
+})?;
+let safe_handle = app.on_safe_area_changed(|| {})?;
+let content_handle = app.on_content_safe_area_changed(|| {})?;
+
+app.off_event(theme_handle)?;
+app.off_event(safe_handle)?;
+app.off_event(content_handle)?;
+# Ok(())
+# }
+```
+
+## Viewport
+
+Inspect the Mini App viewport size and subscribe to updates:
+
+```rust,no_run
+use telegram_webapp_sdk::api::viewport::{
+    expand_viewport, get_viewport_height, on_viewport_changed,
+};
+use wasm_bindgen::closure::Closure;
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+let _ = get_viewport_height();
+let callback = Closure::wrap(Box::new(|| {
+    let _ = get_viewport_height();
+}) as Box<dyn Fn()>);
+on_viewport_changed(&callback);
+expand_viewport()?;
+callback.forget();
+# Ok(())
+# }
+```
+
 ## Fullscreen and orientation
 
 Control the Mini App display and screen orientation:
@@ -376,17 +430,10 @@ Control the Mini App display and screen orientation:
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
-app.set_header_color("#000000")?;
-app.set_background_color("#ffffff")?;
-app.set_bottom_bar_color("#cccccc")?;
-let theme_handle = app.on_theme_changed(|| {})?;
-let safe_handle = app.on_safe_area_changed(|| {})?;
-let content_handle = app.on_content_safe_area_changed(|| {})?;
-// later: app.off_event(theme_handle)?; etc.
-
-app.request_fullscreen()?;
+if !app.is_fullscreen() {
+    app.request_fullscreen()?;
+}
 app.lock_orientation("portrait")?;
-// later...
 app.unlock_orientation()?;
 app.exit_fullscreen()?;
 # Ok(())
@@ -433,6 +480,25 @@ use telegram_webapp_sdk::api::secure_storage::{set, restore};
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
 set("token", "secret").await?;
 let _ = restore("token").await?;
+# Ok(())
+# }
+```
+
+## Biometric authentication
+
+Guard privileged actions behind the BiometricManager API:
+
+```rust,no_run
+use telegram_webapp_sdk::api::biometric::{
+    authenticate, init, is_biometric_available, request_access,
+};
+
+# fn run() -> Result<(), wasm_bindgen::JsValue> {
+init()?;
+if is_biometric_available()? {
+    request_access("auth-key", Some("Unlock the vault"), None)?;
+    authenticate("auth-key", None, None)?;
+}
 # Ok(())
 # }
 ```

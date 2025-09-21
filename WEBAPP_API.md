@@ -5,7 +5,7 @@
 latest_version = "9.2"
 covered_version = "9.2"
 coverage_commit = "92abbf7"
-coverage_date = "2025-09-20"
+coverage_date = "2025-09-21"
 source_url = "https://core.telegram.org/bots/webapps"
 latest_version_probe_url = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp"
 -->
@@ -200,12 +200,5 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 
 ## Remaining WebApp Features
 
-The following features are not yet covered by the SDK:
-
-- [x] Init data validation (unreleased)
-- [x] Theme and safe area change events ([58a73cb](https://github.com/RAprogramm/telegram-webapp-sdk/commit/58a73cb))
-- [x] Viewport management
-- [x] Clipboard access ([fd1c84e](https://github.com/RAprogramm/telegram-webapp-sdk/commit/fd1c84e))
-- [x] Location access ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [x] Invoice payments (unreleased)
-- [x] Background events (unreleased)
+The SDK currently covers the complete Telegram WebApp API 9.2 surface. If you
+spot a gap, please open an issue so it can be addressed quickly.
