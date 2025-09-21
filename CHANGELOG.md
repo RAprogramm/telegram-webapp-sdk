@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2025-09-21
+### Changed
+- Expanded the README with appearance, viewport, and biometric examples while
+  updating dependency snippets to version `0.2.8`.
+- Clarified the documented WebApp API coverage in `WEBAPP_API.md` and recorded
+  the refreshed verification date.
+
 ## [0.2.7] - 2025-09-21
 ### Changed
 - Removed the crate's direct dependency on `thiserror`, relying on `masterror`
