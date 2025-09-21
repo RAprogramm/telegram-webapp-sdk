@@ -25,9 +25,15 @@ jobs:
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update -y && sudo apt-get install -y jq
           fi
-          RV=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].rust_version // empty')
+          PKG_NAME="telegram-webapp-sdk"
+          METADATA=$(cargo metadata --no-deps --format-version=1)
+          if ! printf '%s\n' "$METADATA" | jq -e --arg name "$PKG_NAME" '.packages[] | select(.name == $name)' >/dev/null; then
+            echo "Package ${PKG_NAME} not found in Cargo metadata"
+            exit 1
+          fi
+          RV=$(printf '%s\n' "$METADATA" | jq -r --arg name "$PKG_NAME" '.packages[] | select(.name == $name) | .rust_version // empty')
           if [ -z "$RV" ]; then
-            echo "rust-version is not set in Cargo.toml"
+            echo "rust-version is not set in Cargo.toml for package ${PKG_NAME}"
             exit 1
           fi
           if [[ "$RV" =~ ^[0-9]+\.[0-9]+$ ]]; then
@@ -40,7 +46,17 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${GITHUB_REF#refs/tags/}"
-          FILE_VER=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')
+          PKG_NAME="telegram-webapp-sdk"
+          METADATA=$(cargo metadata --no-deps --format-version=1)
+          if ! printf '%s\n' "$METADATA" | jq -e --arg name "$PKG_NAME" '.packages[] | select(.name == $name)' >/dev/null; then
+            echo "Package ${PKG_NAME} not found in Cargo metadata"
+            exit 1
+          fi
+          FILE_VER=$(printf '%s\n' "$METADATA" | jq -r --arg name "$PKG_NAME" '.packages[] | select(.name == $name) | .version // empty')
+          if [ -z "$FILE_VER" ]; then
+            echo "version is not set in Cargo.toml for package ${PKG_NAME}"
+            exit 1
+          fi
           if [ "v${FILE_VER}" != "${TAG}" ]; then
             echo "Tag ${TAG} != Cargo.toml version v${FILE_VER}"
             exit 1
