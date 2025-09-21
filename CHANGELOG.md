@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2025-09-21
+### Changed
+- Upgraded to `masterror` 0.10 and refreshed internal tooling error handling to
+  accommodate the derive updates.
+
 ## [0.2.5] - 2025-09-20
 ### Changed
 - Replaced `thiserror` derives with the new `masterror::Error` re-export and

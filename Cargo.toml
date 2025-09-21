@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.2.5"
+version = "0.2.6"
 rust-version = "1.90"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
@@ -44,7 +44,7 @@ percent-encoding = "2"
 base64 = "0.22"
 ed25519-dalek = "2"
 "\u0074hiserror" = "2"
-masterror = "0.5"
+masterror = "0.10"
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = [
   "blocking",

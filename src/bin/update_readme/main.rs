@@ -1,3 +1,8 @@
+#![allow(
+    non_shorthand_field_patterns,
+    reason = "derive-generated source access needs renames"
+)]
+
 mod version_probe;
 
 use std::{env, fs, path::PathBuf};
@@ -25,10 +30,11 @@ enum ReadmeUpdateError {
     MetadataParse(toml::de::Error),
     #[error("environment variable CARGO_MANIFEST_DIR not set: {0}")]
     ManifestDir(env::VarError),
-    #[error("failed to read file {path}: {source}")]
+    #[error("failed to read file {path}: {error}")]
     ReadFile {
-        path:   String,
-        source: std::io::Error
+        path:  String,
+        #[source]
+        error: std::io::Error
     },
     #[error("commit {commit} declared in metadata not found in WEBAPP_API.md")]
     CommitNotReferenced { commit: String },
@@ -99,19 +105,19 @@ fn run() -> Result<(), ReadmeUpdateError> {
     let cargo_toml_path = root.join("Cargo.toml");
 
     let webapp_api_content =
-        fs::read_to_string(&webapp_api_path).map_err(|source| ReadmeUpdateError::ReadFile {
+        fs::read_to_string(&webapp_api_path).map_err(|error| ReadmeUpdateError::ReadFile {
             path: webapp_api_path.display().to_string(),
-            source
+            error
         })?;
     let readme_content =
-        fs::read_to_string(&readme_path).map_err(|source| ReadmeUpdateError::ReadFile {
+        fs::read_to_string(&readme_path).map_err(|error| ReadmeUpdateError::ReadFile {
             path: readme_path.display().to_string(),
-            source
+            error
         })?;
     let cargo_toml_content =
-        fs::read_to_string(&cargo_toml_path).map_err(|source| ReadmeUpdateError::ReadFile {
+        fs::read_to_string(&cargo_toml_path).map_err(|error| ReadmeUpdateError::ReadFile {
             path: cargo_toml_path.display().to_string(),
-            source
+            error
         })?;
 
     let mut status = parse_status(&webapp_api_content)?;
