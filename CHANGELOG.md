@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2025-09-21
+### Changed
+- Removed the crate's direct dependency on `thiserror`, relying on `masterror`
+  for error derives exclusively.
+
 ## [0.2.6] - 2025-09-21
 ### Changed
 - Upgraded to `masterror` 0.10 and refreshed internal tooling error handling to
