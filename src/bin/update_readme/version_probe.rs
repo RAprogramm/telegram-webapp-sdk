@@ -1,3 +1,8 @@
+#![allow(
+    non_shorthand_field_patterns,
+    reason = "derive-generated source access needs renames"
+)]
+
 use std::time::Duration;
 
 use masterror::Error;
@@ -14,15 +19,17 @@ pub enum VersionDiscoveryError {
     EmptyUrl,
     #[error("failed to build HTTP client: {0}")]
     ClientBuild(reqwest::Error),
-    #[error("failed to fetch {url}: {source}")]
+    #[error("failed to fetch {url}: {error}")]
     Request {
-        url:    String,
-        source: reqwest::Error
+        url:   String,
+        #[source]
+        error: reqwest::Error
     },
-    #[error("failed to read body from {url}: {source}")]
+    #[error("failed to read body from {url}: {error}")]
     BodyRead {
-        url:    String,
-        source: reqwest::Error
+        url:   String,
+        #[source]
+        error: reqwest::Error
     },
     #[error("failed to compile latest version pattern: {0}")]
     Pattern(regex::Error),
@@ -50,21 +57,21 @@ pub fn discover_latest_version(probe_url: &str) -> Result<String, VersionDiscove
         .get(probe_url)
         .header(ACCEPT, "text/plain, text/x-c++src, text/html")
         .send()
-        .map_err(|source| VersionDiscoveryError::Request {
+        .map_err(|error| VersionDiscoveryError::Request {
             url: probe_url.to_owned(),
-            source
+            error
         })?
         .error_for_status()
-        .map_err(|source| VersionDiscoveryError::Request {
+        .map_err(|error| VersionDiscoveryError::Request {
             url: probe_url.to_owned(),
-            source
+            error
         })?;
 
     let body = response
         .text()
-        .map_err(|source| VersionDiscoveryError::BodyRead {
+        .map_err(|error| VersionDiscoveryError::BodyRead {
             url: probe_url.to_owned(),
-            source
+            error
         })?;
 
     extract_version(probe_url, &body)
