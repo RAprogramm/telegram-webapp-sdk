@@ -45,7 +45,7 @@ pub fn mock_telegram_webapp(config: MockTelegramConfig) -> Result<(), JsValue> {
     let auth_date = config.auth_date.unwrap_or_else(|| "1234567890".into());
     let hash = config.hash.unwrap_or_else(|| "fakehash".into());
 
-    let init_data = generate_mock_init_data(&user, &auth_date, &hash);
+    let init_data = generate_mock_init_data(&user, &auth_date, &hash, config.query_id.as_deref());
     Reflect::set(&webapp, &"initData".into(), &JsValue::from_str(&init_data))?;
 
     let theme = Object::new();

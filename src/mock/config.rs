@@ -13,6 +13,7 @@ pub struct MockTelegramConfig {
     pub user: Option<MockTelegramUser>,
     pub auth_date: Option<String>,
     pub hash: Option<String>,
+    pub query_id: Option<String>,
     pub bg_color: Option<String>,
     pub text_color: Option<String>,
     pub hint_color: Option<String>,

@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct TelegramInitDataInternal {
+    pub query_id:       Option<String>,
     pub user:           Option<String>,
     pub receiver:       Option<String>,
     pub chat:           Option<String>,

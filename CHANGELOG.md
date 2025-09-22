@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] - 2025-09-22
+### Added
+- Propagated `query_id` from `initData` into `TelegramInitData` and exposed it
+  through the global context, including a wasm integration test that verifies
+  the parsed value.
+
+### Changed
+- Extended the mock environment and documentation to surface the optional
+  `query_id` parameter, ensuring examples highlight how to handle inline query
+  responses.
+
 ## [0.2.9] - 2025-09-22
 ### Fixed
 - Corrected launch parameter parsing to honor the first query entry,
