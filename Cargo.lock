@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "telegram-webapp-sdk"
-version = "0.2.10"
+version = "0.2.12"
 dependencies = [
  "base64",
  "ed25519-dalek",

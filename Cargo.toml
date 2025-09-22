@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.2.10"
+version = "0.2.12"
 rust-version = "1.90"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
@@ -13,6 +13,10 @@ categories = ["web-programming", "wasm"]
 
 [workspace.package]
 rust-version = "1.90"
+
+[workspace.dependencies]
+inventory = "0.3.21"
+masterror = "0.11"
 
 
 [lib]
@@ -43,14 +47,14 @@ hex = "0.4"
 percent-encoding = "2"
 base64 = "0.22"
 ed25519-dalek = "2"
-masterror = "0.11"
+masterror = { workspace = true }
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = [
   "blocking",
   "rustls-tls-native-roots",
 ] }
 urlencoding = { version = "2", optional = true }
-inventory = { version = "0.3", optional = true }
+inventory = { workspace = true, optional = true }
 toml = "0.9"
 
 [dependencies.yew]
