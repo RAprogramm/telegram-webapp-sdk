@@ -58,7 +58,7 @@ pub fn init_sdk() -> Result<(), JsValue> {
 
     // === 3. Construct final typed initData ===
     let init_data = TelegramInitData {
-        query_id: None, // not available in urlencoded format
+        query_id: raw.query_id,
         user,
         receiver,
         chat,

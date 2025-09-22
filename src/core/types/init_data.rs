@@ -7,7 +7,11 @@ use super::{chat::TelegramChat, user::TelegramUser};
 /// `signature`.
 #[derive(Clone, Debug, Deserialize)]
 pub struct TelegramInitData {
-    /// Unique identifier for the current Mini App session.
+    /// Unique identifier for the current Mini App session provided via
+    /// `Telegram.WebApp.initData`.
+    ///
+    /// Present when the Mini App is launched from inline query results and can
+    /// be used to respond through `answerWebAppQuery`.
     pub query_id: Option<String>,
 
     /// Information about the current Telegram user.

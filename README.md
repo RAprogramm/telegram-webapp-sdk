@@ -31,7 +31,7 @@
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.9", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.2.10", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -105,7 +105,7 @@ telegram-webapp-sdk = "0.2"
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.9", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.2.10", features = ["macros", "yew", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
@@ -124,6 +124,10 @@ use yew::prelude::*;
 #[function_component(App)]
 fn app() -> Html {
     let ctx = use_telegram_context().expect("context");
+    if let Some(query_id) = ctx.init_data.query_id.as_deref() {
+        // Handle inline query response with `answerWebAppQuery`.
+        let _ = query_id;
+    }
     html! { <span>{ ctx.init_data.auth_date }</span> }
 }
 ```
@@ -152,6 +156,10 @@ fn App() -> impl IntoView {
     provide_telegram_context().expect("context");
     let ctx = use_context::<telegram_webapp_sdk::core::context::TelegramContext>()
         .expect("context");
+    if let Some(query_id) = ctx.init_data.query_id.as_deref() {
+        // Handle inline query response with `answerWebAppQuery`.
+        let _ = query_id;
+    }
     view! { <span>{ ctx.init_data.auth_date }</span> }
 }
 ```
