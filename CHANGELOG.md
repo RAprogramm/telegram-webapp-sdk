@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.12] - 2025-09-24
+### Changed
+- Centralized the `masterror` 0.11 dependency in workspace metadata so all
+  members, including the demo, use the same error handling crate without
+  lingering `thiserror` references.
+
+## [0.2.11] - 2025-09-23
+### Changed
+- Upgraded to `masterror` 0.11 across the workspace, fully removing any
+  remaining reliance on `thiserror` derives.
+
 ## [0.2.10] - 2025-09-22
 ### Added
 - Propagated `query_id` from `initData` into `TelegramInitData` and exposed it

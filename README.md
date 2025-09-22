@@ -31,7 +31,7 @@
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.10", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.2.12", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -105,7 +105,7 @@ telegram-webapp-sdk = "0.2"
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.10", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.2.12", features = ["macros", "yew", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
