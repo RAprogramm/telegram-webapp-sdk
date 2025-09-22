@@ -1,4 +1,5 @@
 use once_cell::unsync::OnceCell;
+use percent_encoding::{percent_decode, percent_decode_str};
 use wasm_bindgen::JsValue;
 
 use super::types::{
@@ -48,6 +49,9 @@ impl TelegramContext {
 
 /// Returns launch parameters parsed from the current window location.
 ///
+/// The `tg_web_app_platform` entry is read from the `tgWebAppPlatform`
+/// query parameter and falls back to `"web"` when it is absent.
+///
 /// # Errors
 /// Returns a [`JsValue`] if the global window object is unavailable.
 ///
@@ -57,11 +61,11 @@ impl TelegramContext {
 /// let _ = get_launch_params();
 /// ```
 pub fn get_launch_params() -> Result<LaunchParams, JsValue> {
-    let window = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
-    let location = window.location();
+    let _ = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
 
     Ok(LaunchParams {
-        tg_web_app_platform:      location.origin().ok().or_else(|| Some("web".into())),
+        tg_web_app_platform:      get_param("tgWebAppPlatform")
+            .or_else(|| Some(String::from("web"))),
         tg_web_app_version:       get_param("tgWebAppVersion"),
         tg_web_app_start_param:   get_param("tgWebAppStartParam"),
         tg_web_app_show_settings: get_param("tgWebAppShowSettings").map(|s| s == "1"),
@@ -70,31 +74,106 @@ pub fn get_launch_params() -> Result<LaunchParams, JsValue> {
 }
 
 fn get_param(key: &str) -> Option<String> {
-    web_sys::window()?
-        .document()?
-        .location()?
-        .search()
-        .ok()?
-        .split('&')
-        .find_map(|pair| {
-            let mut parts = pair.split('=');
-            let k = parts.next()?;
-            let v = parts.next()?;
-            if k == key { Some(v.to_string()) } else { None }
-        })
+    let search = web_sys::window()?.document()?.location()?.search().ok()?;
+
+    let query = search.strip_prefix('?').unwrap_or(search.as_str());
+    extract_param(query, key)
+}
+
+fn extract_param(query: &str, key: &str) -> Option<String> {
+    query.split('&').find_map(|pair| {
+        if pair.is_empty() {
+            return None;
+        }
+
+        let mut parts = pair.splitn(2, '=');
+        let current_key = parts.next()?;
+        if current_key != key {
+            return None;
+        }
+
+        let raw_value = parts.next()?;
+        decode_query_value(raw_value)
+    })
+}
+
+fn decode_query_value(raw_value: &str) -> Option<String> {
+    if raw_value.contains('+') {
+        let mut buffer = Vec::with_capacity(raw_value.len());
+        for byte in raw_value.as_bytes() {
+            if *byte == b'+' {
+                buffer.push(b' ');
+            } else {
+                buffer.push(*byte);
+            }
+        }
+
+        return percent_decode(buffer.as_slice())
+            .decode_utf8()
+            .ok()
+            .map(|cow| cow.into_owned());
+    }
+
+    percent_decode_str(raw_value)
+        .decode_utf8()
+        .ok()
+        .map(|cow| cow.into_owned())
 }
 
 #[cfg(test)]
 mod tests {
-    use wasm_bindgen::JsValue;
-    use wasm_bindgen_test::wasm_bindgen_test;
-
     use super::*;
 
-    #[allow(dead_code)]
-    #[wasm_bindgen_test]
-    fn get_launch_params_returns_error_without_window() {
-        let err = get_launch_params().unwrap_err();
-        assert_eq!(err, JsValue::from_str("no window"));
+    #[test]
+    fn extract_param_returns_first_entry() {
+        let query = "tgWebAppPlatform=android&tgWebAppVersion=9.2";
+        let platform = extract_param(query, "tgWebAppPlatform");
+        assert_eq!(platform.as_deref(), Some("android"));
+    }
+
+    #[test]
+    fn decode_query_value_handles_plus_and_percent_sequences() {
+        let query = "tgWebAppStartParam=hello%2Bworld+test";
+        let value = extract_param(query, "tgWebAppStartParam");
+        assert_eq!(value.as_deref(), Some("hello+world test"));
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    mod wasm {
+        use wasm_bindgen::JsValue;
+        use wasm_bindgen_test::wasm_bindgen_test;
+
+        use super::super::get_launch_params;
+
+        #[allow(dead_code)]
+        #[wasm_bindgen_test]
+        fn get_launch_params_returns_error_without_window() {
+            let err = get_launch_params().unwrap_err();
+            assert_eq!(err, JsValue::from_str("no window"));
+        }
+
+        #[wasm_bindgen_test]
+        fn get_launch_params_reads_first_query_parameter() -> Result<(), JsValue> {
+            let window = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
+            let location = window.location();
+            let original_search = location.search().unwrap_or_default();
+
+            location.set_search(
+                "?tgWebAppPlatform=android&tgWebAppVersion=9.2&tgWebAppStartParam=hello%2Bworld+test&tgWebAppShowSettings=1&tgWebAppBotInline=0"
+            )?;
+
+            let params = get_launch_params()?;
+            assert_eq!(params.tg_web_app_platform.as_deref(), Some("android"));
+            assert_eq!(params.tg_web_app_version.as_deref(), Some("9.2"));
+            assert_eq!(
+                params.tg_web_app_start_param.as_deref(),
+                Some("hello+world test")
+            );
+            assert_eq!(params.tg_web_app_show_settings, Some(true));
+            assert_eq!(params.tg_web_app_bot_inline, Some(false));
+
+            location.set_search(&original_search)?;
+            Ok(())
+        }
     }
 }

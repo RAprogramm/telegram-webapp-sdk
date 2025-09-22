@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] - 2025-09-22
+### Fixed
+- Corrected launch parameter parsing to honor the first query entry,
+  percent-decode values (including `tgWebAppPlatform`), and preserve
+  boolean flags.
+
+### Added
+- Regression tests covering decoded query parameters for `get_launch_params`.
+
 ## [0.2.8] - 2025-09-21
 ### Changed
 - Expanded the README with appearance, viewport, and biometric examples while
