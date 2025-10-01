@@ -10,6 +10,7 @@
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 ![MSRV](https://img.shields.io/badge/MSRV-1.89-blue)
 ![License](https://img.shields.io/badge/License-MIT%20or%20Apache--2.0-informational)
+[![Hits-of-Code](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk?branch=main)](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk/view?branch=main)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
 <!-- webapp_api_badges:start -->
 [![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.2-blue)](https://core.telegram.org/bots/webapps)
