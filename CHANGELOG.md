@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.13] - 2025-10-01
+### Changed
+- Upgraded to `masterror` 0.24 across the workspace, ensuring the SDK and demo
+  benefit from the latest error handling improvements.
+
 ## [0.2.12] - 2025-09-24
 ### Changed
 - Centralized the `masterror` 0.11 dependency in workspace metadata so all
