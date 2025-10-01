@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.2.12"
+version = "0.2.13"
 rust-version = "1.90"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
@@ -16,7 +16,7 @@ rust-version = "1.90"
 
 [workspace.dependencies]
 inventory = "0.3.21"
-masterror = "0.11"
+masterror = "0.24"
 
 
 [lib]

@@ -10,10 +10,11 @@
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 ![MSRV](https://img.shields.io/badge/MSRV-1.89-blue)
 ![License](https://img.shields.io/badge/License-MIT%20or%20Apache--2.0-informational)
+[![Hits-of-Code](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk?branch=main)](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk/view?branch=main)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
 <!-- webapp_api_badges:start -->
 [![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.2-blue)](https://core.telegram.org/bots/webapps)
-[![Coverage](https://img.shields.io/badge/Coverage-9.2%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
+[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
 <!-- webapp_api_badges:end -->
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
@@ -580,7 +581,7 @@ TelegramWebApp::validate_init_data(
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.2` matches the latest Telegram WebApp API release `9.2`. Synced in commit [92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7) (recorded on 2025-09-20).
+**WebApp API coverage:** version `9.2` matches the latest Telegram WebApp API release `9.2`. Synced in commit [92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7) (recorded on 2025-09-21).
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
