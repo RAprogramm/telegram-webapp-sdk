@@ -55,7 +55,9 @@
 - [Changelog](#changelog)
 - [License](#license)
 - [Metrics](#metrics)
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Features
 
 - Comprehensive coverage of Telegram Web App JavaScript APIs.
@@ -63,7 +65,9 @@
 - Optional macros for automatic initialization and routing.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
   step with the Telegram WebApp API 9.2 feature set.
+  
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Macros
 
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
@@ -116,7 +120,9 @@ impl CustomRouter {
 
 telegram_router!(CustomRouter);
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Installation
 
 Add the crate to your `Cargo.toml`:
@@ -136,7 +142,9 @@ telegram-webapp-sdk = { version = "0.2.12", features = ["macros", "yew", "mock"]
 - `yew` &mdash; exposes a `use_telegram_context` hook and a `BottomButton` component.
 - `leptos` &mdash; integrates the context into the Leptos reactive system.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
+- 
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Quick start
 
 ### Yew
@@ -202,7 +210,9 @@ fn App() -> impl IntoView {
     view! { <BottomButton button=Btn::Main text /> }
 }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Mock environment
 
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
@@ -234,7 +244,9 @@ app.request_write_access(|granted| {
 ```
 
 These calls require the user's explicit permission before any information is shared.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Keyboard control
 
 Hide the native keyboard when it's no longer required:
@@ -247,7 +259,9 @@ app.hide_keyboard()?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Closing confirmation
 
 Prompt users before the Mini App closes:
@@ -263,7 +277,9 @@ app.disable_closing_confirmation()?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Invoice payments
 
 Open invoices and react to the final payment status:
