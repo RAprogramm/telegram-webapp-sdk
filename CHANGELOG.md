@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.14] - 2025-10-03
+### Fixed
+- Guarded the nightly-only `doc_auto_cfg` attribute behind a compiler channel
+  probe so documentation builds on docs.rs no longer fail on stable toolchains.
+
+### Changed
+- Added a lightweight build-time check using `version_check` to conditionally
+  enable nightly-only documentation features without impacting stable
+  consumers.
+
 ## [0.2.13] - 2025-10-01
 ### Changed
 - Upgraded to `masterror` 0.24 across the workspace, ensuring the SDK and demo

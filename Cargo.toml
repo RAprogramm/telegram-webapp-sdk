@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.2.13"
+version = "0.2.14"
 rust-version = "1.90"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
@@ -56,6 +56,9 @@ reqwest = { version = "0.12", default-features = false, features = [
 urlencoding = { version = "2", optional = true }
 inventory = { workspace = true, optional = true }
 toml = "0.9"
+
+[build-dependencies]
+version_check = "0.9"
 
 [dependencies.yew]
 version = "0.21"

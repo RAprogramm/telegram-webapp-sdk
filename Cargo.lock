@@ -2750,7 +2750,7 @@ dependencies = [
 
 [[package]]
 name = "telegram-webapp-sdk"
-version = "0.2.13"
+version = "0.2.14"
 dependencies = [
  "base64",
  "ed25519-dalek",
@@ -2770,6 +2770,7 @@ dependencies = [
  "serde_urlencoded",
  "toml",
  "urlencoding",
+ "version_check",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
