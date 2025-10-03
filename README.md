@@ -3,6 +3,8 @@
     Keep sections concise and examples compilable where possible.
 -->
 
+<a id="readme-top"></a>
+
 # Telegram WebApp SDK
 
 [![Crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
@@ -19,6 +21,41 @@
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
+## Table of contents
+
+- [Features](#features)
+- [Macros](#macros)
+- [Router](#router)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+  - [Yew](#yew)
+  - [Leptos](#leptos)
+- [Mock environment](#mock-environment)
+- [User interactions](#user-interactions)
+- [Keyboard control](#keyboard-control)
+- [Closing confirmation](#closing-confirmation)
+- [Invoice payments](#invoice-payments)
+- [Sharing](#sharing)
+- [Settings button](#settings-button)
+- [Cloud storage](#cloud-storage)
+- [Home screen](#home-screen)
+- [Event callbacks](#event-callbacks)
+  - [Background events](#background-events)
+- [Appearance](#appearance)
+- [Viewport](#viewport)
+- [Fullscreen and orientation](#fullscreen-and-orientation)
+- [Haptic feedback](#haptic-feedback)
+- [Device storage](#device-storage)
+- [Secure storage](#secure-storage)
+- [Biometric authentication](#biometric-authentication)
+- [Location manager](#location-manager)
+- [Device sensors](#device-sensors)
+- [Init data validation](#init-data-validation)
+- [API coverage](#api-coverage)
+- [Changelog](#changelog)
+- [License](#license)
+- [Metrics](#metrics)
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Features
 
 - Comprehensive coverage of Telegram Web App JavaScript APIs.
@@ -26,7 +63,7 @@
 - Optional macros for automatic initialization and routing.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
   step with the Telegram WebApp API 9.2 feature set.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Macros
 
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
@@ -52,7 +89,7 @@ When running outside Telegram in debug builds, `telegram_app!` loads mock
 settings from `telegram-webapp.toml`.
 - Configurable mock `Telegram.WebApp` for local development and testing.
 - API helpers for user interactions, storage, device sensors and more.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Router
 
 The `macros` feature ships with a minimal in-memory [`Router`](src/router.rs)
@@ -79,21 +116,7 @@ impl CustomRouter {
 
 telegram_router!(CustomRouter);
 ```
-
-## Table of contents
-
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Mock environment](#mock-environment)
-- [User interactions](#user-interactions)
-- [Keyboard control](#keyboard-control)
-- [Appearance](#appearance)
-- [Viewport](#viewport)
-- [Biometric authentication](#biometric-authentication)
-- [API coverage](#api-coverage)
-- [Changelog](#changelog)
-- [License](#license)
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Installation
 
 Add the crate to your `Cargo.toml`:
@@ -113,7 +136,7 @@ telegram-webapp-sdk = { version = "0.2.12", features = ["macros", "yew", "mock"]
 - `yew` &mdash; exposes a `use_telegram_context` hook and a `BottomButton` component.
 - `leptos` &mdash; integrates the context into the Leptos reactive system.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Quick start
 
 ### Yew
@@ -179,7 +202,7 @@ fn App() -> impl IntoView {
     view! { <BottomButton button=Btn::Main text /> }
 }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Mock environment
 
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
@@ -188,7 +211,7 @@ The `mock` feature simulates a `Telegram.WebApp` instance, enabling local develo
 let config = telegram_webapp_sdk::mock::MockConfig::default();
 let ctx = telegram_webapp_sdk::mock::install(config)?;
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## User interactions
 
 Request access to sensitive user data or open the contact interface:
@@ -211,7 +234,7 @@ app.request_write_access(|granted| {
 ```
 
 These calls require the user's explicit permission before any information is shared.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Keyboard control
 
 Hide the native keyboard when it's no longer required:
@@ -224,7 +247,7 @@ app.hide_keyboard()?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Closing confirmation
 
 Prompt users before the Mini App closes:
@@ -240,6 +263,7 @@ app.disable_closing_confirmation()?;
 # Ok(())
 # }
 ```
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Invoice payments
 
 Open invoices and react to the final payment status:
@@ -257,6 +281,7 @@ app.off_event(handle)?;
 # Ok(())
 # }
 ```
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:
@@ -277,7 +302,7 @@ app.share_to_story("https://example.com/image.png", Some(&params.into()))?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Settings button
 
 Control the Telegram client's settings button and handle user clicks:
@@ -295,7 +320,7 @@ off_click(&cb)?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Cloud storage
 
 Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
@@ -315,7 +340,7 @@ assert_eq!(value, Some("1".into()));
 ```
 
 All functions return a `Promise` and require the Web App to run inside Telegram.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Home screen
 
 Prompt users to add the app to their home screen and check the current status:
@@ -331,7 +356,7 @@ app.check_home_screen_status(|status| {
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Event callbacks
 
 Callback registration methods return an `EventHandle` for later deregistration.
@@ -378,7 +403,7 @@ Supported background events:
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Appearance
 
 Customize colors and react to theme or safe area updates:
@@ -408,7 +433,7 @@ app.off_event(content_handle)?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Viewport
 
 Inspect the Mini App viewport size and subscribe to updates:
@@ -430,7 +455,7 @@ callback.forget();
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Fullscreen and orientation
 
 Control the Mini App display and screen orientation:
@@ -448,7 +473,7 @@ app.exit_fullscreen()?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Haptic feedback
 
 Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
@@ -464,7 +489,7 @@ notification_occurred(HapticNotificationType::Success)?;
 selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Device storage
 
 Persist lightweight data on the user's device:
@@ -478,7 +503,7 @@ let value = get("theme").await?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Secure storage
 
 Store sensitive data encrypted and restorable:
@@ -492,7 +517,7 @@ let _ = restore("token").await?;
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Biometric authentication
 
 Guard privileged actions behind the BiometricManager API:
@@ -511,7 +536,7 @@ if is_biometric_available()? {
 # Ok(())
 # }
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Location manager
 
 Retrieve user location and react to related events via Telegram's location manager:
@@ -531,7 +556,7 @@ on_location_requested(&cb)?;
 cb.forget();
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Device sensors
 
 Access motion sensors if the user's device exposes them.
@@ -548,6 +573,7 @@ stop()?;
 Callbacks for sensor lifecycle events are available through `on_started`,
 `on_changed`, `on_stopped`, and `on_failed` functions for accelerometer,
 gyroscope, and device orientation sensors.
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Init data validation
 
 Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
@@ -577,7 +603,7 @@ TelegramWebApp::validate_init_data(
 
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## API coverage
 
 <!-- webapp_api_summary:start -->
@@ -585,11 +611,11 @@ TelegramWebApp::validate_init_data(
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## License
 
 `telegram-webapp-sdk` is licensed under either of
@@ -598,7 +624,8 @@ See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
-
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Metrics
 
 ![Metrics](https://github.com/RAprogramm/infra-metrics-insight-renderer/blob/main/metrics/telegram-webapp-sdk.svg)
+<p align="right"><a href="#readme-top">Back to top</a></p>
