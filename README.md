@@ -598,3 +598,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
+
+## Metrics
+
+![Metrics](https://github.com/RAprogramm/infra-metrics-insight-renderer/blob/main/metrics/telegram-webapp-sdk.svg)
