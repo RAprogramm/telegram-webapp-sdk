@@ -93,7 +93,9 @@ When running outside Telegram in debug builds, `telegram_app!` loads mock
 settings from `telegram-webapp.toml`.
 - Configurable mock `Telegram.WebApp` for local development and testing.
 - API helpers for user interactions, storage, device sensors and more.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Router
 
 The `macros` feature ships with a minimal in-memory [`Router`](src/router.rs)
@@ -142,7 +144,7 @@ telegram-webapp-sdk = { version = "0.2.12", features = ["macros", "yew", "mock"]
 - `yew` &mdash; exposes a `use_telegram_context` hook and a `BottomButton` component.
 - `leptos` &mdash; integrates the context into the Leptos reactive system.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
-- 
+ 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
 ## Quick start
@@ -221,7 +223,9 @@ The `mock` feature simulates a `Telegram.WebApp` instance, enabling local develo
 let config = telegram_webapp_sdk::mock::MockConfig::default();
 let ctx = telegram_webapp_sdk::mock::install(config)?;
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## User interactions
 
 Request access to sensitive user data or open the contact interface:
@@ -297,7 +301,9 @@ app.off_event(handle)?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Sharing
 
 Share links, prepared messages, or stories and join voice chats:
@@ -336,7 +342,9 @@ off_click(&cb)?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Cloud storage
 
 Persist small key-value pairs in Telegram's cloud using `CloudStorage`:
@@ -372,7 +380,9 @@ app.check_home_screen_status(|status| {
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Event callbacks
 
 Callback registration methods return an `EventHandle` for later deregistration.
@@ -419,7 +429,9 @@ Supported background events:
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Appearance
 
 Customize colors and react to theme or safe area updates:
@@ -449,7 +461,9 @@ app.off_event(content_handle)?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Viewport
 
 Inspect the Mini App viewport size and subscribe to updates:
@@ -471,7 +485,9 @@ callback.forget();
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Fullscreen and orientation
 
 Control the Mini App display and screen orientation:
@@ -489,7 +505,9 @@ app.exit_fullscreen()?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Haptic feedback
 
 Trigger device vibrations through Telegram's [HapticFeedback](https://core.telegram.org/bots/webapps#hapticfeedback) API:
@@ -505,7 +523,9 @@ notification_occurred(HapticNotificationType::Success)?;
 selection_changed()?;
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Device storage
 
 Persist lightweight data on the user's device:
@@ -519,7 +539,9 @@ let value = get("theme").await?;
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Secure storage
 
 Store sensitive data encrypted and restorable:
@@ -552,7 +574,9 @@ if is_biometric_available()? {
 # Ok(())
 # }
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Location manager
 
 Retrieve user location and react to related events via Telegram's location manager:
@@ -572,7 +596,9 @@ on_location_requested(&cb)?;
 cb.forget();
 # Ok::<(), wasm_bindgen::JsValue>(())
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Device sensors
 
 Access motion sensors if the user's device exposes them.
@@ -589,7 +615,9 @@ stop()?;
 Callbacks for sensor lifecycle events are available through `on_started`,
 `on_changed`, `on_stopped`, and `on_failed` functions for accelerometer,
 gyroscope, and device orientation sensors.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Init data validation
 
 Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
@@ -619,7 +647,9 @@ TelegramWebApp::validate_init_data(
 
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## API coverage
 
 <!-- webapp_api_summary:start -->
@@ -627,11 +657,15 @@ TelegramWebApp::validate_init_data(
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## License
 
 `telegram-webapp-sdk` is licensed under either of
@@ -640,7 +674,9 @@ See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
+
 <p align="right"><a href="#readme-top">Back to top</a></p>
+
 ## Metrics
 
 ![Metrics](https://github.com/RAprogramm/infra-metrics-insight-renderer/blob/main/metrics/telegram-webapp-sdk.svg)
