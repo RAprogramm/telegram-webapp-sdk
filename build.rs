@@ -1,7 +1,12 @@
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(has_doc_cfg)");
     println!("cargo:rustc-check-cfg=cfg(has_doc_auto_cfg)");
 
-    if version_check::Channel::read().is_some_and(|channel| channel.supports_features()) {
+    if version_check::supports_feature("doc_cfg").unwrap_or(false) {
+        println!("cargo:rustc-cfg=has_doc_cfg");
+    }
+
+    if version_check::supports_feature("doc_auto_cfg").unwrap_or(false) {
         println!("cargo:rustc-cfg=has_doc_auto_cfg");
     }
 }
