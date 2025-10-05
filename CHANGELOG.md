@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.15] - 2025-10-05
+### Fixed
+- Restored compatibility with the latest nightly toolchains by probing support
+  for `doc_cfg` and `doc_auto_cfg`, ensuring docs.rs builds succeed after the
+  upstream removal of `doc_auto_cfg`.
+
+### Changed
+- Emitted explicit `cargo:rustc-check-cfg` declarations for both documentation
+  capability flags so that future compilers surface helpful diagnostics when
+  the build script conditions fall out of sync.
+
 ## [0.2.14] - 2025-10-03
 ### Fixed
 - Guarded the nightly-only `doc_auto_cfg` attribute behind a compiler channel
