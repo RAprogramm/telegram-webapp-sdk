@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 //! Telegram WebApp SDK macros.
 //!
 //! This module provides declarative macros for building Telegram WebApp

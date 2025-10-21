@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use once_cell::unsync::OnceCell;
 use percent_encoding::{percent_decode, percent_decode_str};
 use wasm_bindgen::JsValue;

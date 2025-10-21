@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64_STANDARD};
 use ed25519_dalek::{Signer, SigningKey};
 use hmac_sha256::{HMAC, Hash};
@@ -10,7 +13,8 @@ use telegram_webapp_sdk::{
 fn hmac_validates() {
     let bot_token = "123456:ABC";
     let secret_key = Hash::hash(format!("WebAppData{bot_token}").as_bytes());
-    let check_string = "a=1\nb=2";
+    let check_string = "a=1
+b=2";
     let expected = HMAC::mac(check_string.as_bytes(), secret_key);
     let hash = hex::encode(expected);
     let query = format!("a=1&b=2&hash={hash}");
@@ -23,7 +27,8 @@ fn hmac_validates() {
 fn hmac_rejects_modified_data() {
     let bot_token = "123456:ABC";
     let secret_key = Hash::hash(format!("WebAppData{bot_token}").as_bytes());
-    let check_string = "a=1\nb=2";
+    let check_string = "a=1
+b=2";
     let expected = HMAC::mac(check_string.as_bytes(), secret_key);
     let hash = hex::encode(expected);
     assert_eq!(
@@ -39,7 +44,8 @@ fn hmac_rejects_modified_data() {
 fn ed25519_validates() {
     let sk = SigningKey::from_bytes(&[42u8; 32]);
     let pk = sk.verifying_key();
-    let message = "a=1\nb=2";
+    let message = "a=1
+b=2";
     let sig = sk.sign(message.as_bytes());
     let init_data = format!(
         "a=1&b=2&signature={}",
@@ -58,7 +64,8 @@ fn ed25519_validates() {
 fn ed25519_rejects_bad_signature() {
     let sk = SigningKey::from_bytes(&[42u8; 32]);
     let pk = sk.verifying_key();
-    let message = "a=1\nb=2";
+    let message = "a=1
+b=2";
     let sig = sk.sign(message.as_bytes());
     let tampered = format!(
         "a=1&b=3&signature={}",

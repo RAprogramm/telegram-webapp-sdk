@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use js_sys::{Array, Function, Promise, Reflect};
 use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;

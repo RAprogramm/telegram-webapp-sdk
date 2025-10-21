@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use telegram_webapp_sdk::{core::safe_context::get_context, telegram_page};
 use wasm_bindgen::JsValue;
 

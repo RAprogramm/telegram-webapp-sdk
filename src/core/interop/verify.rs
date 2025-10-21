@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use hex::encode;
 use hmac_sha256::{HMAC, Hash};
 use percent_encoding::percent_decode_str;

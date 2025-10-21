@@ -1,0 +1,32 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: telegram-webapp-sdk
+Upstream-Contact: RAprogramm <andrey.rozanov.vl@gmail.com>
+Source: https://github.com/RAprogramm/telegram-webapp-sdk
+
+Files: Cargo.lock
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: *.md README.md CHANGELOG.md
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: .gitignore .github/* codecov.yml
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: *.toml rustfmt.toml .config/nextest.toml
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: *.json *.yml *.yaml
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: *.png *.jpg *.svg *.ico
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0
+
+Files: demo/**/*
+Copyright: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+License: CC0-1.0

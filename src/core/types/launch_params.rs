@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #[derive(Debug, Clone)]
 pub struct LaunchParams {
     pub tg_web_app_platform:      Option<String>,

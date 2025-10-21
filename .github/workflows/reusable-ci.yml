@@ -78,15 +78,26 @@ jobs:
             cargo +${{ steps.msrv.outputs.msrv }} clippy --workspace --all-targets -- -D warnings
           fi
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
       - name: Tests (MSRV)
         shell: bash
         run: |
           set -euo pipefail
           if [ "${{ inputs.all-features }}" = "true" ]; then
-            cargo +${{ steps.msrv.outputs.msrv }} test --workspace --all-features --no-fail-fast
+            cargo +${{ steps.msrv.outputs.msrv }} nextest run --workspace --all-features --no-fail-fast --profile ci
           else
-            cargo +${{ steps.msrv.outputs.msrv }} test --workspace --no-fail-fast
+            cargo +${{ steps.msrv.outputs.msrv }} nextest run --workspace --no-fail-fast --profile ci
           fi
+
+      - name: Upload test results to Codecov
+        if: always()
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
           
       - name: Auto-commit changes (any branch)
@@ -111,3 +122,38 @@ jobs:
 
       - name: Package (dry-run)
         run: cargo +${{ steps.msrv.outputs.msrv }} package --locked
+
+      - name: REUSE Compliance
+        uses: fsfe/reuse-action@v5
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Generate coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true
+          verbose: true

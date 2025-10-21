@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #![cfg(all(target_arch = "wasm32", feature = "macros"))]
 
 use wasm_bindgen::JsValue;

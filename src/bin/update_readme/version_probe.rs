@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #![allow(
     non_shorthand_field_patterns,
     reason = "derive-generated source access needs renames"
