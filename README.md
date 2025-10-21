@@ -11,9 +11,11 @@
 [![docs.rs](https://img.shields.io/docsrs/telegram-webapp-sdk)](https://docs.rs/telegram-webapp-sdk)
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 ![MSRV](https://img.shields.io/badge/MSRV-1.89-blue)
-![License](https://img.shields.io/badge/License-MIT%20or%20Apache--2.0-informational)
+![License](https://img.shields.io/badge/License-MIT-informational)
+[![codecov](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graph/badge.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
 [![Hits-of-Code](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk?branch=main)](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk/view?branch=main)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
 [![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.2-blue)](https://core.telegram.org/bots/webapps)
 [![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
@@ -21,8 +23,29 @@
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
+<details>
+<summary>Coverage Graphs</summary>
+
+### Sunburst
+The inner-most circle is the entire project, moving away from the center are folders then, finally, a single file. The size and color of each slice is representing the number of statements and the coverage, respectively.
+
+[![Sunburst](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graphs/sunburst.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
+
+### Grid
+Each block represents a single file in the project. The size and color of each block is represented by the number of statements and the coverage, respectively.
+
+[![Grid](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graphs/tree.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
+
+### Icicle
+The top section represents the entire project. Proceeding with folders and finally individual files. The size and color of each slice is representing the number of statements and the coverage, respectively.
+
+[![Icicle](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graphs/icicle.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
+
+</details>
+
 ## Table of contents
 
+- [Coverage Graphs](#coverage-graphs)
 - [Features](#features)
 - [Macros](#macros)
 - [Router](#router)

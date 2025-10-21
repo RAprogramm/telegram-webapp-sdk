@@ -1,0 +1,58 @@
+version = 1
+SPDX-PackageName = "telegram-webapp-sdk"
+SPDX-PackageSupplier = "RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-PackageDownloadLocation = "https://github.com/RAprogramm/telegram-webapp-sdk"
+
+[[annotations]]
+path = "Cargo.lock"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["**.md", "README.md", "CHANGELOG.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".gitignore", ".github/**", "codecov.yml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["**.toml", "rustfmt.toml", ".config/nextest.toml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["**.json", "**.yml", "**.yaml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["**.png", "**.jpg", "**.svg", "**.ico"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".hooks/**", ".scripts/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["demo/.gitignore", "demo/Cargo.lock", "demo/index.html", "demo/style.css", "demo/Trunk.toml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "demo/dist/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"

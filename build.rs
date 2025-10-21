@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 fn main() {
     println!("cargo:rustc-check-cfg=cfg(has_doc_cfg)");
     println!("cargo:rustc-check-cfg=cfg(has_doc_auto_cfg)");

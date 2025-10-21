@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use serde::{Deserialize, Serialize};
 
 /// Indicates whether the bot can write messages to the user.

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use telegram_webapp_sdk::{logger, telegram_button, telegram_page, webapp::TelegramWebApp};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::{Document, Element, window};

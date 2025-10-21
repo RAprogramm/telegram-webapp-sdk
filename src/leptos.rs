@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 pub mod bottom_button;
 pub use bottom_button::BottomButton;
 use leptos::prelude::provide_context;

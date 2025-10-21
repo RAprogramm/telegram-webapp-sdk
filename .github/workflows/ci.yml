@@ -8,6 +8,7 @@ on:
 jobs:
   ci:
     uses: ./.github/workflows/reusable-ci.yml
+    secrets: inherit
     with:
       all-features: true
 

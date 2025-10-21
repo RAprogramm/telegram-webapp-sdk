@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use js_sys::{Function, Object, Reflect};
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;

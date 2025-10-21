@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 #![allow(
     non_shorthand_field_patterns,
     reason = "derive-generated source access needs renames"
@@ -219,7 +222,9 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
     };
 
     format!(
-        "[![{alt_label}](https://img.shields.io/badge/{badge_label}-{latest_encoded}-blue)]({source})\n[![Coverage](https://img.shields.io/badge/{coverage_label}-{coverage_message}-{coverage_colour})]({commit_url})\n",
+        "[![{alt_label}](https://img.shields.io/badge/{badge_label}-{latest_encoded}-blue)]({source})
+[![Coverage](https://img.shields.io/badge/{coverage_label}-{coverage_message}-{coverage_colour})]({commit_url})
+",
         alt_label = BADGE_LINK_LABEL,
         badge_label = badge_label,
         latest_encoded = latest_encoded,
@@ -251,7 +256,8 @@ fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
         .unwrap_or_default();
 
     format!(
-        "**WebApp API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.\n",
+        "**WebApp API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.
+",
         covered = status.covered_version,
         relation = relation,
         commit_short = commit_short,
@@ -302,7 +308,15 @@ mod tests {
 
     #[test]
     fn parse_status_extracts_metadata() {
-        let markdown = "<!--\n[webapp_api_status]\nlatest_version = \"7.10\"\ncovered_version = \"7.10\"\ncoverage_commit = \"7a2555c\"\ncoverage_date = \"2025-09-11\"\nsource_url = \"https://example.com\"\n-->\nother content 7a2555c";
+        let markdown = "<!--
+[webapp_api_status]
+latest_version = \"7.10\"
+covered_version = \"7.10\"
+coverage_commit = \"7a2555c\"
+coverage_date = \"2025-09-11\"
+source_url = \"https://example.com\"
+-->
+other content 7a2555c";
         let status = parse_status(markdown).expect("status");
         assert_eq!(status.latest_version, "7.10");
         assert_eq!(status.covered_version, "7.10");
@@ -314,7 +328,14 @@ mod tests {
 
     #[test]
     fn parse_status_reads_custom_probe_url() {
-        let markdown = "<!--\n[webapp_api_status]\nlatest_version = \"7.10\"\ncovered_version = \"7.10\"\ncoverage_commit = \"7a2555c\"\nlatest_version_probe_url = \"https://example.com/version.txt\"\n-->\n7a2555c";
+        let markdown = "<!--
+[webapp_api_status]
+latest_version = \"7.10\"
+covered_version = \"7.10\"
+coverage_commit = \"7a2555c\"
+latest_version_probe_url = \"https://example.com/version.txt\"
+-->
+7a2555c";
         let status = parse_status(markdown).expect("status");
         assert_eq!(
             status.latest_version_probe_url,
@@ -334,7 +355,9 @@ mod tests {
         .expect("replace");
         assert_eq!(
             updated,
-            "start<!-- webapp_api_badges:start -->\nline\n<!-- webapp_api_badges:end -->end"
+            "start<!-- webapp_api_badges:start -->
+line
+<!-- webapp_api_badges:end -->end"
         );
     }
 

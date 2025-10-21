@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use masterror::{AppError, AppResult};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlElement, window};

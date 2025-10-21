@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-License-Identifier: MIT
+
 use wasm_bindgen::{JsCast, prelude::Closure};
 use web_sys::{Document, Element, HtmlElement, window};
 
