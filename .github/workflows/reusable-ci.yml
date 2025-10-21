@@ -216,10 +216,27 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Rust stable
+      - name: Read MSRV from Cargo.toml
+        id: msrv
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+          RV=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].rust_version // empty')
+          if [ -z "$RV" ]; then
+            echo "rust-version is not set in Cargo.toml"
+            exit 1
+          fi
+          [[ "$RV" =~ ^[0-9]+\.[0-9]+$ ]] && RV="${RV}.0"
+          echo "msrv=${RV}" >> "$GITHUB_OUTPUT"
+          echo "Using MSRV: $RV"
+
+      - name: Install Rust (${{ steps.msrv.outputs.msrv }})
         uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: ${{ steps.msrv.outputs.msrv }}
           components: llvm-tools-preview
 
       - name: Cache cargo
@@ -237,7 +254,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+          cargo +${{ steps.msrv.outputs.msrv }} llvm-cov --all-features --workspace --lcov --output-path lcov.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
