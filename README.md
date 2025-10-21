@@ -23,6 +23,17 @@
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
+> **⚠️ WARNING: Coverage Limitations**
+>
+> This project is primarily WASM-only code. Current Rust tooling does not support coverage measurement for wasm32 targets:
+> - `cargo-llvm-cov` only supports native platforms (x86_64)
+> - `wasm-bindgen-test` coverage support is experimental and requires complex setup
+> - `cargo-tarpaulin` does not support wasm32
+>
+> Coverage reports show only native-testable code. WASM-specific modules (leptos, yew, api/*, webapp, logger) have integration tests but are not included in coverage metrics.
+>
+> For technical details, see [issue #127](https://github.com/RAprogramm/telegram-webapp-sdk/issues/127).
+
 <details>
 <summary>Coverage Graphs</summary>
 

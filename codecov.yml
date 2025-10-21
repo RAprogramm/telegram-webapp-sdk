@@ -24,6 +24,15 @@ ignore:
   - "tests/**/*"
   - "target/**/*"
   - ".github/**/*"
+  - "src/leptos.rs"
+  - "src/leptos/**/*"
+  - "src/yew.rs"
+  - "src/yew/**/*"
+  - "src/api/**/*"
+  - "src/webapp.rs"
+  - "src/logger.rs"
+  - "src/pages.rs"
+  - "src/router.rs"
 
 github_checks:
   annotations: true
