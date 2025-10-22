@@ -23,7 +23,8 @@
 
 `telegram-webapp-sdk` provides a type-safe and ergonomic wrapper around the [Telegram Web Apps](https://core.telegram.org/bots/webapps) JavaScript API.
 
-> **⚠️ WARNING: Coverage Limitations**
+> [!WARNING]
+> **Coverage Limitations**
 >
 > This project is primarily WASM-only code. Current Rust tooling does not support coverage measurement for wasm32 targets:
 > - `cargo-llvm-cov` only supports native platforms (x86_64)
