@@ -85,3 +85,4 @@ members = ["demo"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 wasm-bindgen-futures = "0.4"
+wasmcov = "0.2"

@@ -188,7 +188,7 @@ jobs:
 
   # 📊 Coverage
   coverage:
-    name: Coverage
+    name: Coverage (Native)
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -224,3 +224,52 @@ jobs:
           files: lcov.info
           fail_ci_if_error: true
           verbose: true
+          flags: native
+
+  # 📊 WASM Coverage
+  wasm-coverage:
+    name: Coverage (WASM)
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          targets: wasm32-unknown-unknown
+          components: llvm-tools-preview
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "nightly-wasm"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Install wasmcov
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +nightly install wasmcov
+
+      - name: Run WASM tests with coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +nightly wasmcov test -- --all-features -- --test-threads=1
+
+      - name: Generate WASM coverage report
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +nightly wasmcov report -- export --format=lcov > wasm-lcov.info
+
+      - name: Upload WASM coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: wasm-lcov.info
+          fail_ci_if_error: true
+          verbose: true
+          flags: wasm
