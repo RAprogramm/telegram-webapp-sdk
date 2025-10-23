@@ -256,13 +256,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cargo +nightly wasmcov build -- --lib --target wasm32-unknown-unknown --all-features
+          cargo +nightly wasmcov build -- --package telegram-webapp-sdk --lib --target wasm32-unknown-unknown --all-features
 
       - name: Run WASM tests with coverage
         shell: bash
         run: |
           set -euo pipefail
-          cargo +nightly wasmcov test -- --all-features -- --test-threads=1
+          cargo +nightly wasmcov test -- --package telegram-webapp-sdk --all-features -- --test-threads=1
 
       - name: Generate WASM coverage report
         shell: bash
