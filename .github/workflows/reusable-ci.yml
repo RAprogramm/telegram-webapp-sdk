@@ -257,7 +257,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cargo +nightly wasmcov test --all-features -- --test-threads=1
+          cargo +nightly wasmcov test -- --all-features -- --test-threads=1
 
       - name: Generate WASM coverage report
         shell: bash
