@@ -247,11 +247,11 @@ jobs:
           shared-key: "nightly-wasm"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Install cargo-wasmcov
+      - name: Install wasmcov
         shell: bash
         run: |
           set -euo pipefail
-          cargo +nightly install cargo-wasmcov
+          cargo +nightly install wasmcov
 
       - name: Run WASM tests with coverage
         shell: bash
