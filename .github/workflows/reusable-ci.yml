@@ -252,6 +252,12 @@ jobs:
           set -euo pipefail
           cargo +nightly install wasmcov
 
+      - name: Build with WASM coverage instrumentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +nightly wasmcov build -- --all --target wasm32-unknown-unknown
+
       - name: Run WASM tests with coverage
         shell: bash
         run: |
