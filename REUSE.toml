@@ -56,3 +56,9 @@ path = "demo/dist/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "wasmcov/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 RAprogramm <andrey.rozanov.vl@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
