@@ -263,7 +263,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cargo +nightly wasmcov report -- --lcov --output-path wasm-lcov.info
+          cargo +nightly wasmcov report -- export --format=lcov > wasm-lcov.info
 
       - name: Upload WASM coverage to Codecov
         uses: codecov/codecov-action@v5
