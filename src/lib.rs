@@ -31,22 +31,3 @@ pub mod yew;
 
 #[cfg(feature = "leptos")]
 pub mod leptos;
-
-/// Captures code coverage data for WASM builds.
-///
-/// This function is used by wasmcov to collect coverage information during test
-/// execution. It should not be called directly in application code.
-///
-/// # Safety
-///
-/// This function is marked as unsafe due to FFI requirements.
-/// It is only exported for wasm32 targets and called by the wasmcov test
-/// harness.
-#[cfg(all(target_family = "wasm", test))]
-#[no_mangle]
-pub unsafe extern "C" fn capture_coverage() {
-    let mut coverage = Vec::new();
-    if let Err(e) = wasmcov::minicov::capture_coverage(&mut coverage) {
-        web_sys::console::error_1(&format!("Coverage capture failed: {}", e).into());
-    }
-}

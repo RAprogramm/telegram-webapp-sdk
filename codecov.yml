@@ -19,10 +19,6 @@ flags:
     paths:
       - src/
     carryforward: true
-  wasm:
-    paths:
-      - src/
-    carryforward: true
 
 comment:
   layout: "header,diff,flags,components,files,footer"
