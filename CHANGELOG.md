@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made `use_telegram_context` Yew hook reactive to properly handle cases when
   the Telegram SDK initializes after component mount. The hook now uses
   `requestAnimationFrame` to efficiently poll for context availability and
-  automatically updates when the context becomes ready.
+  automatically updates when the context becomes ready. ([#141](https://github.com/RAprogramm/telegram-webapp-sdk/issues/141), [#142](https://github.com/RAprogramm/telegram-webapp-sdk/pull/142))
 
 ## [0.2.15] - 2025-10-05
 ### Fixed
