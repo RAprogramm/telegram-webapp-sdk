@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.16] - 2025-10-25
+### Fixed
+- Made `use_telegram_context` Yew hook reactive to properly handle cases when
+  the Telegram SDK initializes after component mount. The hook now uses
+  `requestAnimationFrame` to efficiently poll for context availability and
+  automatically updates when the context becomes ready.
+
 ## [0.2.15] - 2025-10-05
 ### Fixed
 - Restored compatibility with the latest nightly toolchains by probing support

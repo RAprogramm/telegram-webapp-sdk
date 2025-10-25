@@ -1,9 +1,11 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+#[cfg(debug_assertions)]
 use web_sys::console;
 
 /// Internal helper for styled log output.
+#[cfg_attr(not(debug_assertions), allow(unused_variables))]
 fn styled_log(level: &str, emoji: &str, color: &str, msg: &str) {
     #[cfg(debug_assertions)]
     {
