@@ -6,7 +6,10 @@
 use js_sys::{Object, Reflect};
 use telegram_webapp_sdk::{
     TelegramWebApp,
-    core::{context::TelegramContext, init::init_sdk}
+    core::{
+        context::TelegramContext,
+        init::{InitError, init_sdk, is_telegram_available, try_init_sdk}
+    }
 };
 use wasm_bindgen::JsValue;
 use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
@@ -160,4 +163,91 @@ fn webapp_get_raw_init_data_suitable_for_validation() -> Result<(), JsValue> {
     assert!(raw.contains("query_id="));
 
     Ok(())
+}
+
+// === Tests for new environment detection API ===
+
+#[wasm_bindgen_test]
+fn is_telegram_available_returns_true_when_installed() -> Result<(), JsValue> {
+    install_webapp("auth_date=1&hash=abc")?;
+
+    assert!(is_telegram_available());
+
+    Ok(())
+}
+
+#[wasm_bindgen_test]
+fn is_telegram_available_returns_false_when_not_installed() -> Result<(), JsValue> {
+    let win = window().ok_or_else(|| JsValue::from_str("no window"))?;
+
+    // Remove Telegram if it exists
+    Reflect::delete_property(&win, &"Telegram".into())?;
+
+    assert!(!is_telegram_available());
+
+    Ok(())
+}
+
+#[wasm_bindgen_test]
+fn try_init_sdk_returns_true_when_successful() -> Result<(), JsValue> {
+    install_webapp("auth_date=1&hash=abc")?;
+
+    let result = try_init_sdk().map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+    assert_eq!(result, true);
+
+    Ok(())
+}
+
+#[wasm_bindgen_test]
+fn try_init_sdk_returns_false_when_telegram_unavailable() -> Result<(), JsValue> {
+    let win = window().ok_or_else(|| JsValue::from_str("no window"))?;
+
+    // Remove Telegram if it exists
+    Reflect::delete_property(&win, &"Telegram".into())?;
+
+    let result = try_init_sdk().map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+    assert_eq!(result, false);
+
+    Ok(())
+}
+
+#[wasm_bindgen_test]
+fn init_error_display_formatting() {
+    assert_eq!(
+        InitError::WindowUnavailable.to_string(),
+        "Browser window object is not available"
+    );
+    assert_eq!(
+        InitError::TelegramUnavailable.to_string(),
+        "window.Telegram is undefined"
+    );
+    assert_eq!(
+        InitError::WebAppUnavailable.to_string(),
+        "Telegram.WebApp is undefined"
+    );
+    assert_eq!(
+        InitError::InitDataParseFailed("test error".to_string()).to_string(),
+        "Failed to parse initData: test error"
+    );
+    assert_eq!(
+        InitError::ThemeParamsParseFailed("theme error".to_string()).to_string(),
+        "Failed to parse theme parameters: theme error"
+    );
+    assert_eq!(
+        InitError::ContextInitFailed("context error".to_string()).to_string(),
+        "Failed to initialize context: context error"
+    );
+}
+
+#[wasm_bindgen_test]
+fn init_error_converts_to_jsvalue() {
+    let err = InitError::WindowUnavailable;
+    let js_val: JsValue = err.into();
+
+    assert_eq!(
+        js_val.as_string().unwrap(),
+        "Browser window object is not available"
+    );
 }
