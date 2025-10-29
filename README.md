@@ -654,6 +654,30 @@ gyroscope, and device orientation sensors.
 
 ## Init data validation
 
+### Retrieving raw initData
+
+Retrieve the raw URL-encoded `initData` string for server-side authentication.
+The SDK captures this string during initialization and provides convenient
+access without requiring JavaScript reflection:
+
+```rust,no_run
+use telegram_webapp_sdk::TelegramWebApp;
+
+# fn run() -> Result<(), Box<dyn std::error::Error>> {
+// Get raw initData for backend validation
+let raw_init_data = TelegramWebApp::get_raw_init_data()?;
+
+// Send to your backend for signature verification
+// POST /auth with body: { "init_data": raw_init_data }
+# Ok(())
+# }
+```
+
+This eliminates the need for manual `Reflect` calls and ensures consistency
+with the parsed data available in the context.
+
+### Validating initData
+
 Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
 The `validate_init_data` module is re-exported at the crate root and can be
 used directly or through the `TelegramWebApp::validate_init_data` helper:
