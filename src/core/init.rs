@@ -81,7 +81,7 @@ pub fn init_sdk() -> Result<(), JsValue> {
     // theme_params.clone().apply_to_root();
 
     // === 5. Init global context ===
-    TelegramContext::init(init_data, theme_params)?;
+    TelegramContext::init(init_data, theme_params, init_data_str)?;
 
     Ok(())
 }

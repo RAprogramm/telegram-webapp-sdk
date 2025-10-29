@@ -12,8 +12,9 @@ use super::types::{
 /// Global context of the Telegram Mini App, initialized once per app session.
 #[derive(Clone)]
 pub struct TelegramContext {
-    pub init_data:    TelegramInitData,
-    pub theme_params: TelegramThemeParams
+    pub init_data:     TelegramInitData,
+    pub theme_params:  TelegramThemeParams,
+    pub raw_init_data: String
 }
 
 thread_local! {
@@ -28,12 +29,14 @@ impl TelegramContext {
     /// Returns an error if the context was already initialized.
     pub fn init(
         init_data: TelegramInitData,
-        theme_params: TelegramThemeParams
+        theme_params: TelegramThemeParams,
+        raw_init_data: String
     ) -> Result<(), &'static str> {
         CONTEXT.with(|cell| {
             cell.set(TelegramContext {
                 init_data,
-                theme_params
+                theme_params,
+                raw_init_data
             })
             .map_err(|_| "TelegramContext already initialized")
         })
@@ -47,6 +50,34 @@ impl TelegramContext {
         F: FnOnce(&TelegramContext) -> R
     {
         CONTEXT.with(|cell| cell.get().map(f))
+    }
+
+    /// Returns the raw initData string as provided by Telegram.
+    ///
+    /// This is the URL-encoded initData string suitable for server-side
+    /// signature validation. The string is captured during SDK initialization
+    /// and remains unchanged.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the SDK has not been initialized via
+    /// [`crate::core::init::init_sdk`].
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use telegram_webapp_sdk::core::context::TelegramContext;
+    ///
+    /// match TelegramContext::get_raw_init_data() {
+    ///     Ok(raw) => {
+    ///         // Send to backend for validation
+    ///         println!("Raw initData: {}", raw);
+    ///     }
+    ///     Err(e) => eprintln!("Error: {}", e)
+    /// }
+    /// ```
+    pub fn get_raw_init_data() -> Result<String, &'static str> {
+        Self::get(|ctx| ctx.raw_init_data.clone()).ok_or("TelegramContext not initialized")
     }
 }
 

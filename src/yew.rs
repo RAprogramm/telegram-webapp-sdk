@@ -185,7 +185,11 @@ mod tests {
                 destructive_text_color:    None
             };
 
-            let _ = TelegramContext::init(init_data, theme_params);
+            let raw_init_data = String::from(
+                "query_id=test_query_2&user=%7B%22id%22%3A987654321%7D&auth_date=9876543210&hash=test_hash_2"
+            );
+
+            let _ = TelegramContext::init(init_data, theme_params, raw_init_data);
 
             if let Some(window) = web_sys::window() {
                 if let Some(document) = window.document() {

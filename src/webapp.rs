@@ -8,7 +8,7 @@ use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
 use crate::{
-    core::types::download_file_params::DownloadFileParams,
+    core::{context::TelegramContext, types::download_file_params::DownloadFileParams},
     logger,
     validate_init_data::{self, ValidationKey}
 };
@@ -332,6 +332,33 @@ impl TelegramWebApp {
                 validate_init_data::verify_ed25519(init_data, pk)
             }
         }
+    }
+
+    /// Returns the raw initData string as provided by Telegram.
+    ///
+    /// This is the URL-encoded initData string captured during SDK
+    /// initialization, suitable for server-side signature validation.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the SDK has not been initialized via
+    /// [`crate::core::init::init_sdk`].
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use telegram_webapp_sdk::TelegramWebApp;
+    ///
+    /// match TelegramWebApp::get_raw_init_data() {
+    ///     Ok(raw) => {
+    ///         // Send to backend for validation
+    ///         println!("Raw initData: {}", raw);
+    ///     }
+    ///     Err(e) => eprintln!("SDK not initialized: {}", e)
+    /// }
+    /// ```
+    pub fn get_raw_init_data() -> Result<String, &'static str> {
+        TelegramContext::get_raw_init_data()
     }
 
     /// Call `WebApp.sendData(data)`.
