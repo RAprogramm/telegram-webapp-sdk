@@ -22,7 +22,7 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | striptags | trim | upper_first }}
     {% for commit in commits %}
-        - {{ commit.message | upper_first }}
+        - {{ commit.message | split(pat="\n") | first | trim }}
     {% endfor %}
 {% endfor %}\n
 """
@@ -46,7 +46,7 @@ split_commits = false
 # Regex for preprocessing commit messages
 commit_preprocessors = [
     # Transform "#123 type: description" to "type: description (#123)"
-    { pattern = '^#(\d+)\s+(.+)$', replace = "${2} (#${1})" },
+    { pattern = '^#(\d+)\s+', replace = "" },
 ]
 
 # Regex for parsing commit messages
