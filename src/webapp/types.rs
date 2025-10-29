@@ -5,12 +5,35 @@ use js_sys::{Function, Object, Reflect};
 use serde::Serialize;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 
+use crate::logger;
+
 /// Handle returned when registering callbacks.
+///
+/// Automatically unregisters the callback when dropped, implementing RAII
+/// cleanup pattern to prevent memory leaks.
+///
+/// # Examples
+///
+/// ```no_run
+/// use telegram_webapp_sdk::TelegramWebApp;
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     // Handle is automatically cleaned up when scope ends
+///     let handle = app
+///         .on_theme_changed(|| {
+///             println!("Theme changed!");
+///         })
+///         .expect("subscribe");
+///
+///     // No manual cleanup needed - Drop handles it
+/// } // <- handle dropped here, callback unregistered automatically
+/// ```
 pub struct EventHandle<T: ?Sized> {
-    pub(super) target:   Object,
-    pub(super) method:   &'static str,
-    pub(super) event:    Option<String>,
-    pub(super) callback: Closure<T>
+    pub(super) target:       Object,
+    pub(super) method:       &'static str,
+    pub(super) event:        Option<String>,
+    pub(super) callback:     Closure<T>,
+    pub(super) unregistered: bool
 }
 
 impl<T: ?Sized> EventHandle<T> {
@@ -24,24 +47,75 @@ impl<T: ?Sized> EventHandle<T> {
             target,
             method,
             event,
-            callback
+            callback,
+            unregistered: false
         }
     }
 
-    pub(crate) fn unregister(self) -> Result<(), JsValue> {
+    pub(crate) fn unregister(mut self) -> Result<(), JsValue> {
+        if self.unregistered {
+            return Ok(());
+        }
+
         let f = Reflect::get(&self.target, &self.method.into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str(&format!("{} is not a function", self.method)))?;
-        match self.event {
+        match &self.event {
             Some(event) => func.call2(
                 &self.target,
-                &event.into(),
+                &event.clone().into(),
                 self.callback.as_ref().unchecked_ref()
             )?,
             None => func.call1(&self.target, self.callback.as_ref().unchecked_ref())?
         };
+
+        self.unregistered = true;
         Ok(())
+    }
+}
+
+impl<T: ?Sized> Drop for EventHandle<T> {
+    /// Automatically unregisters the event callback when the handle is dropped.
+    ///
+    /// This implements the RAII pattern, ensuring that event handlers are
+    /// properly cleaned up even if the user forgets to manually unregister.
+    /// Errors during unregistration are logged but do not panic.
+    fn drop(&mut self) {
+        if self.unregistered {
+            return;
+        }
+
+        let f = match Reflect::get(&self.target, &self.method.into()) {
+            Ok(f) => f,
+            Err(_) => {
+                logger::error("Failed to get unregister method");
+                return;
+            }
+        };
+
+        let func = match f.dyn_ref::<Function>() {
+            Some(func) => func,
+            None => {
+                logger::error(&format!("{} is not a function", self.method));
+                return;
+            }
+        };
+
+        let result = match &self.event {
+            Some(event) => func.call2(
+                &self.target,
+                &event.clone().into(),
+                self.callback.as_ref().unchecked_ref()
+            ),
+            None => func.call1(&self.target, self.callback.as_ref().unchecked_ref())
+        };
+
+        if result.is_err() {
+            logger::error("Failed to unregister event callback");
+        }
+
+        self.unregistered = true;
     }
 }
 
