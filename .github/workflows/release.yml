@@ -72,3 +72,38 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo +${{ steps.msrv.outputs.msrv }} publish --locked --token "$CARGO_REGISTRY_TOKEN"
+
+  release:
+    runs-on: ubuntu-latest
+    needs: publish
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff@2.10.1
+
+      - name: Generate changelog
+        id: changelog
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+
+          # Generate changelog for current tag only
+          CHANGELOG=$(git cliff --current --strip header)
+
+          # Save to output using multiline format
+          echo "content<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGELOG" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.changelog.outputs.content }}
+          generate_release_notes: false
