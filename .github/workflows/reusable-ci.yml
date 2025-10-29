@@ -55,7 +55,7 @@ jobs:
         run: cargo +nightly-2025-08-01 fmt --all -- --check
 
       - name: REUSE Compliance
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@v6
 
   # 🔍 Linting
   clippy:
