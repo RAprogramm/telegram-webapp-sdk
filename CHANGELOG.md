@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-04
+### Removed
+- **BREAKING:** Removed server-side validation logic from SDK
+  - Removed `validate_init_data` module
+  - Removed `ValidationKey` enum
+  - Removed `TelegramWebApp::validate_init_data()` method
+  - Removed `verify_init_data_hash()` function
+- **BREAKING:** Removed crypto dependencies: `hmac-sha256`, `hex`, `base64`, `ed25519-dalek`
+
+### Changed
+- Updated README to recommend `init-data-rs` crate for server-side validation
+- Bot tokens should never be exposed to client-side code
+- Validation now requires server-side implementation only
+
+### Migration Guide
+For server-side validation, use the `init-data-rs` crate:
+```rust
+use init_data_rs::{validate, InitData};
+
+async fn authenticate(init_data_str: &str, bot_token: &str)
+  -> Result<InitData, Box<dyn std::error::Error>> {
+    let init_data: InitData = validate(init_data_str, bot_token, Some(3600))?;
+    Ok(init_data)
+}
+```
+
+## [0.2.18] - 2025-11-03
+### Added
+- Comprehensive demo documentation (demo/README.md)
+- Rust bot example with teloxide and masterror
+- Local development guide with cloudflared/ngrok
+- Complete WebApp architecture explanation
+
+## [0.2.17] - 2025-11-02
+### Fixed
+- Improved initialization API with environment detection
+- Added typed errors for better error handling
+
 ## [0.2.16] - 2025-10-25
 ### Fixed
 - Made `use_telegram_context` Yew hook reactive to properly handle cases when
