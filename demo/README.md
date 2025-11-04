@@ -158,7 +158,10 @@ rust Wasm file schema version: 0.2.X
 
 Solution:
 ```bash
-# Update wasm-bindgen-cli to match the version in Cargo.lock
+# Find the version in the error message and install it
+cargo install -f wasm-bindgen-cli --version 0.2.104
+
+# Or install from Cargo.lock (if available)
 cargo install wasm-bindgen-cli --version $(grep -A1 'name = "wasm-bindgen"' Cargo.lock | grep version | cut -d'"' -f2)
 ```
 
