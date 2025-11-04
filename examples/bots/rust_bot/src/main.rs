@@ -2,23 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 use masterror::{AppError, AppErrorKind};
-use serde::{Deserialize, Serialize};
 use teloxide::{
     prelude::*,
     types::{InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo},
     utils::command::BotCommands
 };
-
-/// Order data structure received from the Burger King demo WebApp
-#[derive(Debug, Serialize, Deserialize)]
-struct OrderData {
-    /// Unique order identifier
-    id:          u32,
-    /// Item name
-    name:        String,
-    /// Price in cents
-    price_cents: u32
-}
+use webapp_bot_example::OrderData;
 
 #[tokio::main]
 async fn main() {

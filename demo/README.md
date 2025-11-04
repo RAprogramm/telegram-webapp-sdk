@@ -60,6 +60,42 @@ trunk serve
 
 Open http://localhost:8080 in your browser.
 
+### Local Development with Real Telegram (HTTPS Tunnel)
+
+Telegram requires HTTPS for WebApps. Use a tunnel to expose your local server:
+
+**Option A: cloudflared (recommended)**
+
+```bash
+# Install cloudflared
+# https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+
+# Serve demo locally
+trunk serve
+
+# In another terminal, create tunnel
+cloudflared tunnel --url http://localhost:8080
+```
+
+You'll get a URL like `https://random-name.trycloudflare.com` - use this in BotFather.
+
+**Option B: ngrok**
+
+```bash
+# Install ngrok
+# https://ngrok.com/download
+
+# Serve demo locally
+trunk serve
+
+# In another terminal, create tunnel
+ngrok http 8080
+```
+
+You'll get a URL like `https://abc123.ngrok.io` - use this in BotFather.
+
+**Important:** Tunnel URLs change each time you restart. Update BotFather or your bot's `.env` file after each restart.
+
 ## Setting Up a Complete Mini App
 
 ### Step 1: Deploy the WebApp

@@ -5,6 +5,9 @@ edition = "2024"
 rust-version = "1.90"
 publish = false
 
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 teloxide = { version = "0.17", features = ["macros"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
