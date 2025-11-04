@@ -97,10 +97,10 @@ See [examples/bots/rust_bot/README.md](../examples/bots/rust_bot/README.md) for 
 ### Step 4: Test
 
 1. Open your bot in Telegram
-2. Send `/start` (if using the Python example above)
+2. Send `/start` (the Rust bot example handles this command)
 3. Click the WebApp button
 4. Select an item and click "Order"
-5. The data will be sent to your bot's `handle_web_app_data` function
+5. The data will be sent to your bot's `handle_webapp_data` function
 
 ## Common Issues
 
@@ -108,7 +108,7 @@ See [examples/bots/rust_bot/README.md](../examples/bots/rust_bot/README.md) for 
 
 This is expected if you haven't set up a bot backend. The WebApp is only the frontend. You need:
 
-1. A bot running on your server (see Python example above)
+1. A bot running on your server (see Rust example in `examples/bots/rust_bot/`)
 2. The bot must handle `web_app_data` messages
 3. The WebApp must call `send_data()` (which the Burger King demo already does)
 

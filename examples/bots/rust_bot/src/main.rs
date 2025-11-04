@@ -9,10 +9,14 @@ use teloxide::{
     utils::command::BotCommands
 };
 
+/// Order data structure received from the Burger King demo WebApp
 #[derive(Debug, Serialize, Deserialize)]
 struct OrderData {
+    /// Unique order identifier
     id:          u32,
+    /// Item name
     name:        String,
+    /// Price in cents
     price_cents: u32
 }
 
@@ -47,15 +51,21 @@ async fn main() {
         .await;
 }
 
+/// Bot commands
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
 enum Command {
+    /// Display welcome message with WebApp buttons
     #[command(description = "Display welcome message")]
     Start,
+    /// Show help information
     #[command(description = "Show help information")]
     Help
 }
 
+/// Handles bot commands (/start, /help)
+///
+/// Sends WebApp buttons for /start or help information for /help
 async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppError> {
     let webapp_url = std::env::var("WEBAPP_URL")
         .unwrap_or_else(|_| "https://example.com/index.html".to_string());
@@ -125,6 +135,9 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
     Ok(())
 }
 
+/// Handles data received from WebApp
+///
+/// Processes orders from the Burger King demo and sends confirmation messages
 async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
     if let Some(web_app_data) = msg.web_app_data() {
         let order: OrderData = serde_json::from_str(&web_app_data.data).map_err(|e| {

@@ -54,31 +54,53 @@ Example Telegram bot that receives data from the `telegram-webapp-sdk` demo usin
 ### Sending WebApp Buttons
 
 ```rust
+use masterror::{AppError, AppErrorKind};
+
 let keyboard = InlineKeyboardMarkup::new(vec![
     vec![InlineKeyboardButton::web_app(
         "Open Burger King Menu",
         WebAppInfo {
-            url: format!("{}#/burger-king", webapp_url).parse()?,
+            url: format!("{}#/burger-king", webapp_url)
+                .parse()
+                .map_err(|e| {
+                    AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
+                        .with_context(e)
+                })?
         },
     )],
 ]);
 
 bot.send_message(msg.chat.id, "Click to open:")
     .reply_markup(keyboard)
-    .await?;
+    .await
+    .map_err(|e| {
+        AppError::new(AppErrorKind::Service, "Failed to send message")
+            .with_context(e)
+    })?;
 ```
 
 ### Receiving WebApp Data
 
 ```rust
-async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), teloxide::RequestError> {
-    if let Some(web_app_data) = msg.web_app_data() {
-        let order: OrderData = serde_json::from_str(&web_app_data.data)?;
+use masterror::{AppError, AppErrorKind};
 
-        bot.send_message(
-            msg.chat.id,
-            format!("Order: {} - ${:.2}", order.name, order.price_cents as f64 / 100.0)
-        ).await?;
+async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
+    if let Some(web_app_data) = msg.web_app_data() {
+        let order: OrderData = serde_json::from_str(&web_app_data.data).map_err(|e| {
+            AppError::new(AppErrorKind::BadRequest, "Invalid order data format")
+                .with_context(e)
+        })?;
+
+        let response = format!(
+            "Order: {} - ${:.2}",
+            order.name,
+            order.price_cents as f64 / 100.0
+        );
+
+        bot.send_message(msg.chat.id, response).await.map_err(|e| {
+            AppError::new(AppErrorKind::Service, "Failed to send message")
+                .with_context(e)
+        })?;
     }
     Ok(())
 }
