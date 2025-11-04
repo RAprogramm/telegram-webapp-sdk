@@ -16,7 +16,7 @@ rust-version = "1.90"
 
 [workspace.dependencies]
 inventory = "0.3.21"
-masterror = "0.24"
+masterror = "0.25"
 
 
 [lib]
@@ -81,6 +81,7 @@ mock = ["dep:urlencoding"]
 
 [workspace]
 members = ["demo"]
+exclude = ["examples/bots/rust_bot"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
