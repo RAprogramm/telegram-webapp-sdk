@@ -256,20 +256,20 @@ export function apply_default_theme() {
     }
 }
 
-function wasm_bindgen__convert__closures_____invoke__h9a03a9b032c64c17(arg0, arg1) {
-    wasm.wasm_bindgen__convert__closures_____invoke__h9a03a9b032c64c17(arg0, arg1);
-}
-
 function wasm_bindgen__convert__closures_____invoke__hde3f86340efe2d67(arg0, arg1, arg2) {
     wasm.wasm_bindgen__convert__closures_____invoke__hde3f86340efe2d67(arg0, arg1, arg2);
 }
 
-function wasm_bindgen__convert__closures_____invoke__h77889b4a60ffe254(arg0, arg1) {
-    wasm.wasm_bindgen__convert__closures_____invoke__h77889b4a60ffe254(arg0, arg1);
+function wasm_bindgen__convert__closures_____invoke__h9a03a9b032c64c17(arg0, arg1) {
+    wasm.wasm_bindgen__convert__closures_____invoke__h9a03a9b032c64c17(arg0, arg1);
 }
 
 function wasm_bindgen__convert__closures_____invoke__hd9400bcc9f3461f7(arg0, arg1, arg2) {
     wasm.wasm_bindgen__convert__closures_____invoke__hd9400bcc9f3461f7(arg0, arg1, arg2);
+}
+
+function wasm_bindgen__convert__closures_____invoke__h77889b4a60ffe254(arg0, arg1) {
+    wasm.wasm_bindgen__convert__closures_____invoke__h77889b4a60ffe254(arg0, arg1);
 }
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);

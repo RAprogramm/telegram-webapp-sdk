@@ -42,11 +42,7 @@ web-sys = { version = "0.3", features = [
   "Location",
   "CssStyleDeclaration",
 ] }
-hmac-sha256 = "1"
-hex = "0.4"
 percent-encoding = "2"
-base64 = "0.22"
-ed25519-dalek = "2"
 masterror = { workspace = true }
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = [
