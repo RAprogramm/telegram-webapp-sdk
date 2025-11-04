@@ -70,54 +70,22 @@ Open http://localhost:8080 in your browser.
 
 ### Step 2: Create a Bot
 
-Create a simple bot to receive data from the WebApp. Here's a Python example:
+A complete Rust bot example with teloxide and masterror is available in `examples/bots/rust_bot/`:
 
-```python
-import json
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Send WebApp button to user"""
-    keyboard = {
-        "inline_keyboard": [[
-            {
-                "text": "Open Burger King",
-                "web_app": {"url": "https://your-domain.com/path/index.html#/burger-king"}
-            }
-        ]]
-    }
-    await update.message.reply_text(
-        "Click the button to open the menu:",
-        reply_markup=keyboard
-    )
-
-async def handle_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Receive data from WebApp"""
-    data = json.loads(update.message.web_app_data.data)
-
-    # Process the order
-    item_name = data["name"]
-    price = data["price_cents"] / 100
-
-    await update.message.reply_text(
-        f"Order received!\n"
-        f"Item: {item_name}\n"
-        f"Price: ${price:.2f}\n"
-        f"Processing your order..."
-    )
-
-def main():
-    app = Application.builder().token("YOUR_BOT_TOKEN").build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_web_app_data))
-
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()
+```bash
+cd examples/bots/rust_bot
+cp .env.example .env
+# Edit .env with your bot token and WebApp URL
+cargo run --release
 ```
+
+The bot demonstrates:
+- Sending WebApp buttons to users
+- Receiving and processing orders from the Burger King demo
+- Proper error handling with masterror and AppError
+- Using teloxide for Telegram Bot API
+
+See [examples/bots/rust_bot/README.md](../examples/bots/rust_bot/README.md) for complete documentation.
 
 ### Step 3: Configure Bot in BotFather
 
