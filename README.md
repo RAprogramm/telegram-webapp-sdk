@@ -678,33 +678,25 @@ with the parsed data available in the context.
 
 ### Validating initData
 
-Validate the integrity of the `Telegram.WebApp.initData` payload on the server.
-The `validate_init_data` module is re-exported at the crate root and can be
-used directly or through the `TelegramWebApp::validate_init_data` helper:
+**Server-side validation is required.** Use the [`init-data-rs`](https://github.com/escwxyz/init-data-rs) crate for backend validation:
 
-```rust,no_run
-use telegram_webapp_sdk::{
-    validate_init_data::ValidationKey,
-    TelegramWebApp
-};
+```rust,ignore
+// On your backend server
+use init_data_rs::{validate, InitData};
 
-let bot_token = "123456:ABC";
-let query = "user=alice&auth_date=1&hash=48f4c0e9d3dd46a5734bf2c5d4df9f4ec52a3cd612f6482a7d2c68e84e702ee2";
-TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token))?;
-
-// For Ed25519-signed data
-# use ed25519_dalek::{Signer, SigningKey};
-# let sk = SigningKey::from_bytes(&[1u8;32]);
-# let pk = sk.verifying_key();
-# let sig = sk.sign(b"a=1\nb=2");
-# let init_data = format!("a=1&b=2&signature={}", base64::encode(sig.to_bytes()));
-TelegramWebApp::validate_init_data(
-    &init_data,
-    ValidationKey::Ed25519PublicKey(pk.as_bytes())
-)?;
-
-# Ok::<(), Box<dyn std::error::Error>>(())
+async fn authenticate(init_data_str: &str, bot_token: &str) -> Result<InitData, Box<dyn std::error::Error>> {
+    // Validate with optional expiration time (in seconds)
+    let init_data: InitData = validate(init_data_str, bot_token, Some(3600))?;
+    Ok(init_data)
+}
 ```
+
+**Why server-side only?**
+- Bot tokens must never be exposed to client-side code
+- Validation requires secret keys that should remain on the server
+- This follows industry-standard security practices
+
+See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete usage examples.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 

@@ -5,11 +5,7 @@ use js_sys::{Function, Object, Reflect};
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::window;
 
-use crate::{
-    core::context::TelegramContext,
-    validate_init_data::{self, ValidationKey},
-    webapp::TelegramWebApp
-};
+use crate::{core::context::TelegramContext, webapp::TelegramWebApp};
 
 impl TelegramWebApp {
     /// Get instance of `Telegram.WebApp` or `None` if not present
@@ -35,36 +31,6 @@ impl TelegramWebApp {
         Ok(Self {
             inner
         })
-    }
-
-    /// Validate an `initData` payload using either HMAC-SHA256 or Ed25519.
-    ///
-    /// Pass [`ValidationKey::BotToken`] to verify the `hash` parameter using
-    /// the bot token. Use [`ValidationKey::Ed25519PublicKey`] to verify the
-    /// `signature` parameter with an Ed25519 public key.
-    ///
-    /// # Errors
-    /// Returns [`validate_init_data::ValidationError`] if validation fails.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// use telegram_webapp_sdk::{TelegramWebApp, validate_init_data::ValidationKey};
-    /// let bot_token = "123456:ABC";
-    /// let query = "a=1&b=2&hash=9e5e8d7c0b1f9f3a";
-    /// TelegramWebApp::validate_init_data(query, ValidationKey::BotToken(bot_token)).unwrap();
-    /// ```
-    pub fn validate_init_data(
-        init_data: &str,
-        key: ValidationKey
-    ) -> Result<(), validate_init_data::ValidationError> {
-        match key {
-            ValidationKey::BotToken(token) => {
-                validate_init_data::verify_hmac_sha256(init_data, token)
-            }
-            ValidationKey::Ed25519PublicKey(pk) => {
-                validate_init_data::verify_ed25519(init_data, pk)
-            }
-        }
     }
 
     /// Returns the raw initData string as provided by Telegram.
