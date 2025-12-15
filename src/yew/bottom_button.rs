@@ -16,14 +16,14 @@ use crate::webapp::{BottomButton as TgBottomButton, TelegramWebApp};
 /// use telegram_webapp_sdk::yew::BottomButton;
 /// use yew::prelude::*;
 ///
-/// #[function_component(App)]
-/// fn app() -> Html {
+/// #[component]
+/// fn App() -> Html {
 ///     let on_click = Callback::from(|_| {});
 ///     html! { <BottomButton text="OK" color="#000" text_color="#fff" {on_click} /> }
 /// }
 /// ```
-#[function_component(BottomButton)]
-pub fn bottom_button(props: &BottomButtonProps) -> Html {
+#[component]
+pub fn BottomButton(props: &BottomButtonProps) -> Html {
     use_effect_with(props.clone(), |props| {
         if let Some(app) = TelegramWebApp::instance() {
             if let Some(color) = props.color.as_ref() {

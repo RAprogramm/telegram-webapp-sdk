@@ -31,8 +31,8 @@ type ClosureCell = Rc<RefCell<Option<Closure<dyn FnMut()>>>>;
 /// use telegram_webapp_sdk::yew::use_telegram_context;
 /// use yew::prelude::*;
 ///
-/// #[function_component(App)]
-/// fn app() -> Html {
+/// #[component]
+/// fn App() -> Html {
 ///     let ctx_result = use_telegram_context();
 ///
 ///     match ctx_result.as_ref() {
@@ -115,8 +115,8 @@ mod tests {
 
         wasm_bindgen_test_configure!(run_in_browser);
 
-        #[function_component(TestComponent)]
-        fn test_component() -> Html {
+        #[component]
+        fn TestComponent() -> Html {
             let ctx_result = use_telegram_context();
 
             match ctx_result.as_ref() {
