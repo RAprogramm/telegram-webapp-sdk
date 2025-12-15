@@ -392,4 +392,47 @@ line
         assert!(badges.contains("abcdef1"));
         assert!(badges.contains("7.10"));
     }
+
+    #[test]
+    fn parse_cargo_toml_extracts_fields() {
+        let toml = r#"
+[package]
+name = "test"
+version = "1.0.0"
+rust-version = "1.91"
+repository = "https://github.com/test/test"
+"#;
+        let cargo = parse_cargo_toml(toml).expect("parse");
+        assert_eq!(cargo.package.rust_version.as_deref(), Some("1.91"));
+        assert_eq!(
+            cargo.package.repository.as_deref(),
+            Some("https://github.com/test/test")
+        );
+    }
+
+    #[test]
+    fn parse_cargo_toml_handles_missing_optional_fields() {
+        let toml = r#"
+[package]
+name = "test"
+version = "1.0.0"
+"#;
+        let cargo = parse_cargo_toml(toml).expect("parse");
+        assert!(cargo.package.rust_version.is_none());
+        assert!(cargo.package.repository.is_none());
+    }
+
+    #[test]
+    fn render_msrv_badge_formats_correctly() {
+        let badge = render_msrv_badge("1.91");
+        assert!(badge.contains("MSRV"));
+        assert!(badge.contains("1.91"));
+        assert!(badge.contains("img.shields.io"));
+    }
+
+    #[test]
+    fn render_msrv_badge_encodes_special_chars() {
+        let badge = render_msrv_badge("1.91.0");
+        assert!(badge.contains("1.91.0"));
+    }
 }
