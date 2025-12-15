@@ -435,4 +435,72 @@ version = "1.0.0"
         let badge = render_msrv_badge("1.91.0");
         assert!(badge.contains("1.91.0"));
     }
+
+    #[test]
+    fn render_summary_up_to_date() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.0".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "abc1234567".to_owned(),
+            coverage_date:            Some("2025-01-01".to_owned()),
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let summary = render_summary(&status, "https://repo/commit/abc1234");
+        assert!(summary.contains("matches the latest"));
+        assert!(summary.contains("9.0"));
+        assert!(summary.contains("abc1234"));
+        assert!(summary.contains("recorded on 2025-01-01"));
+    }
+
+    #[test]
+    fn render_summary_lags_behind() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.1".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "def5678901".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let summary = render_summary(&status, "https://repo/commit/def5678");
+        assert!(summary.contains("lags behind"));
+        assert!(summary.contains("9.1"));
+        assert!(!summary.contains("recorded on"));
+    }
+
+    #[test]
+    fn render_badges_update_needed() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.1".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "xyz9876543".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let badges = render_badges(&status, "https://repo/commit/xyz9876");
+        assert!(badges.contains("update%20needed"));
+        assert!(badges.contains("orange"));
+    }
+
+    #[test]
+    fn replace_section_missing_start_marker() {
+        let result = replace_section("no markers here", "<!-- start -->", "<!-- end -->", "test");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn replace_section_missing_end_marker() {
+        let result = replace_section(
+            "<!-- start -->no end",
+            "<!-- start -->",
+            "<!-- end -->",
+            "test"
+        );
+        assert!(result.is_err());
+    }
 }
