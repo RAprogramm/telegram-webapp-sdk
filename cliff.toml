@@ -22,7 +22,15 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | striptags | trim | upper_first }}
     {% for commit in commits %}
-        - {{ commit.message | split(pat="\n") | first | trim }}
+        - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | split(pat="\n") | first | trim }}
+        {%- set lines = commit.message | split(pat="\n") %}
+        {%- if lines | length > 1 %}
+          {%- for line in lines | slice(start=1) %}
+            {%- if line | trim | length > 0 %}
+          {{ line | trim }}
+            {%- endif %}
+          {%- endfor %}
+        {%- endif %}
     {% endfor %}
 {% endfor %}\n
 """
@@ -56,17 +64,22 @@ commit_parsers = [
     { message = "^fix", group = "Fixed" },
     { message = "^perf", group = "Changed" },
     { message = "^refactor", group = "Changed" },
-    { message = "^docs", group = "Changed" },
+    { message = "^docs", group = "Documentation" },
     { message = "^test", group = "Changed" },
     { message = "^chore\\(release\\): prepare for", skip = true },
-    { message = "^chore\\(deps.*\\)", skip = true },
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },
     { message = "^chore: bump version", skip = true },
     { message = "^Merge pull request", skip = true },
     { message = "^Merge branch", skip = true },
-    { message = "^deps\\(", skip = true },
-    { message = "^ci", skip = true },
+    { message = "^deps\\(cargo\\)", group = "Dependencies" },
+    { message = "^deps\\(ci\\)", group = "CI/CD" },
+    { message = "^deps", group = "Dependencies" },
+    { message = "^chore\\(deps\\)", group = "Dependencies" },
+    { message = "^chore: update dep", group = "Dependencies" },
+    { message = "^chore: release", group = "Release" },
+    { message = "^chore", group = "Maintenance" },
+    { message = "^ci", group = "CI/CD" },
     { body = ".*security", group = "Security" },
     { message = "^revert", group = "Reverted" },
 ]

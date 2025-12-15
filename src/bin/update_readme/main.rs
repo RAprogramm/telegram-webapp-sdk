@@ -19,6 +19,8 @@ const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
 const BADGES_END: &str = "<!-- webapp_api_badges:end -->";
 const SUMMARY_START: &str = "<!-- webapp_api_summary:start -->";
 const SUMMARY_END: &str = "<!-- webapp_api_summary:end -->";
+const MSRV_START: &str = "<!-- msrv_badge:start -->";
+const MSRV_END: &str = "<!-- msrv_badge:end -->";
 const DEFAULT_SOURCE_URL: &str = "https://core.telegram.org/bots/webapps";
 const DEFAULT_VERSION_PROBE_URL: &str = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp";
 const BADGE_LINK_LABEL: &str = "Telegram WebApp API";
@@ -47,6 +49,8 @@ enum ReadmeUpdateError {
     RepositoryParse(toml::de::Error),
     #[error("repository field missing in Cargo.toml")]
     RepositoryMissing,
+    #[error("rust-version field missing in Cargo.toml")]
+    RustVersionMissing,
     #[error("failed to write README.md: {0}")]
     WriteReadme(std::io::Error),
     #[error("failed to determine latest WebApp API version: {0}")]
@@ -87,7 +91,9 @@ struct WebAppApiStatus {
 
 #[derive(Debug, Deserialize)]
 struct CargoPackage {
-    repository: Option<String>
+    repository:   Option<String>,
+    #[serde(rename = "rust-version")]
+    rust_version: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -133,7 +139,15 @@ fn run() -> Result<(), ReadmeUpdateError> {
         );
     }
     status.latest_version = latest_source_version;
-    let repository = parse_repository(&cargo_toml_content)?;
+    let cargo = parse_cargo_toml(&cargo_toml_content)?;
+    let repository = cargo
+        .package
+        .repository
+        .ok_or(ReadmeUpdateError::RepositoryMissing)?;
+    let rust_version = cargo
+        .package
+        .rust_version
+        .ok_or(ReadmeUpdateError::RustVersionMissing)?;
     let commit_url = status.coverage_commit_url.clone().unwrap_or_else(|| {
         format!(
             "{}/commit/{}",
@@ -144,8 +158,10 @@ fn run() -> Result<(), ReadmeUpdateError> {
 
     let badges_block = render_badges(&status, &commit_url);
     let summary_block = render_summary(&status, &commit_url);
+    let msrv_block = render_msrv_badge(&rust_version);
 
-    let with_badges = replace_section(&readme_content, BADGES_START, BADGES_END, &badges_block)?;
+    let with_msrv = replace_section(&readme_content, MSRV_START, MSRV_END, &msrv_block)?;
+    let with_badges = replace_section(&with_msrv, BADGES_START, BADGES_END, &badges_block)?;
     let updated = replace_section(&with_badges, SUMMARY_START, SUMMARY_END, &summary_block)?;
 
     if updated != readme_content {
@@ -194,13 +210,8 @@ fn parse_status(content: &str) -> Result<WebAppApiStatus, ReadmeUpdateError> {
     Err(ReadmeUpdateError::MetadataCommentMissing)
 }
 
-fn parse_repository(cargo_toml: &str) -> Result<String, ReadmeUpdateError> {
-    let parsed: CargoToml =
-        toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)?;
-    parsed
-        .package
-        .repository
-        .ok_or(ReadmeUpdateError::RepositoryMissing)
+fn parse_cargo_toml(cargo_toml: &str) -> Result<CargoToml, ReadmeUpdateError> {
+    toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)
 }
 
 fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
@@ -234,6 +245,11 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
         coverage_colour = coverage_colour,
         commit_url = commit_url
     )
+}
+
+fn render_msrv_badge(rust_version: &str) -> String {
+    let version_encoded = encode_badge_component(rust_version);
+    format!("![MSRV](https://img.shields.io/badge/MSRV-{version_encoded}-blue)\n")
 }
 
 fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
@@ -375,5 +391,116 @@ line
         let badges = render_badges(&status, "https://repo/commit/abcdef1");
         assert!(badges.contains("abcdef1"));
         assert!(badges.contains("7.10"));
+    }
+
+    #[test]
+    fn parse_cargo_toml_extracts_fields() {
+        let toml = r#"
+[package]
+name = "test"
+version = "1.0.0"
+rust-version = "1.91"
+repository = "https://github.com/test/test"
+"#;
+        let cargo = parse_cargo_toml(toml).expect("parse");
+        assert_eq!(cargo.package.rust_version.as_deref(), Some("1.91"));
+        assert_eq!(
+            cargo.package.repository.as_deref(),
+            Some("https://github.com/test/test")
+        );
+    }
+
+    #[test]
+    fn parse_cargo_toml_handles_missing_optional_fields() {
+        let toml = r#"
+[package]
+name = "test"
+version = "1.0.0"
+"#;
+        let cargo = parse_cargo_toml(toml).expect("parse");
+        assert!(cargo.package.rust_version.is_none());
+        assert!(cargo.package.repository.is_none());
+    }
+
+    #[test]
+    fn render_msrv_badge_formats_correctly() {
+        let badge = render_msrv_badge("1.91");
+        assert!(badge.contains("MSRV"));
+        assert!(badge.contains("1.91"));
+        assert!(badge.contains("img.shields.io"));
+    }
+
+    #[test]
+    fn render_msrv_badge_encodes_special_chars() {
+        let badge = render_msrv_badge("1.91.0");
+        assert!(badge.contains("1.91.0"));
+    }
+
+    #[test]
+    fn render_summary_up_to_date() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.0".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "abc1234567".to_owned(),
+            coverage_date:            Some("2025-01-01".to_owned()),
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let summary = render_summary(&status, "https://repo/commit/abc1234");
+        assert!(summary.contains("matches the latest"));
+        assert!(summary.contains("9.0"));
+        assert!(summary.contains("abc1234"));
+        assert!(summary.contains("recorded on 2025-01-01"));
+    }
+
+    #[test]
+    fn render_summary_lags_behind() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.1".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "def5678901".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let summary = render_summary(&status, "https://repo/commit/def5678");
+        assert!(summary.contains("lags behind"));
+        assert!(summary.contains("9.1"));
+        assert!(!summary.contains("recorded on"));
+    }
+
+    #[test]
+    fn render_badges_update_needed() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.1".to_owned(),
+            covered_version:          "9.0".to_owned(),
+            coverage_commit:          "xyz9876543".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let badges = render_badges(&status, "https://repo/commit/xyz9876");
+        assert!(badges.contains("update%20needed"));
+        assert!(badges.contains("orange"));
+    }
+
+    #[test]
+    fn replace_section_missing_start_marker() {
+        let result = replace_section("no markers here", "<!-- start -->", "<!-- end -->", "test");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn replace_section_missing_end_marker() {
+        let result = replace_section(
+            "<!-- start -->no end",
+            "<!-- start -->",
+            "<!-- end -->",
+            "test"
+        );
+        assert!(result.is_err());
     }
 }
