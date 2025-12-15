@@ -19,6 +19,8 @@ const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
 const BADGES_END: &str = "<!-- webapp_api_badges:end -->";
 const SUMMARY_START: &str = "<!-- webapp_api_summary:start -->";
 const SUMMARY_END: &str = "<!-- webapp_api_summary:end -->";
+const MSRV_START: &str = "<!-- msrv_badge:start -->";
+const MSRV_END: &str = "<!-- msrv_badge:end -->";
 const DEFAULT_SOURCE_URL: &str = "https://core.telegram.org/bots/webapps";
 const DEFAULT_VERSION_PROBE_URL: &str = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp";
 const BADGE_LINK_LABEL: &str = "Telegram WebApp API";
@@ -47,6 +49,8 @@ enum ReadmeUpdateError {
     RepositoryParse(toml::de::Error),
     #[error("repository field missing in Cargo.toml")]
     RepositoryMissing,
+    #[error("rust-version field missing in Cargo.toml")]
+    RustVersionMissing,
     #[error("failed to write README.md: {0}")]
     WriteReadme(std::io::Error),
     #[error("failed to determine latest WebApp API version: {0}")]
@@ -87,7 +91,9 @@ struct WebAppApiStatus {
 
 #[derive(Debug, Deserialize)]
 struct CargoPackage {
-    repository: Option<String>
+    repository:   Option<String>,
+    #[serde(rename = "rust-version")]
+    rust_version: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -133,7 +139,15 @@ fn run() -> Result<(), ReadmeUpdateError> {
         );
     }
     status.latest_version = latest_source_version;
-    let repository = parse_repository(&cargo_toml_content)?;
+    let cargo = parse_cargo_toml(&cargo_toml_content)?;
+    let repository = cargo
+        .package
+        .repository
+        .ok_or(ReadmeUpdateError::RepositoryMissing)?;
+    let rust_version = cargo
+        .package
+        .rust_version
+        .ok_or(ReadmeUpdateError::RustVersionMissing)?;
     let commit_url = status.coverage_commit_url.clone().unwrap_or_else(|| {
         format!(
             "{}/commit/{}",
@@ -144,8 +158,10 @@ fn run() -> Result<(), ReadmeUpdateError> {
 
     let badges_block = render_badges(&status, &commit_url);
     let summary_block = render_summary(&status, &commit_url);
+    let msrv_block = render_msrv_badge(&rust_version);
 
-    let with_badges = replace_section(&readme_content, BADGES_START, BADGES_END, &badges_block)?;
+    let with_msrv = replace_section(&readme_content, MSRV_START, MSRV_END, &msrv_block)?;
+    let with_badges = replace_section(&with_msrv, BADGES_START, BADGES_END, &badges_block)?;
     let updated = replace_section(&with_badges, SUMMARY_START, SUMMARY_END, &summary_block)?;
 
     if updated != readme_content {
@@ -194,13 +210,8 @@ fn parse_status(content: &str) -> Result<WebAppApiStatus, ReadmeUpdateError> {
     Err(ReadmeUpdateError::MetadataCommentMissing)
 }
 
-fn parse_repository(cargo_toml: &str) -> Result<String, ReadmeUpdateError> {
-    let parsed: CargoToml =
-        toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)?;
-    parsed
-        .package
-        .repository
-        .ok_or(ReadmeUpdateError::RepositoryMissing)
+fn parse_cargo_toml(cargo_toml: &str) -> Result<CargoToml, ReadmeUpdateError> {
+    toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)
 }
 
 fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
@@ -234,6 +245,11 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
         coverage_colour = coverage_colour,
         commit_url = commit_url
     )
+}
+
+fn render_msrv_badge(rust_version: &str) -> String {
+    let version_encoded = encode_badge_component(rust_version);
+    format!("![MSRV](https://img.shields.io/badge/MSRV-{version_encoded}-blue)\n")
 }
 
 fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
