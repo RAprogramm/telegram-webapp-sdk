@@ -15,7 +15,7 @@ categories = ["web-programming", "wasm"]
 rust-version = "1.91"
 
 [workspace.dependencies]
-inventory = "0.3.21"
+inventory = "0.3.22"
 masterror = "0.26"
 
 
