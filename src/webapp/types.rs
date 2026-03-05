@@ -239,17 +239,37 @@ impl SafeAreaInset {
 #[derive(Debug, Default, Serialize)]
 pub struct BottomButtonParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub text:             Option<&'a str>,
+    pub text:                 Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub color:            Option<&'a str>,
+    pub color:                Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub text_color:       Option<&'a str>,
+    pub text_color:           Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_active:        Option<bool>,
+    pub is_active:            Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_visible:       Option<bool>,
+    pub is_visible:           Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub has_shine_effect: Option<bool>
+    pub has_shine_effect:     Option<bool>,
+    /// Custom emoji ID for the button icon (Bot API 9.5+).
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, BottomButtonParams, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let params = BottomButtonParams {
+    ///         text: Some("Send"),
+    ///         icon_custom_emoji_id: Some("123456789"),
+    ///         ..Default::default()
+    ///     };
+    ///     let _ = app.set_bottom_button_params(BottomButton::Main, &params);
+    /// }
+    /// ```
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        rename = "icon_custom_emoji_id"
+    )]
+    pub icon_custom_emoji_id: Option<&'a str>
 }
 
 /// Additional parameters supported by the secondary button.

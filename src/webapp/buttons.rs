@@ -123,6 +123,34 @@ impl TelegramWebApp {
         self.bottom_button_method(button, "setTextColor", Some(&color.into()))
     }
 
+    /// Set custom emoji icon for a bottom button (Bot API 9.5+).
+    ///
+    /// Sets the custom emoji ID to be displayed as an icon on the button.
+    /// Use an empty string to remove the icon.
+    ///
+    /// # Arguments
+    /// * `button` - The button to update (Main or Secondary)
+    /// * `icon_id` - The custom emoji ID (e.g., "123456789")
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.set_bottom_button_icon_custom_emoji_id(BottomButton::Main, "123456789");
+    /// }
+    /// ```
+    pub fn set_bottom_button_icon_custom_emoji_id(
+        &self,
+        button: BottomButton,
+        icon_id: &str
+    ) -> Result<(), JsValue> {
+        self.bottom_button_method(button, "setIconCustomEmojiId", Some(&icon_id.into()))
+    }
+
     /// Enable a bottom button, allowing user interaction.
     ///
     /// # Examples
@@ -244,6 +272,26 @@ impl TelegramWebApp {
     /// ```
     pub fn bottom_button_text(&self, button: BottomButton) -> Option<String> {
         self.bottom_button_property(button, "text")?.as_string()
+    }
+
+    /// Returns the current custom emoji icon ID of the button (Bot API 9.5+).
+    ///
+    /// # Arguments
+    /// * `button` - The button to query (Main or Secondary)
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     if let Some(icon_id) = app.bottom_button_icon_custom_emoji_id(BottomButton::Main) {
+    ///         println!("Icon ID: {}", icon_id);
+    ///     }
+    /// }
+    /// ```
+    pub fn bottom_button_icon_custom_emoji_id(&self, button: BottomButton) -> Option<String> {
+        self.bottom_button_property(button, "iconCustomEmojiId")?
+            .as_string()
     }
 
     /// Returns the current text color of the button.
@@ -499,6 +547,23 @@ impl TelegramWebApp {
         self.set_bottom_button_text_color(BottomButton::Main, color)
     }
 
+    /// Set custom emoji icon for the main button (Bot API 9.5+).
+    ///
+    /// Legacy alias for [`Self::set_bottom_button_icon_custom_emoji_id`] with
+    /// [`BottomButton::Main`].
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.set_main_button_icon_custom_emoji_id("123456789");
+    /// }
+    /// ```
+    pub fn set_main_button_icon_custom_emoji_id(&self, icon_id: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_icon_custom_emoji_id(BottomButton::Main, icon_id)
+    }
+
     /// Enable the main bottom button.
     ///
     /// # Examples
@@ -573,6 +638,8 @@ impl TelegramWebApp {
         self.set_bottom_button_callback(BottomButton::Main, callback)
     }
 
+    /// Remove callback for the main button.
+    ///
     /// Legacy alias for [`Self::remove_bottom_button_callback`].
     pub fn remove_main_button_callback(
         &self,
@@ -606,6 +673,23 @@ impl TelegramWebApp {
     /// Set text color for the secondary bottom button.
     pub fn set_secondary_button_text_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text_color(BottomButton::Secondary, color)
+    }
+
+    /// Set custom emoji icon for the secondary button (Bot API 9.5+).
+    ///
+    /// Convenience alias for [`Self::set_bottom_button_icon_custom_emoji_id`]
+    /// with [`BottomButton::Secondary`].
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.set_secondary_button_icon_custom_emoji_id("123456789");
+    /// }
+    /// ```
+    pub fn set_secondary_button_icon_custom_emoji_id(&self, icon_id: &str) -> Result<(), JsValue> {
+        self.set_bottom_button_icon_custom_emoji_id(BottomButton::Secondary, icon_id)
     }
 
     /// Enable the secondary bottom button.

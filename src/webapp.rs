@@ -296,12 +296,13 @@ mod tests {
 
         let app = TelegramWebApp::instance().unwrap();
         let params = BottomButtonParams {
-            text:             Some("Send"),
-            color:            Some("#ffffff"),
-            text_color:       Some("#000000"),
-            is_active:        Some(true),
-            is_visible:       Some(true),
-            has_shine_effect: Some(false)
+            text: Some("Send"),
+            color: Some("#ffffff"),
+            text_color: Some("#000000"),
+            is_active: Some(true),
+            is_visible: Some(true),
+            has_shine_effect: Some(false),
+            ..Default::default()
         };
         app.set_bottom_button_params(BottomButton::Main, &params)
             .unwrap();
@@ -395,6 +396,128 @@ mod tests {
         assert!(app.is_bottom_button_active(BottomButton::Main));
         assert!(!app.is_bottom_button_progress_visible(BottomButton::Main));
         assert!(app.bottom_button_has_shine_effect(BottomButton::Main));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_button_icon_custom_emoji_id_calls_js() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_icon_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &button,
+            &"setIconCustomEmojiId".into(),
+            set_icon_cb.as_ref().unchecked_ref()
+        );
+        set_icon_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_bottom_button_icon_custom_emoji_id(BottomButton::Main, "123456789")
+            .unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("123456789"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_secondary_button_icon_custom_emoji_id_calls_js() {
+        let webapp = setup_webapp();
+        let secondary_button = Object::new();
+        let received = Rc::new(RefCell::new(None));
+        let rc_clone = Rc::clone(&received);
+
+        let set_icon_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            *rc_clone.borrow_mut() = v.as_string();
+        });
+        let _ = Reflect::set(
+            &secondary_button,
+            &"setIconCustomEmojiId".into(),
+            set_icon_cb.as_ref().unchecked_ref()
+        );
+        set_icon_cb.forget();
+
+        let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        app.set_bottom_button_icon_custom_emoji_id(BottomButton::Secondary, "987654321")
+            .unwrap();
+        assert_eq!(received.borrow().as_deref(), Some("987654321"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn bottom_button_icon_custom_emoji_id_getter_returns_value() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let _ = Reflect::set(&button, &"iconCustomEmojiId".into(), &"123456789".into());
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert_eq!(
+            app.bottom_button_icon_custom_emoji_id(BottomButton::Main),
+            Some("123456789".into())
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn bottom_button_icon_custom_emoji_id_returns_none_when_not_set() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        assert_eq!(
+            app.bottom_button_icon_custom_emoji_id(BottomButton::Main),
+            None
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_bottom_button_params_with_icon_custom_emoji_id() {
+        let webapp = setup_webapp();
+        let button = Object::new();
+        let received = Rc::new(RefCell::new(Object::new()));
+        let rc_clone = Rc::clone(&received);
+
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+            let obj = value.dyn_into::<Object>().expect("object");
+            rc_clone.replace(obj);
+        });
+        let _ = Reflect::set(&button, &"setParams".into(), cb.as_ref().unchecked_ref());
+        cb.forget();
+
+        let _ = Reflect::set(&webapp, &"MainButton".into(), &button);
+
+        let app = TelegramWebApp::instance().unwrap();
+        let params = BottomButtonParams {
+            text: Some("Send"),
+            icon_custom_emoji_id: Some("123456789"),
+            ..Default::default()
+        };
+        app.set_bottom_button_params(BottomButton::Main, &params)
+            .unwrap();
+
+        let stored = received.borrow();
+        assert_eq!(
+            Reflect::get(&stored, &"text".into()).unwrap().as_string(),
+            Some("Send".to_string())
+        );
+        assert_eq!(
+            Reflect::get(&stored, &"icon_custom_emoji_id".into())
+                .unwrap()
+                .as_string(),
+            Some("123456789".to_string())
+        );
     }
 
     #[wasm_bindgen_test]

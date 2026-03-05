@@ -19,7 +19,7 @@
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
-[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.2-blue)](https://core.telegram.org/bots/webapps)
+[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.5-blue)](https://core.telegram.org/bots/webapps)
 [![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
 <!-- webapp_api_badges:end -->
 [![Wiki](https://img.shields.io/badge/Wiki-Documentation-0088cc?logo=github)](https://github.com/RAprogramm/telegram-webapp-sdk/wiki)
@@ -290,13 +290,42 @@ These calls require the user's explicit permission before any information is sha
 
 ## Keyboard control
 
-Hide the native keyboard when it's no longer required:
+Control the native keyboard and bottom buttons (Main and Secondary):
 
 ```rust,no_run
-use telegram_webapp_sdk::webapp::TelegramWebApp;
+use telegram_webapp_sdk::webapp::{BottomButton, BottomButtonParams, TelegramWebApp};
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
+
+// Hide the native keyboard
 app.hide_keyboard()?;
+
+// Control the main bottom button
+app.set_main_button_text("Send")?;
+app.set_main_button_color("#2481cc")?;
+app.set_main_button_text_color("#ffffff")?;
+app.enable_main_button()?;
+app.show_main_button()?;
+
+// Set custom emoji icon on the button (Bot API 9.5+)
+app.set_main_button_icon_custom_emoji_id("123456789")?;
+
+// Or use setParams for atomic updates
+let params = BottomButtonParams {
+    text: Some("Submit"),
+    color: Some("#ff0000"),
+    text_color: Some("#ffffff"),
+    is_active: Some(true),
+    is_visible: Some(true),
+    icon_custom_emoji_id: Some("987654321"), // Bot API 9.5+
+    ..Default::default()
+};
+app.set_main_button_params(&params)?;
+
+// Secondary button (also supports icon_custom_emoji_id)
+app.set_secondary_button_text("Cancel")?;
+app.set_secondary_button_icon_custom_emoji_id("111222333")?;
+app.show_secondary_button()?;
 # Ok(())
 # }
 ```
@@ -706,7 +735,7 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.2` matches the latest Telegram WebApp API release `9.2`. Synced in commit [92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7) (recorded on 2025-09-21).
+**WebApp API coverage:** version `9.5` matches the latest Telegram WebApp API release `9.5`. Bot API 9.5 adds `icon_custom_emoji_id` support for bottom buttons.
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
