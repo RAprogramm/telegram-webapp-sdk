@@ -5135,6 +5135,7 @@ dependencies = [
  "percent-encoding",
  "regex",
  "reqwest 0.13.3",
+ "send_wrapper",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

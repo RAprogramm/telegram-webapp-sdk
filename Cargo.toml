@@ -70,12 +70,16 @@ optional = true
 default-features = false
 features = ["csr"]
 
+[dependencies.send_wrapper]
+version = "0.6"
+optional = true
+
 [features]
 default = []
 
 macros = ["dep:inventory"]
 yew = ["dep:yew"]
-leptos = ["dep:leptos"]
+leptos = ["dep:leptos", "dep:send_wrapper"]
 mock = ["dep:urlencoding"]
 full = ["macros", "yew", "leptos", "mock"]
 

@@ -25,7 +25,7 @@ use crate::logger::warn;
 /// theme.apply_to_root()?;
 /// # Ok::<(), JsValue>(())
 /// ```
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub struct TelegramThemeParams {
     /// Primary background color (`--tg-theme-bg-color`).
