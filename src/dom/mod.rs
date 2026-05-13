@@ -3,7 +3,6 @@
 
 pub mod document;
 pub mod element;
-pub mod event;
 
 pub use document::Doc as Document;
 pub use element::ElementExt;
