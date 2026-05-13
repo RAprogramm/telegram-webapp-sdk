@@ -38,6 +38,9 @@ web-sys = { version = "0.3", features = [
   "Element",
   "HtmlElement",
   "HtmlImageElement",
+  "Node",
+  "EventTarget",
+  "MouseEvent",
   "console",
   "Location",
   "CssStyleDeclaration",
@@ -69,15 +72,17 @@ features = ["csr"]
 
 [features]
 default = []
+
 macros = ["dep:inventory"]
 yew = ["dep:yew"]
 leptos = ["dep:leptos"]
 mock = ["dep:urlencoding"]
+full = ["macros", "yew", "leptos", "mock"]
 
 [workspace]
-members = ["demo"]
+members = ["demo", "examples/vanilla", "examples/bots/rust_bot", "examples/integration/backend"]
 default-members = ["."]
-exclude = ["examples/bots/rust_bot"]
+exclude = ["examples/integration/frontend"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

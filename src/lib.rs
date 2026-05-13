@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
 #![doc = include_str!("../README.md")]
@@ -7,6 +7,7 @@
 
 pub mod api;
 pub mod core;
+pub mod dom;
 pub mod logger;
 
 #[cfg(feature = "mock")]

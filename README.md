@@ -98,8 +98,10 @@ The top section represents the entire project. Proceeding with folders and final
 ## Features
 
 - Comprehensive coverage of Telegram Web App JavaScript APIs.
-- Framework integrations for **Yew** and **Leptos**.
+- **Vanilla WASM support** - use with any framework or none at all.
+- Framework integrations for **Yew** and **Leptos** (optional).
 - Optional macros for automatic initialization and routing.
+- DOM helpers for ergonomic element manipulation.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
   step with the Telegram WebApp API 9.2 feature set.
   
@@ -185,6 +187,82 @@ telegram-webapp-sdk = { version = "0.2.15", features = ["macros", "yew", "mock"]
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
 ## Quick start
+
+### Vanilla (No Framework)
+
+Use the SDK directly with pure WebAssembly - no framework required:
+
+```rust,ignore
+use telegram_webapp_sdk::{
+    core::init::init_sdk,
+    webapp::TelegramWebApp,
+    dom::{Document, ElementExt},
+};
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn main() -> Result<(), JsValue> {
+    init_sdk()?;
+    TelegramWebApp::instance()
+        .ok_or_else(|| JsValue::from_str("Telegram not available"))?
+        .ready()?;
+
+    let doc = Document;
+
+    let root = doc.create_element("div")?;
+    root.set_class("container");
+
+    let btn = doc.create_element("button")?;
+    btn.set_text("Click me");
+    btn.set_class("btn-primary");
+    btn.on("click", |_| {
+        web_sys::console::log_1(&"Clicked!".into());
+    })?;
+    root.append(&btn)?;
+
+    doc.body()?.append(&root)?;
+
+    Ok(())
+}
+```
+
+#### DOM Helpers
+
+The SDK includes ergonomic DOM manipulation helpers:
+
+```rust,ignore
+use telegram_webapp_sdk::dom::{Document, ElementExt};
+
+// Get element by ID or selector
+let el = Document.get_element_by_id("my-id");
+let first = Document.query_selector(".item")?;
+
+// Element manipulation
+element.set_class("active");
+element.set_id("unique-id");
+element.set_text("Hello!");
+element.set_html("<strong>Bold</strong>")?;
+element.set_attr("data-value", "123")?;
+element.remove_attr("data-value")?;
+
+// Class manipulation
+element.add_class("highlighted")?;
+element.remove_class("hidden")?;
+element.toggle_class("expanded")?;
+let is_active = element.has_class("active");
+
+// Event handling
+element.on("click", |event| { /* handle click */ })?;
+element.on("input", |event| { /* handle input */ })?;
+
+// Tree manipulation
+element.append(&child)?;
+element.prepend(&header)?;
+element.remove()?;        // detach self from parent
+element.clear();          // remove all children
+```
+
+See [`examples/vanilla`](./examples/vanilla/) for a complete working example.
 
 ### Yew
 

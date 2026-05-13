@@ -1,0 +1,15 @@
+[build]
+publish = "dist"
+
+[build.target.'wasm32-unknown-unknown']
+optimize = "z"
+
+[build.target.'wasm32-unknown-unknown'].rollups
+pub = ["./"]
+
+[build.target.'wasm32-unknown-unknown'].rollups.pub.options
+emit_html = true
+
+[[proxy]]
+from = "/api/*"
+to = "http://localhost:8080"
