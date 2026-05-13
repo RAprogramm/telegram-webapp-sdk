@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-13
+### Changed
+- **MSRV:** minimum supported Rust version raised `1.94.1 → 1.95.0` (#198).
+
+### Fixed
+- `TelegramWebApp::show_scan_qr_popup` now wraps the prompt text in `{ text }` so the caption above the QR scanner reaches Telegram (#195).
+
+### Added
+- `TelegramWebApp::invoke_custom_method(method, params, callback)` — wraps `WebApp.invokeCustomMethod` and translates the `(error, result)` JS callback into `Result<JsValue, JsValue>` (#197).
+- `TelegramWebApp::close_with_options(&CloseOptions)` and `webapp::CloseOptions { return_back }` for `WebApp.close(options)` (Bot API 7.6+ for `return_back`) (#197).
+- `OpenLinkOptions::try_browser` field (Bot API 7.6+) (#197).
+- `TelegramWebApp` property getters: `color_scheme`, `header_color`, `background_color`, `bottom_bar_color`, `raw_version`, `platform` (#197).
+- `wasm_bindgen_test` coverage for `dom::Document` and `ElementExt` (#193).
+
 ## [0.6.0] - 2026-05-13
 ### Added
 - `dom` module with `Document` and `ElementExt` ergonomic helpers for vanilla WASM users (#184).

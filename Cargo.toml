@@ -1,7 +1,7 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.6.0"
-rust-version = "1.94.1"
+version = "0.7.0"
+rust-version = "1.95.0"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
 license = "MIT"
@@ -12,7 +12,7 @@ keywords = ["telegram", "webapp", "wasm", "sdk"]
 categories = ["web-programming", "wasm"]
 
 [workspace.package]
-rust-version = "1.94.1"
+rust-version = "1.95.0"
 
 [workspace.dependencies]
 inventory = "0.3"
