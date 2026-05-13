@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-05-13
+### Docs
+- README and `WEBAPP_API.md` aligned with the post-0.9.0 surface: `async fn` examples for one-shot calls, full Yew/Leptos system-button trio (`BottomButton`/`BackButton`/`SettingsButton`) and reactive hooks (`use_viewport`/`use_theme`/`use_safe_area`), new `Async API` and `Reactive hooks` sections, accurate features list, license corrected to MIT-only, version strings bumped to `0.9`, API coverage block bumped to 9.6, coverage badge and `WEBAPP_API.md` coverage commit pinned to the matching head (#219).
+
 ## [0.9.0] - 2026-05-13
 ### Added
 - **Leptos (`leptos` feature):** reactive hooks `use_viewport`, `use_theme`, `use_safe_area` returning `ReadSignal<*State>`. State structs `ViewportState`, `ThemeState`, `SafeAreaState`. Subscription auto-cleans on scope disposal (#211).
