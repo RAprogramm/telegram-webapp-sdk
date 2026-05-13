@@ -104,7 +104,7 @@ fn device_storage_object() -> Result<JsValue, JsValue> {
     let window = window().ok_or_else(|| JsValue::from_str("no window"))?;
     let tg = Reflect::get(&window, &JsValue::from_str("Telegram"))?;
     let webapp = Reflect::get(&tg, &JsValue::from_str("WebApp"))?;
-    Reflect::get(&webapp, &JsValue::from_str("deviceStorage"))
+    Reflect::get(&webapp, &JsValue::from_str("DeviceStorage"))
 }
 
 #[cfg(test)]
@@ -126,7 +126,7 @@ mod tests {
         let storage = Object::new();
         let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
         let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
-        let _ = Reflect::set(&webapp, &"deviceStorage".into(), &storage);
+        let _ = Reflect::set(&webapp, &"DeviceStorage".into(), &storage);
         storage
     }
 
