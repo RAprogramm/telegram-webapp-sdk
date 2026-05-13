@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-05-13
+### Changed
+- One-shot Telegram callbacks now use `Closure::once_into_js`, so the boxed closure is deallocated after JS invokes it instead of leaking per call. Affects `request_write_access`, `request_emoji_status_access`, `set_emoji_status`, `open_invoice`, `download_file`, `read_text_from_clipboard`, `share_message`, `request_chat`, `check_home_screen_status`, `show_confirm`, `show_popup`, `show_scan_qr_popup`, `invoke_custom_method`. Callback bounds widened `Fn → FnOnce` (strict expansion — existing call sites unaffected) (#203).
+
+### Tests
+- Backfilled `wasm_bindgen_test` coverage for `viewport_height`, `viewport_width`, `viewport_stable_height`, `expand_viewport`, `show_alert`, `show_confirm`, `close_scan_qr_popup`, `on_content_safe_area_changed` (#201).
+
 ## [0.7.0] - 2026-05-13
 ### Changed
 - **MSRV:** minimum supported Rust version raised `1.94.1 → 1.95.0` (#198).
