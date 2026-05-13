@@ -304,7 +304,8 @@ pub struct SecondaryButtonParams<'a> {
 ///
 /// if let Some(app) = TelegramWebApp::instance() {
 ///     let options = OpenLinkOptions {
-///         try_instant_view: Some(true)
+///         try_instant_view: Some(true),
+///         try_browser:      None
 ///     };
 ///     let _ = app.open_link("https://example.com", Some(&options));
 /// }
@@ -312,7 +313,31 @@ pub struct SecondaryButtonParams<'a> {
 #[derive(Debug, Default, Serialize)]
 pub struct OpenLinkOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub try_instant_view: Option<bool>
+    pub try_instant_view: Option<bool>,
+    /// Preferred external browser (Bot API 7.6+). Pass values like `"chrome"`,
+    /// `"firefox"`, `"safari"`. Ignored by older clients.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub try_browser:      Option<String>
+}
+
+/// Options supported by [`crate::webapp::TelegramWebApp::close_with_options`].
+///
+/// # Examples
+/// ```no_run
+/// use telegram_webapp_sdk::webapp::{CloseOptions, TelegramWebApp};
+///
+/// if let Some(app) = TelegramWebApp::instance() {
+///     let _ = app.close_with_options(&CloseOptions {
+///         return_back: Some(true)
+///     });
+/// }
+/// ```
+#[derive(Debug, Default, Serialize)]
+pub struct CloseOptions {
+    /// If `true` and the host client is Bot API 7.6+, returns the user to the
+    /// previous chat instead of just closing the mini app.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub return_back: Option<bool>
 }
 
 /// Background events delivered by Telegram when the Mini App runs in the

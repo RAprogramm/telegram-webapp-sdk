@@ -17,7 +17,7 @@ mod viewport;
 
 // Re-export public types
 pub use types::{
-    BackgroundEvent, BottomButton, BottomButtonParams, EventHandle, OpenLinkOptions,
+    BackgroundEvent, BottomButton, BottomButtonParams, CloseOptions, EventHandle, OpenLinkOptions,
     SafeAreaInset, SecondaryButtonParams, SecondaryButtonPosition
 };
 
