@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct WebAppMessage {
     /// Action type
-    pub action: String,
+    pub action:  String,
     /// Optional payload
-    pub payload: Option<String>,
+    pub payload: Option<String>
 }
 
 /// Response sent to WebApp
@@ -17,5 +17,5 @@ pub struct WebAppResponse {
     /// Message to display
     pub message: String,
     /// Optional data
-    pub data: Option<String>,
+    pub data:    Option<String>
 }

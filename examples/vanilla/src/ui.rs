@@ -3,7 +3,7 @@
 
 use telegram_webapp_sdk::{
     core::context::TelegramContext,
-    dom::{Document, ElementExt},
+    dom::{Document, ElementExt}
 };
 
 pub fn mount() {
@@ -40,7 +40,7 @@ fn build_user_card(doc: &Document) -> web_sys::Element {
                     user.last_name.as_deref().unwrap_or("")
                 ),
                 user.username.clone().map(|u| format!("@{}", u)),
-                user.is_premium.unwrap_or(false),
+                user.is_premium.unwrap_or(false)
             )
         } else {
             ("Guest".to_string(), None, false)

@@ -30,7 +30,11 @@ mod tests {
 
     #[test]
     fn test_order_data_serialize() {
-        let order = OrderData { id: 2, name: String::from("Big King"), price_cents: 499 };
+        let order = OrderData {
+            id:          2,
+            name:        String::from("Big King"),
+            price_cents: 499
+        };
 
         let json = serde_json::to_string(&order).expect("serialize");
 
@@ -49,7 +53,11 @@ mod tests {
 
     #[test]
     fn test_order_price_calculation() {
-        let order = OrderData { id: 1, name: String::from("Test"), price_cents: 1234 };
+        let order = OrderData {
+            id:          1,
+            name:        String::from("Test"),
+            price_cents: 1234
+        };
 
         let price_dollars = order.price_cents as f64 / 100.0;
 
@@ -58,7 +66,11 @@ mod tests {
 
     #[test]
     fn test_order_data_roundtrip() {
-        let original = OrderData { id: 42, name: String::from("Chicken Royale"), price_cents: 750 };
+        let original = OrderData {
+            id:          42,
+            name:        String::from("Chicken Royale"),
+            price_cents: 750
+        };
 
         let json = serde_json::to_string(&original).expect("serialize");
         let deserialized: OrderData = serde_json::from_str(&json).expect("deserialize");

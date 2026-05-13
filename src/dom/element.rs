@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-use wasm_bindgen::{closure::Closure, JsCast, JsValue};
+use wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use web_sys::{Element, EventTarget, Node};
 
 pub trait ElementExt {
@@ -100,7 +100,7 @@ impl ElementExt for Element {
 
     fn on<F>(&self, event: &str, mut handler: F) -> Result<(), JsValue>
     where
-        F: FnMut(web_sys::Event) + 'static,
+        F: FnMut(web_sys::Event) + 'static
     {
         let target: EventTarget = self.clone().unchecked_into();
         let closure = Closure::wrap(Box::new(move |e: web_sys::Event| {

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+use std::env;
+
 use masterror::{AppError, AppErrorKind};
 use teloxide::{
     prelude::*,
@@ -8,8 +10,6 @@ use teloxide::{
     utils::command::BotCommands
 };
 use webapp_integration_backend::{WebAppMessage, WebAppResponse};
-use chrono::Utc;
-use std::env;
 
 #[tokio::main]
 async fn main() {
@@ -17,8 +17,7 @@ async fn main() {
 
     dotenvy::dotenv().ok();
 
-    let webapp_url = env::var("WEBAPP_URL")
-        .unwrap_or_else(|_| "https://example.com".to_string());
+    let webapp_url = env::var("WEBAPP_URL").unwrap_or_else(|_| "https://example.com".to_string());
 
     tracing::info!("Starting WebApp integration bot with URL: {}", webapp_url);
 
@@ -56,24 +55,18 @@ enum Command {
 
 /// Handles bot commands (/start, /help)
 async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppError> {
-    let webapp_url = env::var("WEBAPP_URL")
-        .unwrap_or_else(|_| "https://example.com".to_string());
+    let webapp_url = env::var("WEBAPP_URL").unwrap_or_else(|_| "https://example.com".to_string());
 
     match cmd {
         Command::Start => {
-            let keyboard = InlineKeyboardMarkup::new(vec![
-                vec![InlineKeyboardButton::web_app(
-                    "Open Integration Demo",
-                    WebAppInfo {
-                        url: format!("{}", webapp_url)
-                            .parse()
-                            .map_err(|e| {
-                                AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
-                                    .with_context(e)
-                            })?
-                    }
-                )],
-            ]);
+            let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::web_app(
+                "Open Integration Demo",
+                WebAppInfo {
+                    url: webapp_url.to_string().parse().map_err(|e| {
+                        AppError::new(AppErrorKind::Internal, "Invalid WebApp URL").with_context(e)
+                    })?
+                }
+            )]]);
 
             bot.send_message(
                 msg.chat.id,
@@ -108,10 +101,10 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
 async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
     if let Some(web_app_data) = msg.web_app_data() {
         // Parse the JSON data sent from WebApp
-        let webapp_msg: WebAppMessage = serde_json::from_str(&web_app_data.data)
-            .map_err(|e| {
-                AppError::new(AppErrorKind::BadRequest, "Invalid WebApp message format").with_context(e)
-            })?;
+        let webapp_msg: WebAppMessage = serde_json::from_str(&web_app_data.data).map_err(|e| {
+            AppError::new(AppErrorKind::BadRequest, "Invalid WebApp message format")
+                .with_context(e)
+        })?;
 
         // Process the message based on action
         let response = match webapp_msg.action.as_str() {
@@ -120,7 +113,7 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
                 WebAppResponse {
                     success: true,
                     message: "Echo response from bot".to_string(),
-                    data: Some(format!("You sent: {}", payload)),
+                    data:    Some(format!("You sent: {}", payload))
                 }
             }
             "get_time" => {
@@ -128,26 +121,27 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
                 WebAppResponse {
                     success: true,
                     message: "Current timestamp".to_string(),
-                    data: Some(timestamp.to_string()),
+                    data:    Some(timestamp.to_string())
                 }
             }
-            _ => {
-                WebAppResponse {
-                    success: false,
-                    message: "Unknown action".to_string(),
-                    data: None,
-                }
+            _ => WebAppResponse {
+                success: false,
+                message: "Unknown action".to_string(),
+                data:    None
             }
         };
 
         // Send response back to WebApp via answerWebAppQuery if available
         // For regular messages, we'll send a regular message
-        let response_json = serde_json::to_string(&response)
-            .map_err(|e| AppError::new(AppErrorKind::Internal, "Failed to serialize response").with_context(e))?;
+        let response_json = serde_json::to_string(&response).map_err(|e| {
+            AppError::new(AppErrorKind::Internal, "Failed to serialize response").with_context(e)
+        })?;
 
         bot.send_message(msg.chat.id, response_json)
             .await
-            .map_err(|e| AppError::new(AppErrorKind::Service, "Failed to send response").with_context(e))?;
+            .map_err(|e| {
+                AppError::new(AppErrorKind::Service, "Failed to send response").with_context(e)
+            })?;
 
         tracing::info!(
             "WebApp message from user {}: {}",

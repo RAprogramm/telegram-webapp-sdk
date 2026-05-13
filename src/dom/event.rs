@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-use wasm_bindgen::{closure::Closure, JsCast, JsValue};
+use wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use web_sys::Element;
 
 pub struct EventHandler;
@@ -9,7 +9,7 @@ pub struct EventHandler;
 impl EventHandler {
     pub fn on<F>(element: &Element, event: &str, handler: F) -> Result<(), JsValue>
     where
-        F: FnMut(web_sys::Event) + 'static,
+        F: FnMut(web_sys::Event) + 'static
     {
         let target: web_sys::EventTarget = element.clone().unchecked_into();
         let closure = Closure::wrap(handler.into());
@@ -22,7 +22,7 @@ impl EventHandler {
 
     pub fn on_click<F>(element: &Element, mut handler: F) -> Result<(), JsValue>
     where
-        F: FnMut(web_sys::MouseEvent) + 'static,
+        F: FnMut(web_sys::MouseEvent) + 'static
     {
         let target: web_sys::EventTarget = element.clone().unchecked_into();
         let closure = Closure::wrap(Box::new(move |e: web_sys::Event| {
