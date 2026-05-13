@@ -117,7 +117,7 @@ fn location_manager_object() -> Result<JsValue, JsValue> {
     let window = window().ok_or_else(|| JsValue::from_str("no window"))?;
     let tg = Reflect::get(&window, &JsValue::from_str("Telegram"))?;
     let webapp = Reflect::get(&tg, &JsValue::from_str("WebApp"))?;
-    Reflect::get(&webapp, &JsValue::from_str("locationManager"))
+    Reflect::get(&webapp, &JsValue::from_str("LocationManager"))
 }
 
 fn webapp_object() -> Result<JsValue, JsValue> {
@@ -145,7 +145,7 @@ mod tests {
         let manager = Object::new();
         let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
         let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
-        let _ = Reflect::set(&webapp, &"locationManager".into(), &manager);
+        let _ = Reflect::set(&webapp, &"LocationManager".into(), &manager);
         (webapp, manager)
     }
 
