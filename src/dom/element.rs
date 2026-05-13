@@ -145,3 +145,198 @@ impl ElementExt for Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{cell::Cell, rc::Rc};
+
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::Element;
+
+    use super::*;
+    use crate::dom::Document;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn make(tag: &str) -> Element {
+        Document.create_element(tag).expect("create")
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_class_sets_attribute() {
+        let el = make("div");
+        el.set_class("a b");
+        assert_eq!(el.get_attribute("class").as_deref(), Some("a b"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_id_sets_attribute() {
+        let el = make("div");
+        el.set_id("x");
+        assert_eq!(el.get_attribute("id").as_deref(), Some("x"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_text_sets_text_content() {
+        let el = make("p");
+        el.set_text("hello");
+        assert_eq!(el.text_content().as_deref(), Some("hello"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_html_sets_inner_html() {
+        let el = make("div");
+        el.set_html("<b>bold</b>").expect("ok");
+        assert!(el.inner_html().contains("<b>"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn set_and_get_attr() {
+        let el = make("div");
+        el.set_attr("data-x", "42").expect("ok");
+        assert_eq!(el.get_attr("data-x").as_deref(), Some("42"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn remove_attr_clears_value() {
+        let el = make("div");
+        el.set_attr("data-x", "42").expect("ok");
+        el.remove_attr("data-x").expect("ok");
+        assert!(el.get_attr("data-x").is_none());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn add_class_appends_and_dedupes() {
+        let el = make("div");
+        el.add_class("a").expect("ok");
+        el.add_class("b").expect("ok");
+        el.add_class("a").expect("ok");
+        assert_eq!(el.get_attribute("class").as_deref(), Some("a b"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn remove_class_filters_and_clears_when_empty() {
+        let el = make("div");
+        el.set_class("a b");
+        el.remove_class("a").expect("ok");
+        assert_eq!(el.get_attribute("class").as_deref(), Some("b"));
+        el.remove_class("b").expect("ok");
+        assert!(el.get_attribute("class").is_none());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn toggle_class_round_trip() {
+        let el = make("div");
+        el.toggle_class("on").expect("ok");
+        assert!(el.has_class("on"));
+        el.toggle_class("on").expect("ok");
+        assert!(!el.has_class("on"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn has_class_finds_only_whole_tokens() {
+        let el = make("div");
+        el.set_class("alpha beta");
+        assert!(el.has_class("alpha"));
+        assert!(el.has_class("beta"));
+        assert!(!el.has_class("alph"));
+        assert!(!el.has_class("gamma"));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn on_event_fires_handler() {
+        let body = Document.body().expect("body");
+        let el = make("button");
+        body.append_child(&el).expect("attach");
+
+        let hits = Rc::new(Cell::new(0u32));
+        let hits_cb = hits.clone();
+        el.on("click", move |_| hits_cb.set(hits_cb.get() + 1))
+            .expect("ok");
+
+        let evt = web_sys::Event::new("click").expect("event");
+        el.dispatch_event(&evt).expect("dispatch");
+
+        assert_eq!(hits.get(), 1);
+        el.remove();
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn append_places_child_at_end() {
+        let parent = make("ul");
+        let a = make("li");
+        a.set_id("a");
+        let b = make("li");
+        b.set_id("b");
+        parent.append(&a).expect("ok");
+        parent.append(&b).expect("ok");
+
+        let last = parent.last_element_child().expect("last");
+        assert_eq!(last.id(), "b");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn prepend_inserts_at_start_or_appends_when_empty() {
+        let parent = make("ul");
+        let a = make("li");
+        a.set_id("a");
+        parent.prepend(&a).expect("ok");
+        assert_eq!(parent.first_element_child().expect("first").id(), "a");
+
+        let b = make("li");
+        b.set_id("b");
+        parent.prepend(&b).expect("ok");
+        assert_eq!(parent.first_element_child().expect("first").id(), "b");
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn remove_detaches_and_is_noop_without_parent() {
+        let parent = make("div");
+        let child = make("span");
+        parent.append(&child).expect("ok");
+        assert!(parent.first_element_child().is_some());
+        // UFCS because `web_sys::Element::remove` also exists and shadows the trait
+        // method.
+        ElementExt::remove(&child).expect("detach");
+        assert!(parent.first_element_child().is_none());
+
+        let orphan = make("div");
+        ElementExt::remove(&orphan).expect("noop");
+    }
+
+    fn element_child_count(parent: &Element) -> usize {
+        let mut count = 0usize;
+        let mut next = parent.first_element_child();
+        while let Some(el) = next {
+            count += 1;
+            next = el.next_element_sibling();
+        }
+        count
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn clear_removes_all_children() {
+        let parent = make("div");
+        for _ in 0..3 {
+            parent.append(&make("span")).expect("ok");
+        }
+        assert_eq!(element_child_count(&parent), 3);
+        parent.clear();
+        assert_eq!(element_child_count(&parent), 0);
+    }
+}
