@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-13
+### Added
+- `async fn` siblings for every one-shot Telegram callback, so prod code can `await` Telegram prompts the same way `@telegram-apps/sdk-react` does in TypeScript: `request_write_access`, `request_emoji_status_access`, `set_emoji_status`, `open_invoice`, `download_file`, `read_text_from_clipboard`, `share_message`, `request_chat`, `check_home_screen_status`, `show_confirm`, `show_popup`, `show_scan_qr_popup`, `invoke_custom_method`. `invoke_custom_method` rejects the future on JS-side errors (#207).
+
+### Changed
+- **BREAKING:** every existing callback method renamed to `*_with_callback` so the bare name can host the new async sibling. Migration: append `_with_callback` to existing call sites, or switch to `.await`.
+
 ## [0.7.1] - 2026-05-13
 ### Changed
 - One-shot Telegram callbacks now use `Closure::once_into_js`, so the boxed closure is deallocated after JS invokes it instead of leaking per call. Affects `request_write_access`, `request_emoji_status_access`, `set_emoji_status`, `open_invoice`, `download_file`, `read_text_from_clipboard`, `share_message`, `request_chat`, `check_home_screen_status`, `show_confirm`, `show_popup`, `show_scan_qr_popup`, `invoke_custom_method`. Callback bounds widened `Fn → FnOnce` (strict expansion — existing call sites unaffected) (#203).
