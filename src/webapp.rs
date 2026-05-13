@@ -1006,7 +1006,7 @@ mod tests {
         let status = Rc::new(RefCell::new(String::new()));
         let status_clone = Rc::clone(&status);
 
-        app.open_invoice("https://invoice", move |s| {
+        app.open_invoice_with_callback("https://invoice", move |s| {
             *status_clone.borrow_mut() = s;
         })
         .unwrap();
@@ -1053,7 +1053,7 @@ mod tests {
         let sent = Rc::new(Cell::new(false));
         let sent_clone = Rc::clone(&sent);
 
-        app.share_message("123", move |s| {
+        app.share_message_with_callback("123", move |s| {
             sent_clone.set(s);
         })
         .unwrap();
@@ -1143,7 +1143,8 @@ mod tests {
         let app = TelegramWebApp::instance().unwrap();
         let sent = std::rc::Rc::new(std::cell::Cell::new(false));
         let sent_ref = sent.clone();
-        app.request_chat(42, move |s| sent_ref.set(s)).unwrap();
+        app.request_chat_with_callback(42, move |s| sent_ref.set(s))
+            .unwrap();
 
         assert_eq!(
             Reflect::get(&webapp, &"req_chat_id".into())
@@ -1226,7 +1227,7 @@ mod tests {
         let status = Rc::new(RefCell::new(String::new()));
         let status_clone = Rc::clone(&status);
 
-        app.check_home_screen_status(move |s| {
+        app.check_home_screen_status_with_callback(move |s| {
             *status_clone.borrow_mut() = s;
         })
         .unwrap();
@@ -1333,7 +1334,7 @@ mod tests {
         let granted = Rc::new(Cell::new(false));
         let granted_clone = Rc::clone(&granted);
 
-        let res = app.request_write_access(move |g| {
+        let res = app.request_write_access_with_callback(move |g| {
             granted_clone.set(g);
         });
         assert!(res.is_ok());
@@ -1379,7 +1380,7 @@ mod tests {
             file_name: Some("data.bin"),
             mime_type: None
         };
-        app.download_file(params, move |id| {
+        app.download_file_with_callback(params, move |id| {
             *result_clone.borrow_mut() = id;
         })
         .unwrap();
@@ -1397,7 +1398,7 @@ mod tests {
     fn request_write_access_returns_error_when_missing() {
         let _webapp = setup_webapp();
         let app = TelegramWebApp::instance().unwrap();
-        let res = app.request_write_access(|_| {});
+        let res = app.request_write_access_with_callback(|_| {});
         assert!(res.is_err());
     }
     #[wasm_bindgen_test]
@@ -1411,7 +1412,7 @@ mod tests {
         let granted = Rc::new(Cell::new(true));
         let granted_clone = Rc::clone(&granted);
 
-        app.request_emoji_status_access(move |g| {
+        app.request_emoji_status_access_with_callback(move |g| {
             granted_clone.set(g);
         })
         .unwrap();
@@ -1437,7 +1438,7 @@ mod tests {
         let success = Rc::new(Cell::new(false));
         let success_clone = Rc::clone(&success);
 
-        app.set_emoji_status(&status.into(), move |s| {
+        app.set_emoji_status_with_callback(&status.into(), move |s| {
             success_clone.set(s);
         })
         .unwrap();
@@ -1461,7 +1462,7 @@ mod tests {
         let button = Rc::new(RefCell::new(String::new()));
         let button_clone = Rc::clone(&button);
 
-        app.show_popup(&JsValue::NULL, move |id| {
+        app.show_popup_with_callback(&JsValue::NULL, move |id| {
             *button_clone.borrow_mut() = id;
         })
         .unwrap();
@@ -1480,7 +1481,7 @@ mod tests {
         let text = Rc::new(RefCell::new(String::new()));
         let text_clone = Rc::clone(&text);
 
-        app.read_text_from_clipboard(move |t| {
+        app.read_text_from_clipboard_with_callback(move |t| {
             *text_clone.borrow_mut() = t;
         })
         .unwrap();
@@ -1501,7 +1502,7 @@ mod tests {
         let text = Rc::new(RefCell::new(String::new()));
         let text_clone = Rc::clone(&text);
 
-        app.show_scan_qr_popup("scan", move |value| {
+        app.show_scan_qr_popup_with_callback("scan", move |value| {
             *text_clone.borrow_mut() = value;
         })
         .unwrap();

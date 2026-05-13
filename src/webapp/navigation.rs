@@ -5,7 +5,11 @@ use js_sys::{Function, Reflect};
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 
-use crate::webapp::{TelegramWebApp, types::OpenLinkOptions};
+use crate::webapp::{
+    TelegramWebApp,
+    core::{await_one_shot, one_shot_promise},
+    types::OpenLinkOptions
+};
 
 impl TelegramWebApp {
     /// Call `WebApp.openLink(url)`.
@@ -75,21 +79,11 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.shareMessage(msg_id, callback)`.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.share_message("id123", |sent| {
-    ///     let _ = sent;
-    /// })
-    /// .unwrap();
-    /// ```
+    /// Callback variant of [`Self::share_message`].
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn share_message<F>(&self, msg_id: &str, callback: F) -> Result<(), JsValue>
+    pub fn share_message_with_callback<F>(&self, msg_id: &str, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(bool)
     {
@@ -102,6 +96,40 @@ impl TelegramWebApp {
             .ok_or_else(|| JsValue::from_str("shareMessage is not a function"))?;
         func.call2(&self.inner, &msg_id.into(), &cb)?;
         Ok(())
+    }
+
+    /// Async wrapper over `WebApp.shareMessage`. Resolves with `true` when the
+    /// prepared message was sent.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+    /// let app = TelegramWebApp::try_instance()?;
+    /// let sent: bool = app.share_message("id123").await?;
+    /// let _ = sent;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub async fn share_message(&self, msg_id: &str) -> Result<bool, JsValue> {
+        let webapp = self.inner.clone();
+        let msg_id = msg_id.to_owned();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |v: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &v);
+            });
+            let f = Reflect::get(&webapp, &"shareMessage".into())?;
+            let func = f
+                .dyn_ref::<Function>()
+                .ok_or_else(|| JsValue::from_str("shareMessage is not a function"))?;
+            func.call2(&webapp, &msg_id.into(), &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_bool().unwrap_or(false))
     }
 
     /// Call `WebApp.shareToStory(media_url, params)`.
@@ -158,28 +186,11 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.requestChat(req_id, callback)` (Bot API 9.6+).
-    ///
-    /// Opens a dialog that lets the user pick an existing chat matching the
-    /// prepared keyboard request previously saved via
-    /// `savePreparedKeyboardButton`. The callback receives `true` on
-    /// success and `false` when the user cancels or Telegram reports a
-    /// failure (`requestedChatFailed`).
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.request_chat(42, |sent| {
-    ///     let _ = sent;
-    /// })
-    /// .unwrap();
-    /// ```
+    /// Callback variant of [`Self::request_chat`] (Bot API 9.6+).
     ///
     /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails (including when the
-    /// running Telegram client predates Bot API 9.6).
-    pub fn request_chat<F>(&self, req_id: i32, callback: F) -> Result<(), JsValue>
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn request_chat_with_callback<F>(&self, req_id: i32, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(bool)
     {
@@ -192,6 +203,40 @@ impl TelegramWebApp {
             .ok_or_else(|| JsValue::from_str("requestChat is not a function"))?;
         func.call2(&self.inner, &req_id.into(), &cb)?;
         Ok(())
+    }
+
+    /// Async wrapper over `WebApp.requestChat` (Bot API 9.6+). Resolves with
+    /// `true` when the user picks a chat, `false` on cancel/failure.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # async fn run() -> Result<(), wasm_bindgen::JsValue> {
+    /// let app = TelegramWebApp::try_instance()?;
+    /// let sent: bool = app.request_chat(42).await?;
+    /// let _ = sent;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails (including when the
+    /// running Telegram client predates Bot API 9.6).
+    pub async fn request_chat(&self, req_id: i32) -> Result<bool, JsValue> {
+        let webapp = self.inner.clone();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |v: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &v);
+            });
+            let f = Reflect::get(&webapp, &"requestChat".into())?;
+            let func = f
+                .dyn_ref::<Function>()
+                .ok_or_else(|| JsValue::from_str("requestChat is not a function"))?;
+            func.call2(&webapp, &req_id.into(), &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_bool().unwrap_or(false))
     }
 
     /// Call `WebApp.addToHomeScreen()` and return whether the prompt was shown.
@@ -211,18 +256,8 @@ impl TelegramWebApp {
         Ok(result.as_bool().unwrap_or(false))
     }
 
-    /// Call `WebApp.checkHomeScreenStatus(callback)`.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.check_home_screen_status(|status| {
-    ///     let _ = status;
-    /// })
-    /// .unwrap();
-    /// ```
-    pub fn check_home_screen_status<F>(&self, callback: F) -> Result<(), JsValue>
+    /// Callback variant of [`Self::check_home_screen_status`].
+    pub fn check_home_screen_status_with_callback<F>(&self, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(String)
     {
@@ -235,5 +270,27 @@ impl TelegramWebApp {
             .ok_or_else(|| JsValue::from_str("checkHomeScreenStatus is not a function"))?;
         func.call1(&self.inner, &cb)?;
         Ok(())
+    }
+
+    /// Async wrapper over `WebApp.checkHomeScreenStatus`. Resolves with the
+    /// status string Telegram returns (e.g. `"added"`, `"missed"`).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub async fn check_home_screen_status(&self) -> Result<String, JsValue> {
+        let webapp = self.inner.clone();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |status: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &status);
+            });
+            let f = Reflect::get(&webapp, &"checkHomeScreenStatus".into())?;
+            let func = f
+                .dyn_ref::<Function>()
+                .ok_or_else(|| JsValue::from_str("checkHomeScreenStatus is not a function"))?;
+            func.call1(&webapp, &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_string().unwrap_or_default())
     }
 }

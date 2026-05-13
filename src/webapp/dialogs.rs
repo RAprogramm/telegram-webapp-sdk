@@ -4,7 +4,10 @@
 use js_sys::{Function, Object, Reflect};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 
-use crate::webapp::TelegramWebApp;
+use crate::webapp::{
+    TelegramWebApp,
+    core::{await_one_shot, one_shot_promise}
+};
 
 impl TelegramWebApp {
     /// Call `WebApp.showAlert(message)`.
@@ -15,11 +18,11 @@ impl TelegramWebApp {
         self.call1("showAlert", &msg.into())
     }
 
-    /// Call `WebApp.showConfirm(message, callback)`.
+    /// Callback variant of [`Self::show_confirm`].
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn show_confirm<F>(&self, msg: &str, on_confirm: F) -> Result<(), JsValue>
+    pub fn show_confirm_with_callback<F>(&self, msg: &str, on_confirm: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(bool)
     {
@@ -34,6 +37,29 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Async wrapper over `WebApp.showConfirm`. Resolves with the user's
+    /// boolean answer.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub async fn show_confirm(&self, msg: &str) -> Result<bool, JsValue> {
+        let webapp = self.inner.clone();
+        let msg = msg.to_owned();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |v: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &v);
+            });
+            let f = Reflect::get(&webapp, &"showConfirm".into())?;
+            let func = f
+                .dyn_ref::<Function>()
+                .ok_or_else(|| JsValue::from_str("showConfirm is not a function"))?;
+            func.call2(&webapp, &msg.into(), &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_bool().unwrap_or(false))
+    }
+
     /// Call `WebApp.showPopup(params, callback)`.
     ///
     /// # Examples
@@ -42,12 +68,13 @@ impl TelegramWebApp {
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let params = Object::new();
-    /// app.show_popup(&params.into(), |id| {
+    /// app.show_popup_with_callback(&params.into(), |id| {
     ///     let _ = id;
     /// })
     /// .unwrap();
     /// ```
-    pub fn show_popup<F>(&self, params: &JsValue, callback: F) -> Result<(), JsValue>
+    /// Callback variant of [`Self::show_popup`].
+    pub fn show_popup_with_callback<F>(&self, params: &JsValue, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(String)
     {
@@ -60,6 +87,27 @@ impl TelegramWebApp {
         Ok(())
     }
 
+    /// Async wrapper over `WebApp.showPopup`. Resolves with the id of the
+    /// button the user pressed, or an empty string if the popup was dismissed.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub async fn show_popup(&self, params: &JsValue) -> Result<String, JsValue> {
+        let webapp = self.inner.clone();
+        let params = params.clone();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |id: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &id);
+            });
+            Reflect::get(&webapp, &"showPopup".into())?
+                .dyn_into::<Function>()?
+                .call2(&webapp, &params, &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_string().unwrap_or_default())
+    }
+
     /// Call `WebApp.showScanQrPopup({ text }, callback)`.
     ///
     /// The text is shown above the scanner viewport. Pass an empty string to
@@ -69,12 +117,17 @@ impl TelegramWebApp {
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.show_scan_qr_popup("Scan", |text| {
+    /// app.show_scan_qr_popup_with_callback("Scan", |text| {
     ///     let _ = text;
     /// })
     /// .unwrap();
     /// ```
-    pub fn show_scan_qr_popup<F>(&self, text: &str, callback: F) -> Result<(), JsValue>
+    /// Callback variant of [`Self::show_scan_qr_popup`].
+    pub fn show_scan_qr_popup_with_callback<F>(
+        &self,
+        text: &str,
+        callback: F
+    ) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(String)
     {
@@ -87,6 +140,29 @@ impl TelegramWebApp {
             .dyn_into::<Function>()?
             .call2(&self.inner, &params, &cb)?;
         Ok(())
+    }
+
+    /// Async wrapper over `WebApp.showScanQrPopup`. Resolves with the scanned
+    /// text. Pass an empty `text` to open the scanner without a caption.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub async fn show_scan_qr_popup(&self, text: &str) -> Result<String, JsValue> {
+        let webapp = self.inner.clone();
+        let text = text.to_owned();
+        let promise = one_shot_promise(move |resolve, _reject| {
+            let cb = Closure::once_into_js(move |value: JsValue| {
+                let _ = resolve.call1(&JsValue::NULL, &value);
+            });
+            let params = Object::new();
+            Reflect::set(&params, &"text".into(), &text.into())?;
+            Reflect::get(&webapp, &"showScanQrPopup".into())?
+                .dyn_into::<Function>()?
+                .call2(&webapp, &params, &cb)?;
+            Ok(())
+        });
+        let value = await_one_shot(promise).await?;
+        Ok(value.as_string().unwrap_or_default())
     }
 
     /// Call `WebApp.closeScanQrPopup()`.
@@ -133,7 +209,8 @@ mod tests {
         let _ = Reflect::set(&webapp, &"showScanQrPopup".into(), &capture);
 
         let app = TelegramWebApp::instance().expect("instance");
-        app.show_scan_qr_popup("Scan", |_| {}).expect("ok");
+        app.show_scan_qr_popup_with_callback("Scan", |_| {})
+            .expect("ok");
 
         let params = Reflect::get(&webapp, &"captured_params".into()).expect("captured");
         assert!(!params.is_undefined(), "scan params must be an object");
@@ -172,7 +249,7 @@ mod tests {
         let app = TelegramWebApp::instance().expect("instance");
         let received = std::rc::Rc::new(std::cell::Cell::new(false));
         let received_ref = received.clone();
-        app.show_confirm("Proceed?", move |ok| received_ref.set(ok))
+        app.show_confirm_with_callback("Proceed?", move |ok| received_ref.set(ok))
             .expect("ok");
 
         assert_eq!(
@@ -217,7 +294,7 @@ mod tests {
         let app = TelegramWebApp::instance().expect("instance");
         let captured = std::rc::Rc::new(std::cell::RefCell::new(String::new()));
         let captured_ref = captured.clone();
-        app.show_scan_qr_popup("", move |t| {
+        app.show_scan_qr_popup_with_callback("", move |t| {
             *captured_ref.borrow_mut() = t;
         })
         .expect("ok");
