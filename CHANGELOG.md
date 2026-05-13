@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-05-13
+### Fixed
+- `api::device_storage`, `api::secure_storage`, `api::location_manager` now use the PascalCase sub-object keys (`DeviceStorage` / `SecureStorage` / `LocationManager`) that `Telegram.WebApp` actually exposes. Previously every call to these modules failed at runtime in production because the crate looked up camelCase mirrors that don't exist; tests passed only because their mocks repeated the same wrong key (#223).
+
+### Removed
+- **BREAKING:** `api::cloud_storage::set_items` — `cloudStorage.setItems` is not part of `Telegram.WebApp`. Use a loop over `set_item` (#223).
+- **BREAKING:** `api::cloud_storage::clear` — `cloudStorage.clear` is not part of `Telegram.WebApp` (only `DeviceStorage` / `SecureStorage` ship `clear`). Iterate over `get_keys` + `remove_items` for a bulk wipe (#223).
+
 ## [0.9.1] - 2026-05-13
 ### Docs
 - README and `WEBAPP_API.md` aligned with the post-0.9.0 surface: `async fn` examples for one-shot calls, full Yew/Leptos system-button trio (`BottomButton`/`BackButton`/`SettingsButton`) and reactive hooks (`use_viewport`/`use_theme`/`use_safe_area`), new `Async API` and `Reactive hooks` sections, accurate features list, license corrected to MIT-only, version strings bumped to `0.9`, API coverage block bumped to 9.6, coverage badge and `WEBAPP_API.md` coverage commit pinned to the matching head (#219).
