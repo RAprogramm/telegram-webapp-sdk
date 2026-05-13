@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 use js_sys::{Function, Object, Reflect};
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
 use web_sys::window;
 
 use crate::{core::context::TelegramContext, webapp::TelegramWebApp};
@@ -95,6 +95,56 @@ impl TelegramWebApp {
         self.call0("ready")
     }
 
+    /// Call `WebApp.invokeCustomMethod(method, params, callback)`.
+    ///
+    /// The JS callback is `(error, result)`; the wrapper translates it into
+    /// `Result<JsValue, JsValue>` for the Rust closure.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// # use js_sys::Object;
+    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
+    /// # let app = TelegramWebApp::instance().unwrap();
+    /// let params = Object::new();
+    /// app.invoke_custom_method("getRequestedContact", &params.into(), |outcome| {
+    ///     let _ = outcome;
+    /// })
+    /// .unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn invoke_custom_method<F>(
+        &self,
+        method: &str,
+        params: &JsValue,
+        callback: F
+    ) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(Result<JsValue, JsValue>)
+    {
+        let cb =
+            Closure::<dyn FnMut(JsValue, JsValue)>::new(move |err: JsValue, result: JsValue| {
+                if err.is_null() || err.is_undefined() {
+                    callback(Ok(result));
+                } else {
+                    callback(Err(err));
+                }
+            });
+        let f = Reflect::get(&self.inner, &"invokeCustomMethod".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("invokeCustomMethod is not a function"))?;
+        func.call3(
+            &self.inner,
+            &method.into(),
+            params,
+            cb.as_ref().unchecked_ref()
+        )?;
+        cb.forget();
+        Ok(())
+    }
+
     // === Internal helper methods ===
 
     pub(super) fn call0(&self, method: &str) -> Result<(), JsValue> {
@@ -123,5 +173,79 @@ impl TelegramWebApp {
             .ok_or_else(|| JsValue::from_str("not a function"))?;
         func.call0(&obj)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{cell::RefCell, rc::Rc};
+
+    use js_sys::{Function, Object, Reflect};
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::window;
+
+    use crate::webapp::TelegramWebApp;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn setup_webapp() -> Object {
+        let win = window().expect("window");
+        let telegram = Object::new();
+        let webapp = Object::new();
+        let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
+        let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
+        webapp
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoke_custom_method_passes_args_and_delivers_result() {
+        let webapp = setup_webapp();
+        let invoke = Function::new_with_args(
+            "method, params, cb",
+            "this.method = method; this.params = params; cb(null, {ok: 1});"
+        );
+        let _ = Reflect::set(&webapp, &"invokeCustomMethod".into(), &invoke);
+
+        let app = TelegramWebApp::instance().expect("instance");
+        let received = Rc::new(RefCell::new(None::<JsValue>));
+        let cap = received.clone();
+        let params = Object::new();
+        let _ = Reflect::set(&params, &"x".into(), &"y".into());
+        app.invoke_custom_method("doStuff", &params.into(), move |out| {
+            *cap.borrow_mut() = Some(out.expect("ok"));
+        })
+        .expect("ok");
+
+        assert_eq!(
+            Reflect::get(&webapp, &"method".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("doStuff")
+        );
+        let value = received.borrow().clone().expect("result");
+        let ok_val = Reflect::get(&value, &"ok".into()).expect("ok field");
+        assert_eq!(ok_val.as_f64(), Some(1.0));
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn invoke_custom_method_translates_error() {
+        let webapp = setup_webapp();
+        let invoke = Function::new_with_args("_method, _params, cb", "cb('boom', null);");
+        let _ = Reflect::set(&webapp, &"invokeCustomMethod".into(), &invoke);
+
+        let app = TelegramWebApp::instance().expect("instance");
+        let received = Rc::new(RefCell::new(None::<JsValue>));
+        let cap = received.clone();
+        app.invoke_custom_method("doStuff", &JsValue::NULL, move |out| {
+            *cap.borrow_mut() = Some(out.expect_err("err"));
+        })
+        .expect("ok");
+
+        let err = received.borrow().clone().expect("err");
+        assert_eq!(err.as_string().as_deref(), Some("boom"));
     }
 }
