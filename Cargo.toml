@@ -1,7 +1,7 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.4.0"
-rust-version = "1.93"
+version = "0.5.0"
+rust-version = "1.94.1"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
 license = "MIT"
@@ -12,7 +12,7 @@ keywords = ["telegram", "webapp", "wasm", "sdk"]
 categories = ["web-programming", "wasm"]
 
 [workspace.package]
-rust-version = "1.93"
+rust-version = "1.94.1"
 
 [workspace.dependencies]
 inventory = "0.3"
@@ -38,6 +38,9 @@ web-sys = { version = "0.3", features = [
   "Element",
   "HtmlElement",
   "HtmlImageElement",
+  "Node",
+  "EventTarget",
+  "MouseEvent",
   "console",
   "Location",
   "CssStyleDeclaration",
@@ -56,7 +59,7 @@ toml = "1"
 version_check = "0.9"
 
 [dependencies.yew]
-version = "0.22"
+version = "0.23"
 optional = true
 default-features = false
 features = ["csr"]
@@ -69,15 +72,17 @@ features = ["csr"]
 
 [features]
 default = []
+
 macros = ["dep:inventory"]
 yew = ["dep:yew"]
 leptos = ["dep:leptos"]
 mock = ["dep:urlencoding"]
+full = ["macros", "yew", "leptos", "mock"]
 
 [workspace]
-members = ["demo"]
+members = ["demo", "examples/vanilla", "examples/bots/rust_bot", "examples/integration/backend"]
 default-members = ["."]
-exclude = ["examples/bots/rust_bot"]
+exclude = ["examples/integration/frontend"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
