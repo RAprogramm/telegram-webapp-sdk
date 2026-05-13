@@ -4,7 +4,7 @@
 [webapp_api_status]
 latest_version = "9.6"
 covered_version = "9.6"
-coverage_commit = "HEAD"
+coverage_commit = "53276fd"
 coverage_date = "2026-05-13"
 source_url = "https://core.telegram.org/bots/webapps"
 latest_version_probe_url = "https://telegram.org/js/telegram-web-app.js"
