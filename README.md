@@ -20,7 +20,7 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
 [![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.6-blue)](https://core.telegram.org/bots/webapps)
-[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
+[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2853276fd%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd)
 <!-- webapp_api_badges:end -->
 [![Wiki](https://img.shields.io/badge/Wiki-Documentation-0088cc?logo=github)](https://github.com/RAprogramm/telegram-webapp-sdk/wiki)
 
@@ -112,7 +112,7 @@ The top section represents the entire project. Proceeding with folders and final
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.15", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.9", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -170,19 +170,20 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-telegram-webapp-sdk = "0.2"
+telegram-webapp-sdk = "0.9"
 ```
 
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.2.15", features = ["macros", "yew", "mock"] }
+telegram-webapp-sdk = { version = "0.9", features = ["macros", "yew", "leptos", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
-- `yew` &mdash; exposes a `use_telegram_context` hook and a `BottomButton` component.
-- `leptos` &mdash; integrates the context into the Leptos reactive system.
+- `yew` &mdash; `use_telegram_context`, reactive hooks `use_viewport` / `use_theme` / `use_safe_area`, and components `BottomButton` / `BackButton` / `SettingsButton`.
+- `leptos` &mdash; `provide_telegram_context`, same reactive `use_*` hooks and `BottomButton` / `BackButton` / `SettingsButton` components.
 - `mock` &mdash; installs a configurable mock `Telegram.WebApp` for local development.
+- `full` &mdash; aggregates `macros`, `yew`, `leptos`, `mock`.
  
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -281,16 +282,24 @@ fn app() -> Html {
 }
 ```
 
-Use [`BottomButton`](https://docs.rs/telegram-webapp-sdk/latest/telegram_webapp_sdk/yew/struct.BottomButton.html) to control the main button:
+Yew also ships components for all three system buttons:
 
 ```rust,ignore
-use telegram_webapp_sdk::yew::BottomButton;
+use telegram_webapp_sdk::yew::{BackButton, BottomButton, SettingsButton};
 use yew::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
-    let on_click = Callback::from(|_| {});
-    html! { <BottomButton text="Send" color="#000" text_color="#fff" {on_click} /> }
+    let on_main = Callback::from(|_| {});
+    let on_back = Callback::from(|_| {});
+    let on_settings = Callback::from(|_| {});
+    html! {
+        <>
+            <BottomButton text="Send" color="#000" text_color="#fff" on_click={on_main} />
+            <BackButton visible={true} on_click={on_back} />
+            <SettingsButton visible={true} on_click={on_settings} />
+        </>
+    }
 }
 ```
 
@@ -313,18 +322,103 @@ fn App() -> impl IntoView {
 }
 ```
 
-The SDK also provides a `BottomButton` component for Leptos to control Telegram bottom buttons:
+The SDK also provides `BottomButton`, `BackButton`, and `SettingsButton`
+components for Leptos that drive the corresponding native Telegram buttons:
 
 ```rust,ignore
 use leptos::prelude::*;
-use telegram_webapp_sdk::leptos::{provide_telegram_context, BottomButton};
+use telegram_webapp_sdk::leptos::{
+    provide_telegram_context, BackButton, BottomButton, SettingsButton
+};
 use telegram_webapp_sdk::webapp::BottomButton as Btn;
 
 #[component]
 fn App() -> impl IntoView {
     provide_telegram_context().expect("context");
     let (text, _set_text) = signal("Send".to_owned());
-    view! { <BottomButton button=Btn::Main text /> }
+    let back_visible = RwSignal::new(true);
+    view! {
+        <BottomButton button=Btn::Main text />
+        <BackButton visible=back_visible on_click=move || { /* navigate back */ } />
+        <SettingsButton visible=back_visible on_click=move || { /* open settings */ } />
+    }
+}
+```
+
+<p align="right"><a href="#readme-top">Back to top</a></p>
+
+## Async API
+
+Every one-shot Telegram callback has an `async fn` sibling that returns the
+natural Rust type. Prefer `.await` for prod code; use the `*_with_callback`
+variant when you can't `.await` (e.g. inside a non-async closure):
+
+```rust,no_run
+use telegram_webapp_sdk::webapp::TelegramWebApp;
+
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
+let app = TelegramWebApp::try_instance()?;
+
+let confirmed: bool = app.show_confirm("Send the order?").await?;
+let scanned: String = app.show_scan_qr_popup("Scan a QR code").await?;
+let granted: bool = app.request_write_access().await?;
+let _ = (confirmed, scanned, granted);
+# Ok(())
+# }
+```
+
+The same applies to `share_message`, `request_chat`, `check_home_screen_status`,
+`set_emoji_status`, `request_emoji_status_access`, `open_invoice`,
+`download_file`, `read_text_from_clipboard`, `show_popup`, and
+`invoke_custom_method`.
+
+<p align="right"><a href="#readme-top">Back to top</a></p>
+
+## Reactive hooks
+
+Both Yew and Leptos integrations ship reactive hooks over Telegram's
+state-changing events. The signals are seeded with the current values and
+re-render the component when Telegram fires `viewportChanged`, `themeChanged`,
+`safeAreaChanged`, or `contentSafeAreaChanged`. Cleanup is automatic on
+unmount / scope disposal.
+
+```rust,ignore
+// Leptos
+use leptos::prelude::*;
+use telegram_webapp_sdk::leptos::{use_safe_area, use_theme, use_viewport};
+
+#[component]
+fn Status() -> impl IntoView {
+    let viewport = use_viewport();
+    let theme = use_theme();
+    let safe = use_safe_area();
+    view! {
+        <div>
+            { move || viewport.get().height }
+            { move || theme.get().color_scheme.unwrap_or_default() }
+            { move || safe.get().area.map(|i| i.top).unwrap_or(0.0) }
+        </div>
+    }
+}
+```
+
+```rust,ignore
+// Yew
+use telegram_webapp_sdk::yew::{use_safe_area, use_theme, use_viewport};
+use yew::prelude::*;
+
+#[function_component(Status)]
+fn status() -> Html {
+    let viewport = use_viewport();
+    let theme = use_theme();
+    let safe = use_safe_area();
+    html! {
+        <div>
+            { viewport.height }
+            { theme.color_scheme.clone().unwrap_or_default() }
+            { safe.area.map(|i| i.top).unwrap_or(0.0) }
+        </div>
+    }
 }
 ```
 
@@ -343,27 +437,27 @@ let ctx = telegram_webapp_sdk::mock::install(config)?;
 
 ## User interactions
 
-Request access to sensitive user data or open the contact interface:
+Request access to sensitive user data with the `async` API (preferred):
 
 ```rust,no_run
 use telegram_webapp_sdk::api::user::request_contact;
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
-# fn run() -> Result<(), wasm_bindgen::JsValue> {
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
 request_contact()?;
 
 let app = TelegramWebApp::try_instance()?;
-app.request_write_access(|granted| {
-    let _ = granted;
-})?;
-app.request_chat(42, |sent| {
-    let _ = sent;
-})?;
+let granted: bool = app.request_write_access().await?;
+let sent: bool = app.request_chat(42).await?;
+let _ = (granted, sent);
 # Ok(())
 # }
 ```
 
-These calls require the user's explicit permission before any information is shared.
+A synchronous callback variant is available as `*_with_callback` for code that
+can't `.await` (e.g. `app.request_write_access_with_callback(|granted| { … })`).
+All calls require the user's explicit permission before any information is
+shared.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -436,12 +530,13 @@ Open invoices and react to the final payment status:
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
-# fn run() -> Result<(), wasm_bindgen::JsValue> {
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
 let handle = app.on_invoice_closed(|status| {
     let _ = status;
 })?;
-app.open_invoice("https://invoice", |_status| {})?;
+let status: String = app.open_invoice("https://invoice").await?;
+let _ = status;
 app.off_event(handle)?;
 # Ok(())
 # }
@@ -457,12 +552,11 @@ Share links, prepared messages, or stories and join voice chats:
 use js_sys::Object;
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
-# fn run() -> Result<(), wasm_bindgen::JsValue> {
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
 app.share_url("https://example.com", Some("Check this out"))?;
-app.share_message("msg-id", |sent| {
-    let _ = sent;
-})?;
+let sent: bool = app.share_message("msg-id").await?;
+let _ = sent;
 let params = Object::new();
 app.share_to_story("https://example.com/image.png", Some(&params.into()))?;
 # Ok(())
@@ -471,21 +565,30 @@ app.share_to_story("https://example.com/image.png", Some(&params.into()))?;
 <p align="right"><a href="#readme-top">Back to top</a></p>
 ## Settings button
 
-Control the Telegram client's settings button and handle user clicks:
+Control the Telegram client's settings button and handle user clicks
+through the unified `TelegramWebApp` API:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::settings_button::{show, hide, on_click, off_click};
-use wasm_bindgen::prelude::Closure;
+use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
-let cb = Closure::wrap(Box::new(|| {}) as Box<dyn Fn()>);
-on_click(&cb)?;
-show()?;
-hide()?;
-off_click(&cb)?;
+let app = TelegramWebApp::try_instance()?;
+app.show_settings_button()?;
+
+let handle = app.set_settings_button_callback(|| {
+    // user opened the settings menu
+})?;
+
+// when no longer needed:
+app.remove_settings_button_callback(handle)?;
+app.hide_settings_button()?;
 # Ok(())
 # }
 ```
+
+The legacy standalone helpers in `api::settings_button` (`show`, `hide`,
+`on_click`, `off_click`) remain available for callers that prefer the free
+function style.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -515,12 +618,11 @@ Prompt users to add the app to their home screen and check the current status:
 
 ```rust,no_run
 use telegram_webapp_sdk::webapp::TelegramWebApp;
-# fn run() -> Result<(), wasm_bindgen::JsValue> {
+# async fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
 let _shown = app.add_to_home_screen()?;
-app.check_home_screen_status(|status| {
-    let _ = status;
-})?;
+let status: String = app.check_home_screen_status().await?;
+let _ = status;
 # Ok(())
 # }
 ```
@@ -814,7 +916,7 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.5` matches the latest Telegram WebApp API release `9.5`. Bot API 9.5 adds `icon_custom_emoji_id` support for bottom buttons.
+**WebApp API coverage:** version `9.6` matches the latest Telegram WebApp API release `9.6`. Bot API 9.5 added `icon_custom_emoji_id` for bottom buttons; 9.6 added `WebApp.requestChat` and the `requestedChatSent` / `requestedChatFailed` events.
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
@@ -829,12 +931,9 @@ See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 
 ## License
 
-`telegram-webapp-sdk` is licensed under either of
-
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
-
-at your option.
+`telegram-webapp-sdk` is licensed under the MIT license — see
+[`LICENSES/MIT.txt`](LICENSES/MIT.txt) or
+<http://opensource.org/licenses/MIT>.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
