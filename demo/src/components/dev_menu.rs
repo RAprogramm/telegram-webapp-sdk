@@ -50,7 +50,7 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     }),
     // Checks home screen status asynchronously
     ("check-home-screen", |tg| {
-        let _ = tg.check_home_screen_status(|status| {
+        let _ = tg.check_home_screen_status_with_callback(|status| {
             // callback is fire-and-forget; log status
             info(&format!("home screen status: {}", status));
         });
