@@ -159,30 +159,40 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.joinVoiceChat(chat_id, invite_hash)`.
+    /// Call `WebApp.requestChat(req_id, callback)` (Bot API 9.6+).
+    ///
+    /// Opens a dialog that lets the user pick an existing chat matching the
+    /// prepared keyboard request previously saved via
+    /// `savePreparedKeyboardButton`. The callback receives `true` on
+    /// success and `false` when the user cancels or Telegram reports a
+    /// failure (`requestedChatFailed`).
     ///
     /// # Examples
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
     /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.join_voice_chat("chat", None).unwrap();
+    /// app.request_chat(42, |sent| {
+    ///     let _ = sent;
+    /// })
+    /// .unwrap();
     /// ```
     ///
     /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn join_voice_chat(
-        &self,
-        chat_id: &str,
-        invite_hash: Option<&str>
-    ) -> Result<(), JsValue> {
-        let f = Reflect::get(&self.inner, &"joinVoiceChat".into())?;
+    /// Returns [`JsValue`] if the underlying JS call fails (including when the
+    /// running Telegram client predates Bot API 9.6).
+    pub fn request_chat<F>(&self, req_id: i32, callback: F) -> Result<(), JsValue>
+    where
+        F: 'static + Fn(bool)
+    {
+        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+            callback(v.as_bool().unwrap_or(false));
+        });
+        let f = Reflect::get(&self.inner, &"requestChat".into())?;
         let func = f
             .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("joinVoiceChat is not a function"))?;
-        match invite_hash {
-            Some(hash) => func.call2(&self.inner, &chat_id.into(), &hash.into())?,
-            None => func.call1(&self.inner, &chat_id.into())?
-        };
+            .ok_or_else(|| JsValue::from_str("requestChat is not a function"))?;
+        func.call2(&self.inner, &req_id.into(), cb.as_ref().unchecked_ref())?;
+        cb.forget();
         Ok(())
     }
 

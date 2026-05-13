@@ -329,8 +329,6 @@ pub enum BackgroundEvent {
     WriteAccessRequested,
     /// User responded to a contact request. Payload: `bool`.
     ContactRequested,
-    /// User responded to a phone number request. Payload: `bool`.
-    PhoneRequested,
     /// An invoice was closed. Payload: status string.
     InvoiceClosed,
     /// A popup was closed. Payload: object containing `button_id`.
@@ -338,7 +336,13 @@ pub enum BackgroundEvent {
     /// Text was received from the QR scanner. Payload: scanned text.
     QrTextReceived,
     /// Text was read from the clipboard. Payload: clipboard text.
-    ClipboardTextReceived
+    ClipboardTextReceived,
+    /// User picked a chat in response to `WebApp.requestChat`
+    /// (Bot API 9.6+). Payload: `JsValue::UNDEFINED`.
+    RequestedChatSent,
+    /// `WebApp.requestChat` failed (user cancelled or Telegram error).
+    /// Payload: object containing `error: String`.
+    RequestedChatFailed
 }
 
 impl BackgroundEvent {
@@ -349,11 +353,12 @@ impl BackgroundEvent {
             BackgroundEvent::SettingsButtonClicked => "settingsButtonClicked",
             BackgroundEvent::WriteAccessRequested => "writeAccessRequested",
             BackgroundEvent::ContactRequested => "contactRequested",
-            BackgroundEvent::PhoneRequested => "phoneRequested",
             BackgroundEvent::InvoiceClosed => "invoiceClosed",
             BackgroundEvent::PopupClosed => "popupClosed",
             BackgroundEvent::QrTextReceived => "qrTextReceived",
-            BackgroundEvent::ClipboardTextReceived => "clipboardTextReceived"
+            BackgroundEvent::ClipboardTextReceived => "clipboardTextReceived",
+            BackgroundEvent::RequestedChatSent => "requestedChatSent",
+            BackgroundEvent::RequestedChatFailed => "requestedChatFailed"
         }
     }
 }

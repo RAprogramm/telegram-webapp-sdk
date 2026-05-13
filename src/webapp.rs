@@ -1134,31 +1134,24 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
-    fn join_voice_chat_calls_js() {
+    fn request_chat_calls_js() {
         let webapp = setup_webapp();
-        let join = Function::new_with_args(
-            "id, hash",
-            "this.voice_chat_id = id; this.voice_chat_hash = hash;"
-        );
-        let _ = Reflect::set(&webapp, &"joinVoiceChat".into(), &join);
+        let request =
+            Function::new_with_args("req_id, cb", "this.req_chat_id = req_id; cb(true);");
+        let _ = Reflect::set(&webapp, &"requestChat".into(), &request);
 
         let app = TelegramWebApp::instance().unwrap();
-        app.join_voice_chat("123", Some("hash")).unwrap();
+        let sent = std::rc::Rc::new(std::cell::Cell::new(false));
+        let sent_ref = sent.clone();
+        app.request_chat(42, move |s| sent_ref.set(s)).unwrap();
 
         assert_eq!(
-            Reflect::get(&webapp, &"voice_chat_id".into())
+            Reflect::get(&webapp, &"req_chat_id".into())
                 .unwrap()
-                .as_string()
-                .as_deref(),
-            Some("123"),
+                .as_f64(),
+            Some(42.0),
         );
-        assert_eq!(
-            Reflect::get(&webapp, &"voice_chat_hash".into())
-                .unwrap()
-                .as_string()
-                .as_deref(),
-            Some("hash"),
-        );
+        assert!(sent.get());
     }
 
     #[wasm_bindgen_test]

@@ -2,12 +2,12 @@
 
 <!--
 [webapp_api_status]
-latest_version = "9.2"
-covered_version = "9.2"
-coverage_commit = "92abbf7"
-coverage_date = "2025-09-21"
+latest_version = "9.6"
+covered_version = "9.6"
+coverage_commit = "HEAD"
+coverage_date = "2026-05-13"
 source_url = "https://core.telegram.org/bots/webapps"
-latest_version_probe_url = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp"
+latest_version_probe_url = "https://telegram.org/js/telegram-web-app.js"
 -->
 
 This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as they are implemented.
@@ -30,11 +30,9 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] shareURL ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] shareMessage ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] shareToStory ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
-- [x] joinVoiceChat ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] requestWriteAccess ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] requestContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
-- [x] requestPhoneNumber ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
-- [x] openContact ([d595540](https://github.com/RAprogramm/telegram-webapp-sdk/commit/d595540))
+- [x] requestChat (Bot API 9.6)
 - [x] enableVerticalSwipes ([8e60df3](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8e60df3))
 - [x] disableVerticalSwipes ([8e60df3](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8e60df3))
 - [x] hideKeyboard ([94ff585](https://github.com/RAprogramm/telegram-webapp-sdk/commit/94ff585))
@@ -75,6 +73,7 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] isActive ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 - [x] isProgressVisible ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
 - [x] hasShineEffect ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
+- [x] iconCustomEmojiId (Bot API 9.5)
 
 ### MainButton
 - [x] show ([bcce132](https://github.com/RAprogramm/telegram-webapp-sdk/commit/bcce132))
@@ -192,13 +191,14 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 | `settingsButtonClicked` | none |
 | `writeAccessRequested` | `bool` granted flag |
 | `contactRequested` | `bool` shared flag |
-| `phoneRequested` | `bool` shared flag |
 | `invoiceClosed` | status `String` |
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
+| `requestedChatSent` | none (Bot API 9.6) |
+| `requestedChatFailed` | object `{ error: String }` (Bot API 9.6) |
 
 ## Remaining WebApp Features
 
-The SDK currently covers the complete Telegram WebApp API 9.2 surface. If you
+The SDK currently covers the complete Telegram WebApp API 9.6 surface. If you
 spot a gap, please open an issue so it can be addressed quickly.
