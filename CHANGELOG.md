@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-13
+### Added
+- **Leptos (`leptos` feature):** reactive hooks `use_viewport`, `use_theme`, `use_safe_area` returning `ReadSignal<*State>`. State structs `ViewportState`, `ThemeState`, `SafeAreaState`. Subscription auto-cleans on scope disposal (#211).
+- **Yew (`yew` feature):** matching `#[hook]`s `use_viewport`, `use_theme`, `use_safe_area` returning `*State` directly. Subscription cleared on unmount (#213).
+
+### Changed
+- New optional dependency `send_wrapper` gated behind the `leptos` feature (required by Leptos 0.7+'s `Send + Sync` bound on `on_cleanup`).
+- `TelegramThemeParams` now derives `PartialEq` + `Eq` so reactive state structs can derive `PartialEq` for change detection.
+
 ## [0.8.0] - 2026-05-13
 ### Added
 - `async fn` siblings for every one-shot Telegram callback, so prod code can `await` Telegram prompts the same way `@telegram-apps/sdk-react` does in TypeScript: `request_write_access`, `request_emoji_status_access`, `set_emoji_status`, `open_invoice`, `download_file`, `read_text_from_clipboard`, `share_message`, `request_chat`, `check_home_screen_status`, `show_confirm`, `show_popup`, `show_scan_qr_popup`, `invoke_custom_method`. `invoke_custom_method` rejects the future on JS-side errors (#207).
