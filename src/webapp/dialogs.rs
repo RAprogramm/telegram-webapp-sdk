@@ -146,6 +146,68 @@ mod tests {
 
     #[wasm_bindgen_test]
     #[allow(dead_code, clippy::unused_unit)]
+    fn show_alert_passes_message() {
+        let webapp = setup_webapp();
+        let capture = Function::new_with_args("msg", "this.captured_alert = msg;");
+        let _ = Reflect::set(&webapp, &"showAlert".into(), &capture);
+
+        let app = TelegramWebApp::instance().expect("instance");
+        app.show_alert("Heads up").expect("ok");
+
+        assert_eq!(
+            Reflect::get(&webapp, &"captured_alert".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("Heads up")
+        );
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn show_confirm_passes_message_and_routes_boolean_back() {
+        let webapp = setup_webapp();
+        let invoke = Function::new_with_args("msg, cb", "this.captured_confirm = msg; cb(true);");
+        let _ = Reflect::set(&webapp, &"showConfirm".into(), &invoke);
+
+        let app = TelegramWebApp::instance().expect("instance");
+        let received = std::rc::Rc::new(std::cell::Cell::new(false));
+        let received_ref = received.clone();
+        app.show_confirm("Proceed?", move |ok| received_ref.set(ok))
+            .expect("ok");
+
+        assert_eq!(
+            Reflect::get(&webapp, &"captured_confirm".into())
+                .unwrap()
+                .as_string()
+                .as_deref(),
+            Some("Proceed?")
+        );
+        assert!(received.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn close_scan_qr_popup_calls_js() {
+        let webapp = setup_webapp();
+        let called = std::rc::Rc::new(std::cell::Cell::new(false));
+        let called_ref = called.clone();
+        let close =
+            wasm_bindgen::closure::Closure::<dyn FnMut()>::new(move || called_ref.set(true));
+        let _ = Reflect::set(
+            &webapp,
+            &"closeScanQrPopup".into(),
+            wasm_bindgen::JsCast::unchecked_ref::<Function>(close.as_ref())
+        );
+        close.forget();
+
+        let app = TelegramWebApp::instance().expect("instance");
+        app.close_scan_qr_popup().expect("ok");
+        assert!(called.get());
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
     fn show_scan_qr_popup_callback_receives_scanned_text() {
         let webapp = setup_webapp();
         // Synchronously invoke the callback with a scanned value so we can

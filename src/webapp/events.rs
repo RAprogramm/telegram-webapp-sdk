@@ -277,3 +277,46 @@ impl TelegramWebApp {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use js_sys::{Function, Object, Reflect};
+    use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
+    use web_sys::window;
+
+    use crate::webapp::TelegramWebApp;
+
+    wasm_bindgen_test_configure!(run_in_browser);
+
+    fn setup_webapp() -> Object {
+        let win = window().expect("window");
+        let telegram = Object::new();
+        let webapp = Object::new();
+        let on_event = Function::new_with_args("name, cb", "this[name] = cb;");
+        let off_event = Function::new_with_args("name", "delete this[name];");
+        let _ = Reflect::set(&webapp, &"onEvent".into(), &on_event);
+        let _ = Reflect::set(&webapp, &"offEvent".into(), &off_event);
+        let _ = Reflect::set(&win, &"Telegram".into(), &telegram);
+        let _ = Reflect::set(&telegram, &"WebApp".into(), &webapp);
+        webapp
+    }
+
+    #[wasm_bindgen_test]
+    #[allow(dead_code, clippy::unused_unit)]
+    fn on_content_safe_area_changed_registers_and_unregisters() {
+        let webapp = setup_webapp();
+        let app = TelegramWebApp::instance().expect("instance");
+
+        let handle = app.on_content_safe_area_changed(|| {}).expect("subscribe");
+        assert!(
+            Reflect::has(&webapp, &"contentSafeAreaChanged".into()).unwrap_or(false),
+            "callback should be registered under the event name"
+        );
+
+        app.off_event(handle).expect("unsubscribe");
+        assert!(
+            !Reflect::has(&webapp, &"contentSafeAreaChanged".into()).unwrap_or(true),
+            "callback should be removed"
+        );
+    }
+}
