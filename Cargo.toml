@@ -1,6 +1,6 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.5.0"
+version = "0.6.0"
 rust-version = "1.94.1"
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"

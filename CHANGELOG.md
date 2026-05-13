@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-13
+### Added
+- `dom` module with `Document` and `ElementExt` ergonomic helpers for vanilla WASM users (#184).
+- `full` feature aggregating `macros`, `yew`, `leptos`, `mock` (#184).
+- `TelegramWebApp::request_chat(req_id, callback)` and `BackgroundEvent::RequestedChatSent` / `RequestedChatFailed` events — Bot API 9.6 (#185).
+- `examples/vanilla` (Trunk-based pure-WASM mini-app) and `examples/integration` (teloxide backend + standalone WASM frontend) (#184).
+
+### Removed
+- **BREAKING:** `api::user::request_phone_number` — no such method in `Telegram.WebApp` (#185).
+- **BREAKING:** `api::user::open_contact` — no such method in `Telegram.WebApp` (#185).
+- **BREAKING:** `TelegramWebApp::join_voice_chat` — no such method in `Telegram.WebApp` (#185).
+- **BREAKING:** `BackgroundEvent::PhoneRequested` — Telegram never emits `phoneRequested`; use `BackgroundEvent::ContactRequested` (#185).
+- Dead `src/dom/event.rs::EventHandler` and empty feature flags in `examples/integration/frontend` (#188).
+
+### Changed
+- `web-sys` features now include `Node`, `EventTarget`, `MouseEvent` for the `dom` module (#184).
+- Workspace members extended with `examples/vanilla`, `examples/bots/rust_bot`, `examples/integration/backend` (#184).
+- README WebApp API badge bumped to 9.6 (#185).
+- `WEBAPP_API.md` now tracks `iconCustomEmojiId` (9.5) and `requestChat` (9.6); `covered_version` bumped to 9.6 (#185).
+
+### Migration Guide
+- Replace `request_phone_number()` / `open_contact()` calls with `request_contact()` and a `BackgroundEvent::ContactRequested` listener.
+- Drop any `join_voice_chat` calls — voice chats were never reachable through the WebApp JS bridge.
+- Replace `BackgroundEvent::PhoneRequested` subscriptions with `BackgroundEvent::ContactRequested`.
+
 ## [0.3.0] - 2025-11-04
 ### Removed
 - **BREAKING:** Removed server-side validation logic from SDK
