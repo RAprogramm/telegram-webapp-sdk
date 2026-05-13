@@ -1,14 +1,18 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+pub mod back_button;
 pub mod bottom_button;
 pub mod safe_area;
+pub mod settings_button;
 pub mod theme;
 pub mod viewport;
 
+pub use back_button::BackButton;
 pub use bottom_button::BottomButton;
 use leptos::prelude::provide_context;
 pub use safe_area::{SafeAreaState, use_safe_area};
+pub use settings_button::SettingsButton;
 pub use theme::{ThemeState, use_theme};
 pub use viewport::{ViewportState, use_viewport};
 use wasm_bindgen::JsValue;

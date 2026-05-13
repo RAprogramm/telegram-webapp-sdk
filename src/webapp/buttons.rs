@@ -515,6 +515,69 @@ impl TelegramWebApp {
             .unwrap_or(false)
     }
 
+    // === Settings button operations ===
+
+    /// Show the native settings button.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn show_settings_button(&self) -> Result<(), JsValue> {
+        self.call_nested0("SettingsButton", "show")
+    }
+
+    /// Hide the native settings button.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn hide_settings_button(&self) -> Result<(), JsValue> {
+        self.call_nested0("SettingsButton", "hide")
+    }
+
+    /// Registers a callback for the native settings button.
+    ///
+    /// Returns an [`EventHandle`] that can be passed to
+    /// [`remove_settings_button_callback`](Self::remove_settings_button_callback).
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn set_settings_button_callback<F>(
+        &self,
+        callback: F
+    ) -> Result<EventHandle<dyn FnMut()>, JsValue>
+    where
+        F: 'static + Fn()
+    {
+        let button_val = Reflect::get(&self.inner, &"SettingsButton".into())?;
+        let button = button_val.dyn_into::<Object>()?;
+        let cb = Closure::<dyn FnMut()>::new(callback);
+        let f = Reflect::get(&button, &"onClick".into())?;
+        let func = f
+            .dyn_ref::<Function>()
+            .ok_or_else(|| JsValue::from_str("onClick is not a function"))?;
+        func.call1(&button, cb.as_ref().unchecked_ref())?;
+        Ok(EventHandle::new(button, "offClick", None, cb))
+    }
+
+    /// Remove previously set settings button callback.
+    ///
+    /// # Errors
+    /// Returns [`JsValue`] if the underlying JS call fails.
+    pub fn remove_settings_button_callback(
+        &self,
+        handle: EventHandle<dyn FnMut()>
+    ) -> Result<(), JsValue> {
+        handle.unregister()
+    }
+
+    /// Returns whether the native settings button is visible.
+    pub fn is_settings_button_visible(&self) -> bool {
+        Reflect::get(&self.inner, &"SettingsButton".into())
+            .ok()
+            .and_then(|bb| Reflect::get(&bb, &"isVisible".into()).ok())
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    }
+
     // === Legacy aliases for main button ===
 
     /// Legacy alias for [`Self::show_bottom_button`] with

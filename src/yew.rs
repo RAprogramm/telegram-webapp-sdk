@@ -8,13 +8,17 @@ use yew::prelude::{hook, use_effect, use_state};
 
 use crate::core::{context::TelegramContext, safe_context::get_context};
 
+pub mod back_button;
 pub mod bottom_button;
 pub mod safe_area;
+pub mod settings_button;
 pub mod theme;
 pub mod viewport;
 
+pub use back_button::BackButton;
 pub use bottom_button::BottomButton;
 pub use safe_area::{SafeAreaState, use_safe_area};
+pub use settings_button::SettingsButton;
 pub use theme::{ThemeState, use_theme};
 pub use viewport::{ViewportState, use_viewport};
 
