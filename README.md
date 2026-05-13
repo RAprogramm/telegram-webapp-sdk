@@ -19,7 +19,7 @@
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
-[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.5-blue)](https://core.telegram.org/bots/webapps)
+[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.6-blue)](https://core.telegram.org/bots/webapps)
 [![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2892abbf7%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7)
 <!-- webapp_api_badges:end -->
 [![Wiki](https://img.shields.io/badge/Wiki-Documentation-0088cc?logo=github)](https://github.com/RAprogramm/telegram-webapp-sdk/wiki)
@@ -103,7 +103,7 @@ The top section represents the entire project. Proceeding with folders and final
 - Optional macros for automatic initialization and routing.
 - DOM helpers for ergonomic element manipulation.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
-  step with the Telegram WebApp API 9.2 feature set.
+  step with the Telegram WebApp API 9.6 feature set.
   
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -346,17 +346,18 @@ let ctx = telegram_webapp_sdk::mock::install(config)?;
 Request access to sensitive user data or open the contact interface:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::user::{request_contact, request_phone_number, open_contact};
+use telegram_webapp_sdk::api::user::request_contact;
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
 request_contact()?;
-request_phone_number()?;
-open_contact()?;
 
 let app = TelegramWebApp::try_instance()?;
 app.request_write_access(|granted| {
     let _ = granted;
+})?;
+app.request_chat(42, |sent| {
+    let _ = sent;
 })?;
 # Ok(())
 # }
@@ -459,7 +460,6 @@ use telegram_webapp_sdk::webapp::TelegramWebApp;
 # fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
 app.share_url("https://example.com", Some("Check this out"))?;
-app.join_voice_chat("chat", None)?;
 app.share_message("msg-id", |sent| {
     let _ = sent;
 })?;
@@ -568,11 +568,12 @@ Supported background events:
 | `settingsButtonClicked` | none |
 | `writeAccessRequested` | `bool` granted flag |
 | `contactRequested` | `bool` shared flag |
-| `phoneRequested` | `bool` shared flag |
 | `invoiceClosed` | status `String` |
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
+| `requestedChatSent` | none (Bot API 9.6) |
+| `requestedChatFailed` | object `{ error: String }` (Bot API 9.6) |
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
