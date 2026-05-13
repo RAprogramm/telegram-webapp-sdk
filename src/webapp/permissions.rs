@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
+// SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
 use js_sys::{Function, Reflect};
@@ -24,14 +24,12 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn request_write_access<F>(&self, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
-        self.call1("requestWriteAccess", cb.as_ref().unchecked_ref())?;
-        cb.forget();
-        Ok(())
+        self.call1("requestWriteAccess", &cb)
     }
 
     /// Call `WebApp.requestEmojiStatusAccess(callback)`.
@@ -50,17 +48,16 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn request_emoji_status_access<F>(&self, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
         let f = Reflect::get(&self.inner, &"requestEmojiStatusAccess".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("requestEmojiStatusAccess is not a function"))?;
-        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call1(&self.inner, &cb)?;
         Ok(())
     }
 
@@ -84,17 +81,16 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn set_emoji_status<F>(&self, status: &JsValue, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
         let f = Reflect::get(&self.inner, &"setEmojiStatus".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("setEmojiStatus is not a function"))?;
-        func.call2(&self.inner, status, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call2(&self.inner, status, &cb)?;
         Ok(())
     }
 
@@ -111,15 +107,14 @@ impl TelegramWebApp {
     /// ```
     pub fn open_invoice<F>(&self, url: &str, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |status: JsValue| {
+        let cb = Closure::once_into_js(move |status: JsValue| {
             callback(status.as_string().unwrap_or_default());
         });
         Reflect::get(&self.inner, &"openInvoice".into())?
             .dyn_into::<Function>()?
-            .call2(&self.inner, &url.into(), cb.as_ref().unchecked_ref())?;
-        cb.forget();
+            .call2(&self.inner, &url.into(), &cb)?;
         Ok(())
     }
 
@@ -150,17 +145,16 @@ impl TelegramWebApp {
         callback: F
     ) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
         let js_params =
             to_value(&params).map_err(|e| JsValue::from_str(&format!("serialize params: {e}")))?;
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_string().unwrap_or_default());
         });
         Reflect::get(&self.inner, &"downloadFile".into())?
             .dyn_into::<Function>()?
-            .call2(&self.inner, &js_params, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+            .call2(&self.inner, &js_params, &cb)?;
         Ok(())
     }
 
@@ -180,17 +174,16 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn read_text_from_clipboard<F>(&self, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |text: JsValue| {
+        let cb = Closure::once_into_js(move |text: JsValue| {
             callback(text.as_string().unwrap_or_default());
         });
         let f = Reflect::get(&self.inner, &"readTextFromClipboard".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("readTextFromClipboard is not a function"))?;
-        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call1(&self.inner, &cb)?;
         Ok(())
     }
 }

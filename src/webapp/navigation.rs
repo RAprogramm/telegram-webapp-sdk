@@ -91,17 +91,16 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn share_message<F>(&self, msg_id: &str, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
         let f = Reflect::get(&self.inner, &"shareMessage".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("shareMessage is not a function"))?;
-        func.call2(&self.inner, &msg_id.into(), cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call2(&self.inner, &msg_id.into(), &cb)?;
         Ok(())
     }
 
@@ -182,17 +181,16 @@ impl TelegramWebApp {
     /// running Telegram client predates Bot API 9.6).
     pub fn request_chat<F>(&self, req_id: i32, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
+        let cb = Closure::once_into_js(move |v: JsValue| {
             callback(v.as_bool().unwrap_or(false));
         });
         let f = Reflect::get(&self.inner, &"requestChat".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("requestChat is not a function"))?;
-        func.call2(&self.inner, &req_id.into(), cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call2(&self.inner, &req_id.into(), &cb)?;
         Ok(())
     }
 
@@ -226,17 +224,16 @@ impl TelegramWebApp {
     /// ```
     pub fn check_home_screen_status<F>(&self, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |status: JsValue| {
+        let cb = Closure::once_into_js(move |status: JsValue| {
             callback(status.as_string().unwrap_or_default());
         });
         let f = Reflect::get(&self.inner, &"checkHomeScreenStatus".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("checkHomeScreenStatus is not a function"))?;
-        func.call1(&self.inner, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+        func.call1(&self.inner, &cb)?;
         Ok(())
     }
 }

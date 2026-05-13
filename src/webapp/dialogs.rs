@@ -21,15 +21,16 @@ impl TelegramWebApp {
     /// Returns [`JsValue`] if the underlying JS call fails.
     pub fn show_confirm<F>(&self, msg: &str, on_confirm: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(bool)
+        F: 'static + FnOnce(bool)
     {
-        let cb = Closure::<dyn FnMut(bool)>::new(on_confirm);
+        let cb = Closure::once_into_js(move |v: JsValue| {
+            on_confirm(v.as_bool().unwrap_or(false));
+        });
         let f = Reflect::get(&self.inner, &"showConfirm".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("showConfirm is not a function"))?;
-        func.call2(&self.inner, &msg.into(), cb.as_ref().unchecked_ref())?;
-        cb.forget(); // safe leak for JS lifetime
+        func.call2(&self.inner, &msg.into(), &cb)?;
         Ok(())
     }
 
@@ -48,15 +49,14 @@ impl TelegramWebApp {
     /// ```
     pub fn show_popup<F>(&self, params: &JsValue, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |id: JsValue| {
+        let cb = Closure::once_into_js(move |id: JsValue| {
             callback(id.as_string().unwrap_or_default());
         });
         Reflect::get(&self.inner, &"showPopup".into())?
             .dyn_into::<Function>()?
-            .call2(&self.inner, params, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+            .call2(&self.inner, params, &cb)?;
         Ok(())
     }
 
@@ -76,17 +76,16 @@ impl TelegramWebApp {
     /// ```
     pub fn show_scan_qr_popup<F>(&self, text: &str, callback: F) -> Result<(), JsValue>
     where
-        F: 'static + Fn(String)
+        F: 'static + FnOnce(String)
     {
-        let cb = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| {
+        let cb = Closure::once_into_js(move |value: JsValue| {
             callback(value.as_string().unwrap_or_default());
         });
         let params = Object::new();
         Reflect::set(&params, &"text".into(), &text.into())?;
         Reflect::get(&self.inner, &"showScanQrPopup".into())?
             .dyn_into::<Function>()?
-            .call2(&self.inner, &params, cb.as_ref().unchecked_ref())?;
-        cb.forget();
+            .call2(&self.inner, &params, &cb)?;
         Ok(())
     }
 

@@ -121,27 +121,20 @@ impl TelegramWebApp {
         callback: F
     ) -> Result<(), JsValue>
     where
-        F: 'static + Fn(Result<JsValue, JsValue>)
+        F: 'static + FnOnce(Result<JsValue, JsValue>)
     {
-        let cb =
-            Closure::<dyn FnMut(JsValue, JsValue)>::new(move |err: JsValue, result: JsValue| {
-                if err.is_null() || err.is_undefined() {
-                    callback(Ok(result));
-                } else {
-                    callback(Err(err));
-                }
-            });
+        let cb = Closure::once_into_js(move |err: JsValue, result: JsValue| {
+            if err.is_null() || err.is_undefined() {
+                callback(Ok(result));
+            } else {
+                callback(Err(err));
+            }
+        });
         let f = Reflect::get(&self.inner, &"invokeCustomMethod".into())?;
         let func = f
             .dyn_ref::<Function>()
             .ok_or_else(|| JsValue::from_str("invokeCustomMethod is not a function"))?;
-        func.call3(
-            &self.inner,
-            &method.into(),
-            params,
-            cb.as_ref().unchecked_ref()
-        )?;
-        cb.forget();
+        func.call3(&self.inner, &method.into(), params, &cb)?;
         Ok(())
     }
 
