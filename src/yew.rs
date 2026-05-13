@@ -9,7 +9,14 @@ use yew::prelude::{hook, use_effect, use_state};
 use crate::core::{context::TelegramContext, safe_context::get_context};
 
 pub mod bottom_button;
+pub mod safe_area;
+pub mod theme;
+pub mod viewport;
+
 pub use bottom_button::BottomButton;
+pub use safe_area::{SafeAreaState, use_safe_area};
+pub use theme::{ThemeState, use_theme};
+pub use viewport::{ViewportState, use_viewport};
 
 type ClosureCell = Rc<RefCell<Option<Closure<dyn FnMut()>>>>;
 
