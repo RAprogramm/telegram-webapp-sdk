@@ -6,7 +6,9 @@ use inventory::collect;
 /// Represents a single routable page.
 #[derive(Copy, Clone)]
 pub struct Page {
+    /// URL path this page is mounted at.
     pub path:    &'static str,
+    /// Callback rendering the page when its path is matched.
     pub handler: fn()
 }
 

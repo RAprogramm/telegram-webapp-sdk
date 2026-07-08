@@ -1,24 +1,32 @@
+#![warn(missing_docs)]
 // SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
-
 #![doc = include_str!("../README.md")]
 #![cfg_attr(all(docsrs, has_doc_cfg), feature(doc_cfg))]
 #![cfg_attr(all(docsrs, not(has_doc_cfg), has_doc_auto_cfg), feature(doc_auto_cfg))]
 
+/// High-level, ergonomic wrappers over the Telegram WebApp JavaScript API.
 pub mod api;
+/// Core primitives: launch parameters, init data, theme parameters and the
+/// global [`core::context::TelegramContext`].
 pub mod core;
+/// Thin helpers for interacting with the browser DOM from WebAssembly.
 pub mod dom;
+/// Logging helpers that forward messages to the browser console.
 pub mod logger;
 
 #[cfg(feature = "mock")]
 pub mod mock;
+/// Utility helpers, including environment detection for the Telegram WebApp.
 pub mod utils;
+/// Safe Rust bindings for `window.Telegram.WebApp` and its sub-objects.
 pub mod webapp;
 #[cfg(feature = "macros")]
 pub use inventory;
 pub use webapp::TelegramWebApp;
 #[cfg(feature = "macros")]
 mod macros;
+/// Registry of routable pages collected via the `#[page]` macro.
 #[cfg(feature = "macros")]
 pub mod pages;
 #[cfg(feature = "macros")]
@@ -26,8 +34,10 @@ pub mod pages;
 pub use crate::macros::*;
 pub mod router;
 
+/// Yew components and hooks for building Telegram mini apps.
 #[cfg(feature = "yew")]
 pub mod yew;
 
+/// Leptos components and hooks for building Telegram mini apps.
 #[cfg(feature = "leptos")]
 pub mod leptos;

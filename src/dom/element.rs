@@ -4,24 +4,51 @@
 use wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use web_sys::{Element, EventTarget, Node};
 
+/// Ergonomic extension methods for [`web_sys::Element`].
+///
+/// Provides concise helpers for common DOM manipulations (attributes, classes,
+/// text/HTML content, event listeners, and child insertion/removal) on top of
+/// the lower-level `web-sys` API.
 pub trait ElementExt {
+    /// Sets the `class` attribute, replacing any existing class list.
     fn set_class(&self, class: &str);
+    /// Sets the `id` attribute.
     fn set_id(&self, id: &str);
+    /// Replaces the element's text content with `text`.
     fn set_text(&self, text: &str);
+    /// Replaces the element's inner HTML with `html`.
     fn set_html(&self, html: &str) -> Result<(), JsValue>;
+    /// Sets attribute `attr` to `value`.
     fn set_attr(&self, attr: &str, value: &str) -> Result<(), JsValue>;
+    /// Returns the value of attribute `attr`, or `None` if it is absent.
     fn get_attr(&self, attr: &str) -> Option<String>;
+    /// Removes attribute `attr`.
     fn remove_attr(&self, attr: &str) -> Result<(), JsValue>;
+    /// Adds `class` to the `class` attribute if it is not already present.
     fn add_class(&self, class: &str) -> Result<(), JsValue>;
+    /// Removes `class` from the `class` attribute, dropping the attribute
+    /// entirely when no classes remain.
     fn remove_class(&self, class: &str) -> Result<(), JsValue>;
+    /// Adds `class` if absent, or removes it if present.
     fn toggle_class(&self, class: &str) -> Result<(), JsValue>;
+    /// Returns `true` if the `class` attribute contains `class` as a whole
+    /// token.
     fn has_class(&self, class: &str) -> bool;
+    /// Attaches `handler` as a listener for `event`.
+    ///
+    /// The underlying closure is leaked so the listener remains valid for the
+    /// lifetime of the element.
     fn on<F>(&self, event: &str, handler: F) -> Result<(), JsValue>
     where
         F: FnMut(web_sys::Event) + 'static;
+    /// Appends `child` as the last child of this element.
     fn append(&self, child: &Element) -> Result<(), JsValue>;
+    /// Inserts `child` as the first child of this element, or appends it when
+    /// the element has no children.
     fn prepend(&self, child: &Element) -> Result<(), JsValue>;
+    /// Detaches this element from its parent; a no-op when it has no parent.
     fn remove(&self) -> Result<(), JsValue>;
+    /// Removes all child nodes of this element.
     fn clear(&self);
 }
 

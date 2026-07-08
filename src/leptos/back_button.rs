@@ -39,8 +39,12 @@ thread_local! {
 /// ```
 #[component]
 pub fn BackButton<F>(
-    #[prop(into)] visible: Signal<bool>,
-    #[prop(optional)] on_click: Option<F>
+    /// Reactive flag controlling whether the back button is shown.
+    #[prop(into)]
+    visible: Signal<bool>,
+    /// Optional callback invoked when the back button is clicked.
+    #[prop(optional)]
+    on_click: Option<F>
 ) -> impl IntoView
 where
     F: Fn() + Clone + 'static
