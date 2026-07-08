@@ -2,3 +2,4 @@
 **/target
 /wasmcov
 wasm-coverage
+demo/dist
