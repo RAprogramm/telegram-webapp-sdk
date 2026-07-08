@@ -1,0 +1,70 @@
+# Two-mode release automation driven by release-plz:
+#   `release-pr` keeps a single release PR open against `main`, bumping the
+#   version and prepending a CHANGELOG section as conventional commits land;
+#   `release` runs after that PR is merged — it publishes the crate to
+#   crates.io, tags `vX.Y.Z`, and creates the GitHub release.
+#
+# Authentication uses the `GH_TOKEN` PAT secret (not the workflow
+# GITHUB_TOKEN) so the release PR triggers the regular CI checks. If
+# `GH_TOKEN` is absent, set it up as a repository secret with
+# `contents:write` and `pull-requests:write` scopes. See `release-plz.toml`
+# for configuration and `RELEASE.md` for the human-facing flow.
+
+name: Release-plz
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-plz-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-plz-release:
+    name: Release-plz release
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'RAprogramm' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run release-plz release
+        uses: release-plz/action@v0.5
+        with:
+          command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  release-plz-pr:
+    name: Release-plz PR
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'RAprogramm' }}
+    needs: release-plz-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run release-plz release-pr
+        uses: release-plz/action@v0.5
+        with:
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
