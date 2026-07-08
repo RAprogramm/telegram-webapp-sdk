@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.0...v0.11.1) - 2026-07-08
+
+### CI/CD
+
+- harden dependabot config and pin release-plz actions to SHA ([#243](https://github.com/RAprogramm/telegram-webapp-sdk/issues/243))
+- *(ci)* bump release-plz/action ([#244](https://github.com/RAprogramm/telegram-webapp-sdk/issues/244))
+- enforce cargo-deny and pin remaining actions to SHA ([#254](https://github.com/RAprogramm/telegram-webapp-sdk/issues/254))
+- run cargo-semver-checks in the release pipeline ([#258](https://github.com/RAprogramm/telegram-webapp-sdk/issues/258))
+
+### Changed
+
+- move update_readme tool out of the library crate ([#256](https://github.com/RAprogramm/telegram-webapp-sdk/issues/256))
+
+### Documentation
+
+- publish EN/RU documentation site to GitHub Pages ([#248](https://github.com/RAprogramm/telegram-webapp-sdk/issues/248))
+- make README a single source of truth ([#250](https://github.com/RAprogramm/telegram-webapp-sdk/issues/250))
+- build docs.rs with all features ([#252](https://github.com/RAprogramm/telegram-webapp-sdk/issues/252))
+
 ## [0.11.0](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.10.0...v0.11.0) - 2026-07-08
 
 ### Changed
