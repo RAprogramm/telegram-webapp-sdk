@@ -198,5 +198,8 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 
 ## Remaining WebApp Features
 
-The SDK currently covers the complete Telegram WebApp API 9.6 surface. If you
-spot a gap, please open an issue so it can be addressed quickly.
+The SDK currently covers the complete Telegram Mini Apps (WebApp) API 9.6
+surface, which is the latest Mini App version exposed by `telegram-web-app.js`.
+Bot API has since advanced to 10.1, but versions 9.7 through 10.1 introduced no
+new WebApp methods, fields, or events, so no additional surface is pending. If
+you spot a gap, please open an issue so it can be addressed quickly.
