@@ -511,10 +511,8 @@ version = "1.0.0"
 
     #[test]
     fn resolve_latest_version_falls_back_on_error() {
-        let resolved: String = resolve_latest_version(
-            "9.6",
-            Err(std::io::Error::new(std::io::ErrorKind::Other, "offline"))
-        );
+        let resolved: String =
+            resolve_latest_version("9.6", Err(std::io::Error::other("offline")));
         assert_eq!(resolved, "9.6");
     }
 
