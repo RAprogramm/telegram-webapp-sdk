@@ -28,18 +28,20 @@ jobs:
     name: Release-plz release
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'RAprogramm' }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Run release-plz release
-        uses: release-plz/action@v0.5
+        uses: release-plz/action@d22c02a7cf6d7870bd163be7c7d9518d331aef34 # v0.5
         with:
           command: release
         env:
@@ -51,18 +53,21 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'RAprogramm' }}
     needs: release-plz-release
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Run release-plz release-pr
-        uses: release-plz/action@v0.5
+        uses: release-plz/action@d22c02a7cf6d7870bd163be7c7d9518d331aef34 # v0.5
         with:
           command: release-pr
         env:

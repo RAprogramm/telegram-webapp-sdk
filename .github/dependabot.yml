@@ -5,10 +5,8 @@ updates:
   # 1) Rust / Cargo (workspace)
   - package-ecosystem: "cargo"
     directories:
-      - "/"            # корень с workspace Cargo.toml (оставь только реально существующие)
-      - "/api-server"
-      - "/client"
-      - "/crates/*"
+      - "/"                                 # root workspace (crate + demo + examples members)
+      - "/examples/integration/frontend"    # excluded from workspace, own Cargo.lock
     schedule:
       interval: "weekly"
       day: "monday"
@@ -42,15 +40,3 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps(ci)"
-
-  # 3) Docker
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:20"
-      timezone: "Asia/Ho_Chi_Minh"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "deps(docker)"
