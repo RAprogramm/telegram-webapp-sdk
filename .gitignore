@@ -3,3 +3,4 @@
 /wasmcov
 wasm-coverage
 demo/dist
+__pycache__/

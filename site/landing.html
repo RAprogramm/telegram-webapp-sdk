@@ -1,0 +1,94 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="telegram-webapp-sdk documentation — Telegram Mini Apps (WebApp) SDK for Rust and WebAssembly">
+<title>telegram-webapp-sdk — Documentation</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #1f2328;
+    --muted: #57606a;
+    --card-bg: #ffffff;
+    --card-border: #d0d7de;
+    --card-hover: #0969da;
+    --accent: #0969da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #8d96a0;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --card-hover: #58a6ff;
+      --accent: #58a6ff;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  img.logo { width: 140px; height: 140px; object-fit: contain; }
+  h1 { margin-top: 1rem; font-size: 2.2rem; }
+  p.tagline { margin-top: .5rem; color: var(--muted); font-size: 1.1rem; font-style: italic; }
+  nav.languages {
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 640px;
+  }
+  nav.languages a {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.4rem 1rem;
+    text-decoration: none;
+    color: var(--fg);
+    transition: border-color .15s, transform .15s;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  nav.languages a:hover {
+    border-color: var(--card-hover);
+    transform: translateY(-2px);
+  }
+  nav.languages .flag { font-size: 2rem; }
+  nav.languages .name { font-weight: 600; font-size: 1.05rem; }
+  nav.languages .label { color: var(--muted); font-size: .9rem; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .95rem; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <img class="logo" src="logo.png" alt="telegram-webapp-sdk logo">
+  <h1>telegram-webapp-sdk</h1>
+  <p class="tagline">Telegram Mini Apps for Rust &amp; WebAssembly</p>
+  <nav class="languages" aria-label="Documentation language">
+    <a href="en/"><span class="flag">🇬🇧</span><span class="name">English</span><span class="label">Documentation</span></a>
+    <a href="ru/" lang="ru"><span class="flag">🇷🇺</span><span class="name">Русский</span><span class="label">Документация</span></a>
+  </nav>
+  <footer>
+    <a href="https://docs.rs/telegram-webapp-sdk">API&nbsp;Docs</a> ·
+    <a href="https://crates.io/crates/telegram-webapp-sdk">crates.io</a> ·
+    <a href="https://github.com/RAprogramm/telegram-webapp-sdk">GitHub</a>
+  </footer>
+</body>
+</html>

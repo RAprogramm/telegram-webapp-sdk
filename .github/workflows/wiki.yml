@@ -1,0 +1,39 @@
+# Mirror the wiki/ directory into the repository's GitHub Wiki on every push to
+# main that touches wiki/. The wiki is the human-editable source; the mdBook
+# site (site.yml) is generated from the same files. The wiki must be
+# initialized once (create any page in the GitHub UI) before the first push.
+
+name: Publish Wiki
+
+on:
+  push:
+    branches: [main]
+    paths: ["wiki/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Sync wiki/ to GitHub wiki
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Push wiki contents
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" /tmp/wiki
+          rsync -a --delete --exclude .git wiki/ /tmp/wiki/
+          cd /tmp/wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki already up to date"
+            exit 0
+          fi
+          git commit -m "docs: sync wiki from ${GITHUB_SHA}"
+          git push
