@@ -2,7 +2,7 @@
 name = "webapp-integration-backend"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.90"
+rust-version = "1.96"
 publish = false
 
 [lib]
@@ -16,5 +16,5 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-masterror = "0.27"
+masterror = "0.29"
 chrono = { version = "0.4", features = ["serde"] }
