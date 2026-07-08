@@ -40,6 +40,11 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        with:
+          tool: cargo-semver-checks
+
       - name: Run release-plz release
         uses: release-plz/action@e8792575c7f2366cf6ff3ccc33ead9ace5b691c7 # v0.5
         with:
@@ -65,6 +70,11 @@ jobs:
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        with:
+          tool: cargo-semver-checks
 
       - name: Run release-plz release-pr
         uses: release-plz/action@e8792575c7f2366cf6ff3ccc33ead9ace5b691c7 # v0.5
