@@ -11,6 +11,9 @@ documentation = "https://docs.rs/telegram-webapp-sdk"
 keywords = ["telegram", "webapp", "wasm", "sdk"]
 categories = ["web-programming", "wasm"]
 
+[package.metadata.docs.rs]
+all-features = true
+
 [workspace.package]
 rust-version = "1.96"
 
