@@ -4,13 +4,24 @@
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlElement};
 
+/// Zero-sized handle providing convenient access to the current
+/// [`web_sys::Document`].
+///
+/// Each method resolves `window().document()` on demand, so no browser handles
+/// are stored. Re-exported as `Document`.
 pub struct Doc;
 
 impl Doc {
+    /// Returns the element with the given `id`, or `None` if it does not exist
+    /// or no document is available.
     pub fn get_element_by_id(&self, id: &str) -> Option<Element> {
         web_sys::window()?.document()?.get_element_by_id(id)
     }
 
+    /// Returns the first element matching the CSS `selector`.
+    ///
+    /// Returns `Ok(None)` when nothing matches, and `Err` when the document is
+    /// unavailable or the selector is invalid.
     pub fn query_selector(&self, selector: &str) -> Result<Option<Element>, JsValue> {
         web_sys::window()
             .and_then(|w| w.document())
@@ -18,6 +29,9 @@ impl Doc {
             .query_selector(selector)
     }
 
+    /// Creates a new element with the given `tag` name.
+    ///
+    /// Returns `Err` when the window or document is unavailable.
     pub fn create_element(&self, tag: &str) -> Result<Element, JsValue> {
         web_sys::window()
             .ok_or_else(|| JsValue::from_str("window not available"))?
@@ -26,6 +40,9 @@ impl Doc {
             .create_element(tag)
     }
 
+    /// Returns the document `<body>` element.
+    ///
+    /// Returns `Err` when the window, document, or body is unavailable.
     pub fn body(&self) -> Result<HtmlElement, JsValue> {
         web_sys::window()
             .ok_or_else(|| JsValue::from_str("window not available"))?

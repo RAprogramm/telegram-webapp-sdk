@@ -50,11 +50,21 @@ thread_local! {
 /// ```
 #[component]
 pub fn BottomButton<F>(
-    #[prop(into)] text: Signal<String>,
-    #[prop(optional, into)] color: Option<Signal<String>>,
-    #[prop(optional, into)] text_color: Option<Signal<String>>,
-    #[prop(optional)] on_click: Option<F>,
-    #[prop(default = WebBottomButton::Main)] button: WebBottomButton
+    /// Reactive text label displayed on the button.
+    #[prop(into)]
+    text: Signal<String>,
+    /// Optional reactive background color as a `#RRGGBB` hex string.
+    #[prop(optional, into)]
+    color: Option<Signal<String>>,
+    /// Optional reactive text color as a `#RRGGBB` hex string.
+    #[prop(optional, into)]
+    text_color: Option<Signal<String>>,
+    /// Optional callback invoked when the button is clicked.
+    #[prop(optional)]
+    on_click: Option<F>,
+    /// Which bottom button to control; defaults to the main button.
+    #[prop(default = WebBottomButton::Main)]
+    button: WebBottomButton
 ) -> impl IntoView
 where
     F: Fn() + Clone + 'static

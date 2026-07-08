@@ -12,8 +12,14 @@ use super::types::{
 /// Global context of the Telegram Mini App, initialized once per app session.
 #[derive(Clone)]
 pub struct TelegramContext {
+    /// Parsed and validated `initData` describing the current user, chat and
+    /// session of the Mini App.
     pub init_data:     TelegramInitData,
+    /// Theme parameters reported by `Telegram.WebApp.themeParams` at
+    /// initialization time.
     pub theme_params:  TelegramThemeParams,
+    /// Original URL-encoded `initData` string, retained for server-side
+    /// signature validation.
     pub raw_init_data: String
 }
 

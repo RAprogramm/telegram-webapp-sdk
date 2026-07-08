@@ -254,6 +254,17 @@ impl TelegramWebApp {
             .unwrap_or(false)
     }
 
+    /// Returns whether the mini app is expanded to its maximum available
+    /// height.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::webapp::TelegramWebApp;
+    ///
+    /// if let Some(app) = TelegramWebApp::instance() {
+    ///     let _ = app.is_expanded();
+    /// }
+    /// ```
     pub fn is_expanded(&self) -> bool {
         Reflect::get(&self.inner, &"isExpanded".into())
             .ok()

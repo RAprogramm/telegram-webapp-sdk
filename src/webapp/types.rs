@@ -238,16 +238,22 @@ impl SafeAreaInset {
 /// ```
 #[derive(Debug, Default, Serialize)]
 pub struct BottomButtonParams<'a> {
+    /// Text label displayed on the button.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text:                 Option<&'a str>,
+    /// Button background color as a `#RRGGBB` hex string.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub color:                Option<&'a str>,
+    /// Button text color as a `#RRGGBB` hex string.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_color:           Option<&'a str>,
+    /// Whether the button is active (tappable) rather than disabled.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_active:            Option<bool>,
+    /// Whether the button is visible.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_visible:           Option<bool>,
+    /// Whether the button plays a shimmering shine animation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub has_shine_effect:     Option<bool>,
     /// Custom emoji ID for the button icon (Bot API 9.5+).
@@ -290,8 +296,10 @@ pub struct BottomButtonParams<'a> {
 /// ```
 #[derive(Debug, Default, Serialize)]
 pub struct SecondaryButtonParams<'a> {
+    /// Parameters shared with the main button (text, colors, visibility, …).
     #[serde(flatten)]
     pub common:   BottomButtonParams<'a>,
+    /// Placement of the secondary button relative to the main button.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<SecondaryButtonPosition>
 }
@@ -312,6 +320,8 @@ pub struct SecondaryButtonParams<'a> {
 /// ```
 #[derive(Debug, Default, Serialize)]
 pub struct OpenLinkOptions {
+    /// If `true`, attempts to open the link in Instant View mode when
+    /// supported.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub try_instant_view: Option<bool>,
     /// Preferred external browser (Bot API 7.6+). Pass values like `"chrome"`,

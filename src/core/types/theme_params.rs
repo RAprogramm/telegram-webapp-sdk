@@ -197,6 +197,16 @@ impl TelegramThemeParams {
     }
 }
 
+/// Applies a default (empty) set of theme parameters to the document root.
+///
+/// This clears any previously set `--tg-theme-*` custom properties by writing
+/// only the values present in [`TelegramThemeParams::default`], which is none.
+/// It is exposed to JavaScript via `wasm_bindgen`.
+///
+/// # Errors
+///
+/// Returns `Err(JsValue)` if the global `window`/`document` objects are
+/// unavailable or the document root cannot be cast to an `HtmlElement`.
 #[wasm_bindgen]
 pub fn apply_default_theme() -> Result<(), JsValue> {
     let theme: TelegramThemeParams = Default::default();

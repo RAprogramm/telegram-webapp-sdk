@@ -8,11 +8,18 @@ use yew::prelude::{hook, use_effect, use_state};
 
 use crate::core::{context::TelegramContext, safe_context::get_context};
 
+/// [`back_button::BackButton`] component driving `WebApp.BackButton`.
 pub mod back_button;
+/// [`bottom_button::BottomButton`] component driving the main/secondary button.
 pub mod bottom_button;
+/// [`safe_area::use_safe_area`] hook exposing safe-area insets reactively.
 pub mod safe_area;
+/// [`settings_button::SettingsButton`] component driving
+/// `WebApp.SettingsButton`.
 pub mod settings_button;
+/// [`theme::use_theme`] hook exposing Telegram theme parameters reactively.
 pub mod theme;
+/// [`viewport::use_viewport`] hook exposing viewport size and state reactively.
 pub mod viewport;
 
 pub use back_button::BackButton;
