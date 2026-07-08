@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.10.0...v0.10.1) - 2026-07-08
+
+### CI/CD
+
+- automate releases with release-plz ([#238](https://github.com/RAprogramm/telegram-webapp-sdk/issues/238))
+
+### Maintenance
+
+- stop tracking demo/dist build artifacts ([#240](https://github.com/RAprogramm/telegram-webapp-sdk/issues/240))
+
 ## [0.10.0] - 2026-05-13
 ### Fixed
 - `api::device_storage`, `api::secure_storage`, `api::location_manager` now use the PascalCase sub-object keys (`DeviceStorage` / `SecureStorage` / `LocationManager`) that `Telegram.WebApp` actually exposes. Previously every call to these modules failed at runtime in production because the crate looked up camelCase mirrors that don't exist; tests passed only because their mocks repeated the same wrong key (#223).
