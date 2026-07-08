@@ -179,7 +179,7 @@ jobs:
           shared-key: "stable"
 
       - name: Refresh README from sources
-        run: cargo +${{ needs.setup.outputs.msrv }} run --bin update_readme
+        run: cargo +${{ needs.setup.outputs.msrv }} run -p update-readme
 
       - name: Ensure README is in sync
         shell: bash
