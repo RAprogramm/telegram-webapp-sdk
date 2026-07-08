@@ -1,0 +1,68 @@
+# release-plz drives the release cadence for telegram-webapp-sdk:
+#   1. on every push to `main`, it computes the next version from
+#      conventional commits since the latest tag and opens (or updates) a
+#      release PR bumping Cargo.toml and prepending a CHANGELOG section;
+#   2. when that release PR is merged, it publishes the crate to
+#      crates.io, tags `vX.Y.Z`, and creates the GitHub release.
+#
+# Only `telegram-webapp-sdk` is published; workspace members `demo`,
+# `vanilla-example`, `webapp-bot-example` and the integration backend are
+# marked `publish = false` in their manifests and are skipped here.
+#
+# Reference: https://release-plz.dev
+
+[workspace]
+allow_dirty = false
+changelog_update = true
+git_release_enable = false
+git_tag_enable = false
+publish = true
+release = true
+
+[[package]]
+name = "telegram-webapp-sdk"
+changelog_path = "CHANGELOG.md"
+git_release_enable = true
+git_tag_enable = true
+git_release_name = "v{{ version }}"
+git_tag_name = "v{{ version }}"
+
+[changelog]
+# Mirror cliff.toml so the CHANGELOG stays consistent with historical
+# entries. The first preprocessor linkifies issue references; the second
+# normalizes the `#123 type: desc` commit convention into `type: desc`
+# so release-plz detects the conventional type for semver bumping.
+commit_preprocessors = [
+    { pattern = '\(#(\d+)\)', replace = "([#${1}](https://github.com/RAprogramm/telegram-webapp-sdk/issues/${1}))" },
+    { pattern = '^#(\d+)\s+(feat|fix|perf|refactor|test|docs|doc|ci|chore|deps|add|revert)(!)?(\([^)]*\))?:?\s+', replace = "${2}${3}${4}: " },
+]
+commit_parsers = [
+    { message = "^feat", group = "Added" },
+    { message = "^add", group = "Added" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^perf", group = "Changed" },
+    { message = "^refactor", group = "Changed" },
+    { message = "^docs", group = "Documentation" },
+    { message = "^doc", group = "Documentation" },
+    { message = "^test", group = "Changed" },
+    { message = "^chore\\(release\\): prepare for", skip = true },
+    { message = "^chore\\(pr\\)", skip = true },
+    { message = "^chore\\(pull\\)", skip = true },
+    { message = "^chore: bump version", skip = true },
+    { message = "^Merge pull request", skip = true },
+    { message = "^Merge branch", skip = true },
+    { message = "^deps\\(cargo\\)", group = "Dependencies" },
+    { message = "^deps\\(ci\\)", group = "CI/CD" },
+    { message = "^deps", group = "Dependencies" },
+    { message = "^chore\\(deps\\)", group = "Dependencies" },
+    { message = "^chore: update dep", group = "Dependencies" },
+    { message = "^chore: release", skip = true },
+    { message = "^chore", group = "Maintenance" },
+    { message = "^ci", group = "CI/CD" },
+    { body = ".*security", group = "Security" },
+    { message = "^revert", group = "Reverted" },
+]
+sort_commits = "oldest"
+link_parsers = [
+    { pattern = "\\(#(\\d+)\\)", href = "https://github.com/RAprogramm/telegram-webapp-sdk/issues/$1", text = "#$1" },
+]
