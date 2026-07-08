@@ -11,7 +11,7 @@
 [![docs.rs](https://img.shields.io/docsrs/telegram-webapp-sdk)](https://docs.rs/telegram-webapp-sdk)
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 <!-- msrv_badge:start -->
-![MSRV](https://img.shields.io/badge/MSRV-1.95-blue)
+![MSRV](https://img.shields.io/badge/MSRV-1.96-blue)
 <!-- msrv_badge:end -->
 ![License](https://img.shields.io/badge/License-MIT-informational)
 [![codecov](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graph/badge.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
@@ -112,7 +112,7 @@ The top section represents the entire project. Proceeding with folders and final
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.9", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.11", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -170,13 +170,13 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-telegram-webapp-sdk = "0.9"
+telegram-webapp-sdk = "0.11"
 ```
 
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.9", features = ["macros", "yew", "leptos", "mock"] }
+telegram-webapp-sdk = { version = "0.11", features = ["macros", "yew", "leptos", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
@@ -429,8 +429,10 @@ fn status() -> Html {
 The `mock` feature simulates a `Telegram.WebApp` instance, enabling local development without Telegram:
 
 ```rust,ignore
-let config = telegram_webapp_sdk::mock::MockConfig::default();
-let ctx = telegram_webapp_sdk::mock::install(config)?;
+use telegram_webapp_sdk::mock::{config::MockTelegramConfig, init::mock_telegram_webapp};
+
+let config = MockTelegramConfig::default();
+mock_telegram_webapp(config)?;
 ```
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
@@ -916,7 +918,7 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.6` matches the latest Telegram WebApp API release `9.6`. Bot API 9.5 added `icon_custom_emoji_id` for bottom buttons; 9.6 added `WebApp.requestChat` and the `requestedChatSent` / `requestedChatFailed` events.
+**WebApp API coverage:** version `9.6` matches the latest Telegram WebApp API release `9.6`. Synced in commit [53276fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd) (recorded on 2026-05-13).
 <!-- webapp_api_summary:end -->
 
 See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
