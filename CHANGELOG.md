@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.10.1](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.10.0...v0.10.1) - 2026-07-08
+## [0.11.0](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.10.0...v0.11.0) - 2026-07-08
+
+### Changed
+
+- **MSRV raised to 1.96** (required by `masterror` 0.29).
+
+### Dependencies
+
+- Update all dependencies to latest; bump `masterror` 0.27 → 0.29, refresh `wasm-bindgen` 0.2.126, `web-sys`/`js-sys` 0.3.103, `wasm-bindgen-futures` 0.4.76, `serde_json` 1.0.150, `regex` 1.12.4, `reqwest` 0.13.4 ([#236](https://github.com/RAprogramm/telegram-webapp-sdk/issues/236)).
 
 ### CI/CD
 
