@@ -132,23 +132,10 @@ fn run() -> Result<(), ReadmeUpdateError> {
         })?;
 
     let mut status = parse_status(&webapp_api_content)?;
-    match discover_latest_version(status.latest_version_probe_url.as_str()) {
-        Ok(latest_source_version) => {
-            if status.latest_version != latest_source_version {
-                eprintln!(
-                    "WEBAPP_API.md declares latest version {} but source reports {}. Using source version.",
-                    status.latest_version, latest_source_version
-                );
-                status.latest_version = latest_source_version;
-            }
-        }
-        Err(error) => {
-            eprintln!(
-                "Could not probe latest WebApp version ({error}); using declared version {} from WEBAPP_API.md.",
-                status.latest_version
-            );
-        }
-    }
+    status.latest_version = resolve_latest_version(
+        &status.latest_version,
+        discover_latest_version(status.latest_version_probe_url.as_str())
+    );
     let cargo = parse_cargo_toml(&cargo_toml_content)?;
     let repository = cargo
         .package
@@ -162,7 +149,59 @@ fn run() -> Result<(), ReadmeUpdateError> {
         .package
         .version
         .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
-    let dependency_version = major_minor(&package_version);
+
+    let updated = assemble_readme(
+        &readme_content,
+        &status,
+        &repository,
+        &rust_version,
+        &package_version
+    )?;
+
+    if updated != readme_content {
+        fs::write(&readme_path, updated).map_err(ReadmeUpdateError::WriteReadme)?;
+    }
+
+    Ok(())
+}
+
+/// Picks the WebApp API version to advertise: the probed value when it differs
+/// from the declared one, otherwise the declared value. A failed probe (e.g. no
+/// network) is non-fatal and falls back to the declared version.
+fn resolve_latest_version<E: std::fmt::Display>(
+    declared: &str,
+    probed: Result<String, E>
+) -> String {
+    match probed {
+        Ok(latest) => {
+            if latest != declared {
+                eprintln!(
+                    "WEBAPP_API.md declares latest version {declared} but source reports {latest}. Using source version."
+                );
+                latest
+            } else {
+                declared.to_owned()
+            }
+        }
+        Err(error) => {
+            eprintln!(
+                "Could not probe latest WebApp version ({error}); using declared version {declared} from WEBAPP_API.md."
+            );
+            declared.to_owned()
+        }
+    }
+}
+
+/// Applies every managed section (MSRV badge, WebApp API badges, coverage
+/// summary) and rewrites the crate version in dependency examples, returning
+/// the updated README contents.
+fn assemble_readme(
+    readme_content: &str,
+    status: &WebAppApiStatus,
+    repository: &str,
+    rust_version: &str,
+    package_version: &str
+) -> Result<String, ReadmeUpdateError> {
     let commit_url = status.coverage_commit_url.clone().unwrap_or_else(|| {
         format!(
             "{}/commit/{}",
@@ -171,20 +210,15 @@ fn run() -> Result<(), ReadmeUpdateError> {
         )
     });
 
-    let badges_block = render_badges(&status, &commit_url);
-    let summary_block = render_summary(&status, &commit_url);
-    let msrv_block = render_msrv_badge(&rust_version);
+    let badges_block = render_badges(status, &commit_url);
+    let summary_block = render_summary(status, &commit_url);
+    let msrv_block = render_msrv_badge(rust_version);
+    let dependency_version = major_minor(package_version);
 
-    let with_msrv = replace_section(&readme_content, MSRV_START, MSRV_END, &msrv_block)?;
+    let with_msrv = replace_section(readme_content, MSRV_START, MSRV_END, &msrv_block)?;
     let with_badges = replace_section(&with_msrv, BADGES_START, BADGES_END, &badges_block)?;
     let with_summary = replace_section(&with_badges, SUMMARY_START, SUMMARY_END, &summary_block)?;
-    let updated = rewrite_crate_version(&with_summary, &dependency_version);
-
-    if updated != readme_content {
-        fs::write(&readme_path, updated).map_err(ReadmeUpdateError::WriteReadme)?;
-    }
-
-    Ok(())
+    Ok(rewrite_crate_version(&with_summary, &dependency_version))
 }
 
 fn parse_status(content: &str) -> Result<WebAppApiStatus, ReadmeUpdateError> {
@@ -461,6 +495,57 @@ version = "1.0.0"
         let cargo = parse_cargo_toml(toml).expect("parse");
         assert!(cargo.package.rust_version.is_none());
         assert!(cargo.package.repository.is_none());
+    }
+
+    #[test]
+    fn resolve_latest_version_prefers_differing_probe() {
+        let resolved = resolve_latest_version::<std::io::Error>("9.6", Ok("9.7".to_owned()));
+        assert_eq!(resolved, "9.7");
+    }
+
+    #[test]
+    fn resolve_latest_version_keeps_declared_when_equal() {
+        let resolved = resolve_latest_version::<std::io::Error>("9.6", Ok("9.6".to_owned()));
+        assert_eq!(resolved, "9.6");
+    }
+
+    #[test]
+    fn resolve_latest_version_falls_back_on_error() {
+        let resolved: String = resolve_latest_version(
+            "9.6",
+            Err(std::io::Error::new(std::io::ErrorKind::Other, "offline"))
+        );
+        assert_eq!(resolved, "9.6");
+    }
+
+    #[test]
+    fn assemble_readme_applies_all_sections() {
+        let status = WebAppApiStatus {
+            latest_version:           "9.6".to_owned(),
+            covered_version:          "9.6".to_owned(),
+            coverage_commit:          "abc1234567".to_owned(),
+            coverage_date:            None,
+            source_url:               "https://example.com".to_owned(),
+            coverage_commit_url:      None,
+            latest_version_probe_url: DEFAULT_VERSION_PROBE_URL.to_owned()
+        };
+        let readme = "<!-- msrv_badge:start -->
+old
+<!-- msrv_badge:end -->
+<!-- webapp_api_badges:start -->
+old
+<!-- webapp_api_badges:end -->
+<!-- webapp_api_summary:start -->
+old
+<!-- webapp_api_summary:end -->
+telegram-webapp-sdk = \"0.9\"
+";
+        let updated = assemble_readme(readme, &status, "https://github.com/o/r", "1.96", "0.11.0")
+            .expect("assemble");
+        assert!(updated.contains("MSRV-1.96"));
+        assert!(updated.contains("9.6"));
+        assert!(updated.contains("abc1234"));
+        assert!(updated.contains("telegram-webapp-sdk = \"0.11\""));
     }
 
     #[test]
