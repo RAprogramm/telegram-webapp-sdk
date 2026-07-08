@@ -15,7 +15,7 @@ jobs:
     outputs:
       msrv: ${{ steps.msrv.outputs.msrv }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Read MSRV from Cargo.toml
         id: msrv
@@ -41,12 +41,12 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
 
       - name: Install nightly rustfmt
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: nightly-2025-08-01
           components: rustfmt
@@ -55,7 +55,22 @@ jobs:
         run: cargo +nightly-2025-08-01 fmt --all -- --check
 
       - name: REUSE Compliance
-        uses: fsfe/reuse-action@v6
+        uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6
+
+  # 🛡️ Supply Chain
+  deny:
+    name: Cargo Deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        with:
+          tool: cargo-deny
+
+      - name: Run cargo-deny
+        run: cargo deny check
 
   # 🔍 Linting
   clippy:
@@ -66,16 +81,16 @@ jobs:
       CARGO_LOCKED: "true"
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Rust (${{ needs.setup.outputs.msrv }})
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: ${{ needs.setup.outputs.msrv }}
           components: clippy
 
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: "stable"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -99,15 +114,15 @@ jobs:
       CARGO_LOCKED: "true"
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Rust (${{ needs.setup.outputs.msrv }})
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: ${{ needs.setup.outputs.msrv }}
 
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: "stable"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -122,7 +137,7 @@ jobs:
           fi
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
         with:
           tool: cargo-nextest
 
@@ -138,7 +153,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: always()
-        uses: codecov/test-results-action@v1
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -151,15 +166,15 @@ jobs:
       CARGO_LOCKED: "true"
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Rust (${{ needs.setup.outputs.msrv }})
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: ${{ needs.setup.outputs.msrv }}
 
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: "stable"
 
@@ -186,22 +201,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Rust (${{ needs.setup.outputs.msrv }})
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: ${{ needs.setup.outputs.msrv }}
           components: llvm-tools-preview
 
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: "stable"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
         with:
           tool: cargo-llvm-cov
 
@@ -212,7 +227,7 @@ jobs:
           cargo +${{ needs.setup.outputs.msrv }} llvm-cov --all-features --workspace --lcov --output-path lcov.info
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
