@@ -8,7 +8,10 @@
 
 mod version_probe;
 
-use std::{env, fs, path::PathBuf};
+use std::{
+    env, fs,
+    path::{Path, PathBuf}
+};
 
 use masterror::Error;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
@@ -36,6 +39,8 @@ enum ReadmeUpdateError {
     MetadataParse(toml::de::Error),
     #[error("environment variable CARGO_MANIFEST_DIR not set: {0}")]
     ManifestDir(env::VarError),
+    #[error("could not locate the workspace root (Cargo.toml with [workspace])")]
+    WorkspaceRootMissing,
     #[error("failed to read file {path}: {error}")]
     ReadFile {
         path:  String,
@@ -109,7 +114,8 @@ fn main() -> Result<(), ReadmeUpdateError> {
 
 fn run() -> Result<(), ReadmeUpdateError> {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").map_err(ReadmeUpdateError::ManifestDir)?;
-    let root = PathBuf::from(manifest_dir);
+    let root =
+        workspace_root(Path::new(&manifest_dir)).ok_or(ReadmeUpdateError::WorkspaceRootMissing)?;
 
     let webapp_api_path = root.join("WEBAPP_API.md");
     let readme_path = root.join("README.md");
@@ -163,6 +169,23 @@ fn run() -> Result<(), ReadmeUpdateError> {
     }
 
     Ok(())
+}
+
+/// Walks up from `start` until it finds a `Cargo.toml` declaring `[workspace]`,
+/// returning that directory. Lets the tool locate the repository root
+/// regardless of which workspace member it is invoked from.
+fn workspace_root(start: &Path) -> Option<PathBuf> {
+    let mut current = Some(start);
+    while let Some(dir) = current {
+        let manifest = dir.join("Cargo.toml");
+        if let Ok(content) = fs::read_to_string(&manifest)
+            && content.contains("[workspace]")
+        {
+            return Some(dir.to_path_buf());
+        }
+        current = dir.parent();
+    }
+    None
 }
 
 /// Picks the WebApp API version to advertise: the probed value when it differs
@@ -495,6 +518,17 @@ version = "1.0.0"
         let cargo = parse_cargo_toml(toml).expect("parse");
         assert!(cargo.package.rust_version.is_none());
         assert!(cargo.package.repository.is_none());
+    }
+
+    #[test]
+    fn workspace_root_finds_marker_ancestor() {
+        let base = std::env::temp_dir().join(format!("update-readme-ws-{}", std::process::id()));
+        let nested = base.join("tools/update-readme/src");
+        fs::create_dir_all(&nested).expect("create dirs");
+        fs::write(base.join("Cargo.toml"), "[workspace]\nmembers = []\n").expect("ws manifest");
+        let found = workspace_root(&nested).expect("root");
+        assert_eq!(found, base);
+        fs::remove_dir_all(&base).ok();
     }
 
     #[test]

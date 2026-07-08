@@ -50,10 +50,6 @@ web-sys = { version = "0.3", features = [
 ] }
 percent-encoding = "2"
 masterror = { workspace = true }
-regex = "1"
-reqwest = { version = "0.13", default-features = false, features = [
-  "blocking",
-] }
 urlencoding = { version = "2", optional = true }
 inventory = { workspace = true, optional = true }
 toml = "1"
@@ -92,6 +88,7 @@ members = [
   "examples/vanilla",
   "examples/bots/rust_bot",
   "examples/integration/backend",
+  "tools/update-readme",
 ]
 default-members = ["."]
 exclude = ["examples/integration/frontend"]

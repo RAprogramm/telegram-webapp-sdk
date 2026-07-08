@@ -30,7 +30,7 @@ ignore:
   - "tests/**/*"
   - "target/**/*"
   - ".github/**/*"
-  - "src/bin/**/*"
+  - "tools/**/*"
 
 github_checks:
   annotations: true
