@@ -163,23 +163,17 @@ jobs:
         with:
           shared-key: "stable"
 
-      - name: Auto-commit changes
-        if: always()
-        run: |
-          set -euo pipefail
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git add .
-          git commit -m "chore(readme): auto-refresh [skip ci]" || true
+      - name: Refresh README from sources
+        run: cargo +${{ needs.setup.outputs.msrv }} run --bin update_readme
 
-      - name: Ensure tree is clean
+      - name: Ensure README is in sync
         shell: bash
         run: |
           set -euo pipefail
           if ! git diff --quiet; then
-            echo "Working tree is dirty:"
-            git status --porcelain
+            echo "README.md is out of sync with its sources (Cargo.toml / WEBAPP_API.md)."
+            echo "Run 'cargo run --bin update_readme' and commit the result."
+            git --no-pager diff
             exit 1
           fi
 

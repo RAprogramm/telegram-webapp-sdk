@@ -12,8 +12,9 @@ use std::{env, fs, path::PathBuf};
 
 use masterror::Error;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
+use regex::Regex;
 use serde::Deserialize;
-use version_probe::{VersionDiscoveryError, discover_latest_version};
+use version_probe::discover_latest_version;
 
 const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
 const BADGES_END: &str = "<!-- webapp_api_badges:end -->";
@@ -51,10 +52,10 @@ enum ReadmeUpdateError {
     RepositoryMissing,
     #[error("rust-version field missing in Cargo.toml")]
     RustVersionMissing,
+    #[error("version field missing in Cargo.toml")]
+    PackageVersionMissing,
     #[error("failed to write README.md: {0}")]
-    WriteReadme(std::io::Error),
-    #[error("failed to determine latest WebApp API version: {0}")]
-    LatestVersion(VersionDiscoveryError)
+    WriteReadme(std::io::Error)
 }
 
 #[derive(Debug, Deserialize)]
@@ -91,6 +92,7 @@ struct WebAppApiStatus {
 
 #[derive(Debug, Deserialize)]
 struct CargoPackage {
+    version:      Option<String>,
     repository:   Option<String>,
     #[serde(rename = "rust-version")]
     rust_version: Option<String>
@@ -130,15 +132,23 @@ fn run() -> Result<(), ReadmeUpdateError> {
         })?;
 
     let mut status = parse_status(&webapp_api_content)?;
-    let latest_source_version = discover_latest_version(status.latest_version_probe_url.as_str())
-        .map_err(ReadmeUpdateError::LatestVersion)?;
-    if status.latest_version != latest_source_version {
-        eprintln!(
-            "WEBAPP_API.md declares latest version {} but source reports {}. Using source version.",
-            status.latest_version, latest_source_version
-        );
+    match discover_latest_version(status.latest_version_probe_url.as_str()) {
+        Ok(latest_source_version) => {
+            if status.latest_version != latest_source_version {
+                eprintln!(
+                    "WEBAPP_API.md declares latest version {} but source reports {}. Using source version.",
+                    status.latest_version, latest_source_version
+                );
+                status.latest_version = latest_source_version;
+            }
+        }
+        Err(error) => {
+            eprintln!(
+                "Could not probe latest WebApp version ({error}); using declared version {} from WEBAPP_API.md.",
+                status.latest_version
+            );
+        }
     }
-    status.latest_version = latest_source_version;
     let cargo = parse_cargo_toml(&cargo_toml_content)?;
     let repository = cargo
         .package
@@ -148,6 +158,11 @@ fn run() -> Result<(), ReadmeUpdateError> {
         .package
         .rust_version
         .ok_or(ReadmeUpdateError::RustVersionMissing)?;
+    let package_version = cargo
+        .package
+        .version
+        .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
+    let dependency_version = major_minor(&package_version);
     let commit_url = status.coverage_commit_url.clone().unwrap_or_else(|| {
         format!(
             "{}/commit/{}",
@@ -162,7 +177,8 @@ fn run() -> Result<(), ReadmeUpdateError> {
 
     let with_msrv = replace_section(&readme_content, MSRV_START, MSRV_END, &msrv_block)?;
     let with_badges = replace_section(&with_msrv, BADGES_START, BADGES_END, &badges_block)?;
-    let updated = replace_section(&with_badges, SUMMARY_START, SUMMARY_END, &summary_block)?;
+    let with_summary = replace_section(&with_badges, SUMMARY_START, SUMMARY_END, &summary_block)?;
+    let updated = rewrite_crate_version(&with_summary, &dependency_version);
 
     if updated != readme_content {
         fs::write(&readme_path, updated).map_err(ReadmeUpdateError::WriteReadme)?;
@@ -250,6 +266,31 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
 fn render_msrv_badge(rust_version: &str) -> String {
     let version_encoded = encode_badge_component(rust_version);
     format!("![MSRV](https://img.shields.io/badge/MSRV-{version_encoded}-blue)\n")
+}
+
+/// Reduces a full semantic version to its `major.minor` prefix used in README
+/// dependency examples. Versions with fewer than two components are returned
+/// unchanged.
+fn major_minor(version: &str) -> String {
+    let mut parts = version.split('.');
+    match (parts.next(), parts.next()) {
+        (Some(major), Some(minor)) => format!("{major}.{minor}"),
+        _ => version.to_owned()
+    }
+}
+
+/// Rewrites every `telegram-webapp-sdk = "…"` / `telegram-webapp-sdk = {
+/// version = "…" … }` dependency example in the README to the given
+/// `major.minor` version, keeping Cargo.toml the single source of truth for the
+/// version.
+fn rewrite_crate_version(readme: &str, dependency_version: &str) -> String {
+    let pattern = Regex::new(r#"(telegram-webapp-sdk = (?:\{\s*version\s*=\s*)?")[0-9][0-9.]*"#)
+        .expect("crate version regex is valid");
+    pattern
+        .replace_all(readme, |caps: &regex::Captures<'_>| {
+            format!("{}{}", &caps[1], dependency_version)
+        })
+        .into_owned()
 }
 
 fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
@@ -420,6 +461,30 @@ version = "1.0.0"
         let cargo = parse_cargo_toml(toml).expect("parse");
         assert!(cargo.package.rust_version.is_none());
         assert!(cargo.package.repository.is_none());
+    }
+
+    #[test]
+    fn major_minor_reduces_full_version() {
+        assert_eq!(major_minor("0.11.0"), "0.11");
+        assert_eq!(major_minor("1.2.3"), "1.2");
+        assert_eq!(major_minor("0.9"), "0.9");
+        assert_eq!(major_minor("2"), "2");
+    }
+
+    #[test]
+    fn rewrite_crate_version_updates_both_forms() {
+        let readme = r#"
+telegram-webapp-sdk = "0.9"
+telegram-webapp-sdk = { version = "0.9", features = ["macros"] }
+See https://docs.rs/telegram-webapp-sdk for details.
+"#;
+        let updated = rewrite_crate_version(readme, "0.11");
+        assert!(updated.contains(r#"telegram-webapp-sdk = "0.11""#));
+        assert!(
+            updated
+                .contains(r#"telegram-webapp-sdk = { version = "0.11", features = ["macros"] }"#)
+        );
+        assert!(updated.contains("https://docs.rs/telegram-webapp-sdk for details."));
     }
 
     #[test]
