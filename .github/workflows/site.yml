@@ -1,0 +1,57 @@
+# Build the multilingual (EN/RU) documentation site from wiki/ with mdBook and
+# deploy it to GitHub Pages. Source content lives in wiki/ (also synced to the
+# GitHub Wiki by wiki.yml); site/build.py assembles one mdBook per language plus
+# the landing page. Pages must be enabled with the "GitHub Actions" source.
+
+name: Docs Site
+
+on:
+  push:
+    branches: [main]
+    paths: ["wiki/**", "site/**", ".github/workflows/site.yml"]
+  pull_request:
+    paths: ["wiki/**", "site/**", ".github/workflows/site.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site from wiki
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install mdBook
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        with:
+          tool: mdbook@0.5.3
+
+      - name: Build site
+        run: python3 site/build.py --out "$RUNNER_TEMP/site"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
