@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.4](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.3...v0.11.4) - 2026-08-23
+
+### CI/CD
+
+- *(ci)* bump release-plz/action from 0.5.130 to 0.5.131 ([#267](https://github.com/RAprogramm/telegram-webapp-sdk/issues/267))
+- *(ci)* bump actions/checkout from 7.0.0 to 7.0.1 ([#269](https://github.com/RAprogramm/telegram-webapp-sdk/issues/269))
+- *(ci)* bump Swatinem/rust-cache ([#274](https://github.com/RAprogramm/telegram-webapp-sdk/issues/274))
+- *(ci)* bump taiki-e/install-action from 2.83.2 to 2.85.13 ([#275](https://github.com/RAprogramm/telegram-webapp-sdk/issues/275))
+
+### Dependencies
+
+- deps(cargo)(deps): bump the cargo-minor-patch group across 2 directories with 6 updates ([#268](https://github.com/RAprogramm/telegram-webapp-sdk/issues/268))
+
 ## [0.11.3](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.2...v0.11.3) - 2026-07-19
 
 ### CI/CD
