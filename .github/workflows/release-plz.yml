@@ -41,7 +41,7 @@ jobs:
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2
+        uses: taiki-e/install-action@37f7c5781271959fb65b6b35224e28652ff2b63d # v2
         with:
           tool: cargo-semver-checks
 
@@ -72,7 +72,7 @@ jobs:
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2
+        uses: taiki-e/install-action@37f7c5781271959fb65b6b35224e28652ff2b63d # v2
         with:
           tool: cargo-semver-checks
 
