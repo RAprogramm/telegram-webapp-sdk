@@ -49,7 +49,6 @@ web-sys = { version = "0.3", features = [
   "CssStyleDeclaration",
 ] }
 percent-encoding = "2"
-masterror = { workspace = true }
 urlencoding = { version = "2", optional = true }
 inventory = { workspace = true, optional = true }
 toml = "1"
