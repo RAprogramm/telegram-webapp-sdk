@@ -8,8 +8,10 @@ use std::{cell::Cell, rc::Rc};
 use js_sys::{Object, Reflect};
 use telegram_webapp_sdk::webapp::TelegramWebApp;
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
-use wasm_bindgen_test::wasm_bindgen_test;
+use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
 use web_sys::window;
+
+wasm_bindgen_test_configure!(run_in_browser);
 
 fn setup_webapp() -> Result<Object, JsValue> {
     let win = window().ok_or_else(|| JsValue::from_str("no window"))?;
