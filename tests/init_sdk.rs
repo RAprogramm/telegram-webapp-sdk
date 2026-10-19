@@ -64,7 +64,7 @@ fn get_raw_init_data_returns_original_string() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramContext::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramContext::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -78,7 +78,7 @@ fn get_raw_init_data_preserves_url_encoding() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramContext::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramContext::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -92,7 +92,7 @@ fn get_raw_init_data_handles_complex_payload() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramContext::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramContext::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -106,7 +106,7 @@ fn get_raw_init_data_handles_minimal_payload() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramContext::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramContext::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -120,7 +120,7 @@ fn get_raw_init_data_handles_special_characters() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramContext::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramContext::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -142,7 +142,7 @@ fn webapp_get_raw_init_data_returns_original_string() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramWebApp::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramWebApp::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert_eq!(raw, expected);
 
@@ -156,7 +156,7 @@ fn webapp_get_raw_init_data_suitable_for_validation() -> Result<(), JsValue> {
 
     init_sdk()?;
 
-    let raw = TelegramWebApp::get_raw_init_data().map_err(|e| JsValue::from_str(e))?;
+    let raw = TelegramWebApp::get_raw_init_data().map_err(JsValue::from_str)?;
 
     assert!(raw.contains("auth_date="));
     assert!(raw.contains("hash="));
@@ -194,7 +194,7 @@ fn try_init_sdk_returns_true_when_successful() -> Result<(), JsValue> {
 
     let result = try_init_sdk().map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    assert_eq!(result, true);
+    assert!(result);
 
     Ok(())
 }
@@ -208,7 +208,7 @@ fn try_init_sdk_returns_false_when_telegram_unavailable() -> Result<(), JsValue>
 
     let result = try_init_sdk().map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    assert_eq!(result, false);
+    assert!(!result);
 
     Ok(())
 }

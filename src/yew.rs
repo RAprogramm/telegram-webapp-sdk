@@ -149,12 +149,11 @@ mod tests {
 
         #[wasm_bindgen_test]
         fn hook_renders_component_with_context_result() {
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Ok(container) = document.create_element("div") {
-                        yew::Renderer::<TestComponent>::with_root(container).render();
-                    }
-                }
+            if let Some(window) = web_sys::window()
+                && let Some(document) = window.document()
+                && let Ok(container) = document.create_element("div")
+            {
+                yew::Renderer::<TestComponent>::with_root(container).render();
             }
         }
 
@@ -209,12 +208,11 @@ mod tests {
 
             let _ = TelegramContext::init(init_data, theme_params, raw_init_data);
 
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Ok(container) = document.create_element("div") {
-                        yew::Renderer::<TestComponent>::with_root(container).render();
-                    }
-                }
+            if let Some(window) = web_sys::window()
+                && let Some(document) = window.document()
+                && let Ok(container) = document.create_element("div")
+            {
+                yew::Renderer::<TestComponent>::with_root(container).render();
             }
         }
     }
