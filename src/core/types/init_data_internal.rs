@@ -3,7 +3,7 @@
 
 use serde::Deserialize;
 
-/// Raw, minimally-typed view of the Telegram WebApp `initData` payload.
+/// Raw, minimally-typed view of the Telegram `WebApp` `initData` payload.
 ///
 /// The complex fields (`user`, `receiver`, `chat`) are kept as their original
 /// JSON-encoded strings so that the exact bytes can be used to verify the

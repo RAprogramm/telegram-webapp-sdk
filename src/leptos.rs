@@ -47,7 +47,7 @@ use crate::core::{context::TelegramContext, safe_context::get_context};
 /// }
 /// ```
 pub fn provide_telegram_context() -> Result<(), JsValue> {
-    let ctx: TelegramContext = get_context(|c| c.clone())?;
+    let ctx: TelegramContext = get_context(Clone::clone)?;
     provide_context(ctx);
     Ok(())
 }

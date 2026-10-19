@@ -8,6 +8,7 @@ use crate::webapp::TelegramWebApp;
 
 impl TelegramWebApp {
     /// Returns `WebApp.colorScheme` — `"light"` or `"dark"`.
+    #[must_use]
     pub fn color_scheme(&self) -> Option<String> {
         Reflect::get(&self.inner, &"colorScheme".into())
             .ok()
@@ -15,6 +16,7 @@ impl TelegramWebApp {
     }
 
     /// Returns the current `WebApp.headerColor` value.
+    #[must_use]
     pub fn header_color(&self) -> Option<String> {
         Reflect::get(&self.inner, &"headerColor".into())
             .ok()
@@ -22,6 +24,7 @@ impl TelegramWebApp {
     }
 
     /// Returns the current `WebApp.backgroundColor` value.
+    #[must_use]
     pub fn background_color(&self) -> Option<String> {
         Reflect::get(&self.inner, &"backgroundColor".into())
             .ok()
@@ -29,6 +32,7 @@ impl TelegramWebApp {
     }
 
     /// Returns the current `WebApp.bottomBarColor` value (Bot API 7.10+).
+    #[must_use]
     pub fn bottom_bar_color(&self) -> Option<String> {
         Reflect::get(&self.inner, &"bottomBarColor".into())
             .ok()
@@ -36,6 +40,7 @@ impl TelegramWebApp {
     }
 
     /// Returns the raw `WebApp.version` string (e.g. `"9.6"`).
+    #[must_use]
     pub fn raw_version(&self) -> Option<String> {
         Reflect::get(&self.inner, &"version".into())
             .ok()
@@ -44,6 +49,7 @@ impl TelegramWebApp {
 
     /// Returns the `WebApp.platform` string (e.g. `"tdesktop"`, `"ios"`,
     /// `"web"`).
+    #[must_use]
     pub fn platform(&self) -> Option<String> {
         Reflect::get(&self.inner, &"platform".into())
             .ok()

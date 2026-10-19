@@ -53,5 +53,5 @@ fn provide_telegram_context_fails_without_init() {
     leptos::prelude::Owner::new().with(|| {
         let result = provide_telegram_context();
         assert!(result.is_err());
-    })
+    });
 }

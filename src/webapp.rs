@@ -12,7 +12,7 @@ mod lifecycle;
 mod navigation;
 mod permissions;
 mod theme;
-/// Public data types shared across the WebApp bindings: button descriptors,
+/// Public data types shared across the `WebApp` bindings: button descriptors,
 /// button parameters, link/close options and event handles.
 pub mod types;
 mod viewport;

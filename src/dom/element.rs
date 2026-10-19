@@ -17,19 +17,46 @@ pub trait ElementExt {
     /// Replaces the element's text content with `text`.
     fn set_text(&self, text: &str);
     /// Replaces the element's inner HTML with `html`.
+    ///
+    /// # Errors
+    /// This helper never fails: `set_inner_html` is infallible in `web-sys`, so
+    /// the returned `Result` is always `Ok`. It exists to keep the trait
+    /// uniform.
     fn set_html(&self, html: &str) -> Result<(), JsValue>;
     /// Sets attribute `attr` to `value`.
+    ///
+    /// # Errors
+    /// Returns an error when `attr` is not a valid attribute name and the
+    /// browser rejects it.
     fn set_attr(&self, attr: &str, value: &str) -> Result<(), JsValue>;
     /// Returns the value of attribute `attr`, or `None` if it is absent.
     fn get_attr(&self, attr: &str) -> Option<String>;
     /// Removes attribute `attr`.
+    ///
+    /// # Errors
+    /// Returns an error when `attr` is not a valid attribute name and the
+    /// browser rejects it.
     fn remove_attr(&self, attr: &str) -> Result<(), JsValue>;
     /// Adds `class` to the `class` attribute if it is not already present.
+    ///
+    /// # Errors
+    /// Returns an error when the `class` attribute cannot be written, which
+    /// happens only if the browser rejects the attribute update.
     fn add_class(&self, class: &str) -> Result<(), JsValue>;
     /// Removes `class` from the `class` attribute, dropping the attribute
     /// entirely when no classes remain.
+    ///
+    /// # Errors
+    /// Returns an error when the `class` attribute cannot be written or
+    /// removed, which happens only if the browser rejects the attribute
+    /// update.
     fn remove_class(&self, class: &str) -> Result<(), JsValue>;
     /// Adds `class` if absent, or removes it if present.
+    ///
+    /// # Errors
+    /// Returns an error when the `class` attribute cannot be written or
+    /// removed, which happens only if the browser rejects the attribute
+    /// update.
     fn toggle_class(&self, class: &str) -> Result<(), JsValue>;
     /// Returns `true` if the `class` attribute contains `class` as a whole
     /// token.
@@ -38,15 +65,32 @@ pub trait ElementExt {
     ///
     /// The underlying closure is leaked so the listener remains valid for the
     /// lifetime of the element.
+    ///
+    /// # Errors
+    /// Returns an error when the browser rejects
+    /// `add_event_listener_with_callback`, for example when `event` is
+    /// empty.
     fn on<F>(&self, event: &str, handler: F) -> Result<(), JsValue>
     where
         F: FnMut(web_sys::Event) + 'static;
     /// Appends `child` as the last child of this element.
+    ///
+    /// # Errors
+    /// Returns an error when the browser refuses the insertion, for example
+    /// when `child` is `self` or comes from a different document.
     fn append(&self, child: &Element) -> Result<(), JsValue>;
     /// Inserts `child` as the first child of this element, or appends it when
     /// the element has no children.
+    ///
+    /// # Errors
+    /// Returns an error when the browser refuses the insertion, for example
+    /// when `child` is `self` or comes from a different document.
     fn prepend(&self, child: &Element) -> Result<(), JsValue>;
     /// Detaches this element from its parent; a no-op when it has no parent.
+    ///
+    /// # Errors
+    /// Returns an error when the parent node refuses the removal, which cannot
+    /// happen for an element obtained from the live document tree.
     fn remove(&self) -> Result<(), JsValue>;
     /// Removes all child nodes of this element.
     fn clear(&self);
@@ -88,7 +132,7 @@ impl ElementExt for Element {
             let new_class = if current.is_empty() {
                 class.to_string()
             } else {
-                format!("{} {}", current, class)
+                format!("{current} {class}")
             };
             self.set_attribute("class", &new_class)?;
         }
@@ -121,8 +165,7 @@ impl ElementExt for Element {
 
     fn has_class(&self, class: &str) -> bool {
         self.get_attribute("class")
-            .map(|c| c.split_whitespace().any(|x| x == class))
-            .unwrap_or(false)
+            .is_some_and(|c| c.split_whitespace().any(|x| x == class))
     }
 
     fn on<F>(&self, event: &str, mut handler: F) -> Result<(), JsValue>
@@ -143,27 +186,29 @@ impl ElementExt for Element {
     fn append(&self, child: &Element) -> Result<(), JsValue> {
         Node::append_child(self, child)
             .map(|_| ())
-            .map_err(|e| e.unchecked_into())
+            .map_err(JsCast::unchecked_into)
     }
 
     fn prepend(&self, child: &Element) -> Result<(), JsValue> {
-        if let Some(first) = self.first_child() {
-            Node::insert_before(self, child, Some(&first))
-                .map(|_| ())
-                .map_err(|e| e.unchecked_into())
-        } else {
-            self.append(child)
-        }
+        self.first_child().map_or_else(
+            || self.append(child),
+            |first| {
+                Node::insert_before(self, child, Some(&first))
+                    .map(|_| ())
+                    .map_err(JsCast::unchecked_into)
+            }
+        )
     }
 
     fn remove(&self) -> Result<(), JsValue> {
-        if let Some(parent) = self.parent_element() {
-            Node::remove_child(&parent, self)
-                .map(|_| ())
-                .map_err(|e| e.unchecked_into())
-        } else {
-            Ok(())
-        }
+        self.parent_element().map_or_else(
+            || Ok(()),
+            |parent| {
+                Node::remove_child(&parent, self)
+                    .map(|_| ())
+                    .map_err(JsCast::unchecked_into)
+            }
+        )
     }
 
     fn clear(&self) {

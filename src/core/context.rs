@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+use std::borrow::Cow;
+
 use once_cell::unsync::OnceCell;
 use percent_encoding::{percent_decode, percent_decode_str};
 use wasm_bindgen::JsValue;
@@ -39,7 +41,7 @@ impl TelegramContext {
         raw_init_data: String
     ) -> Result<(), &'static str> {
         CONTEXT.with(|cell| {
-            cell.set(TelegramContext {
+            cell.set(Self {
                 init_data,
                 theme_params,
                 raw_init_data
@@ -53,7 +55,7 @@ impl TelegramContext {
     /// Accepts a closure and returns the result of applying it to the context.
     pub fn get<F, R>(f: F) -> Option<R>
     where
-        F: FnOnce(&TelegramContext) -> R
+        F: FnOnce(&Self) -> R
     {
         CONTEXT.with(|cell| cell.get().map(f))
     }
@@ -151,13 +153,13 @@ fn decode_query_value(raw_value: &str) -> Option<String> {
         return percent_decode(buffer.as_slice())
             .decode_utf8()
             .ok()
-            .map(|cow| cow.into_owned());
+            .map(Cow::into_owned);
     }
 
     percent_decode_str(raw_value)
         .decode_utf8()
         .ok()
-        .map(|cow| cow.into_owned())
+        .map(Cow::into_owned)
 }
 
 #[cfg(test)]

@@ -49,6 +49,7 @@ thread_local! {
 /// }
 /// ```
 #[component]
+#[must_use]
 pub fn BottomButton<F>(
     /// Reactive text label displayed on the button.
     #[prop(into)]

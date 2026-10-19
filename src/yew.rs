@@ -61,7 +61,7 @@ type ClosureCell = Rc<RefCell<Option<Closure<dyn FnMut()>>>>;
 /// ```
 #[hook]
 pub fn use_telegram_context() -> Result<TelegramContext, JsValue> {
-    let context_state = use_state(|| get_context(|c| c.clone()));
+    let context_state = use_state(|| get_context(Clone::clone));
 
     {
         let context_state = context_state.clone();
@@ -74,11 +74,10 @@ pub fn use_telegram_context() -> Result<TelegramContext, JsValue> {
             {
                 let handle_clone = handle.clone();
                 let closure_clone = closure.clone();
-                let ctx_state = context_state.clone();
 
                 let check_fn = Closure::wrap(Box::new(move || {
-                    if let Ok(ctx) = get_context(|c| c.clone()) {
-                        ctx_state.set(Ok(ctx));
+                    if let Ok(ctx) = get_context(Clone::clone) {
+                        context_state.set(Ok(ctx));
                         if let Some(id) = handle_clone.borrow_mut().take()
                             && let Some(w) = web_sys::window()
                         {
@@ -162,7 +161,7 @@ mod tests {
             let init_data = TelegramInitData {
                 query_id:       Some(String::from("test_query_2")),
                 user:           Some(TelegramUser {
-                    id: 987654321,
+                    id: 987_654_321,
                     is_bot: Some(false),
                     first_name: String::from("Test2"),
                     last_name: Some(String::from("User2")),
@@ -179,7 +178,7 @@ mod tests {
                 chat_instance:  None,
                 start_param:    None,
                 can_send_after: None,
-                auth_date:      9876543210,
+                auth_date:      9_876_543_210,
                 hash:           String::from("test_hash_2"),
                 signature:      None
             };

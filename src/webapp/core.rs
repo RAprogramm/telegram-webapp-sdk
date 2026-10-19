@@ -33,6 +33,7 @@ pub(super) async fn await_one_shot(promise: Promise) -> Result<JsValue, JsValue>
 
 impl TelegramWebApp {
     /// Get instance of `Telegram.WebApp` or `None` if not present
+    #[must_use]
     pub fn instance() -> Option<Self> {
         let win = window()?;
         let tg = Reflect::get(&win, &"Telegram".into()).ok()?;
@@ -92,7 +93,12 @@ impl TelegramWebApp {
         self.call1("sendData", &data.into())
     }
 
-    /// Returns whether the WebApp version is at least the provided value.
+    /// Returns whether the `WebApp` version is at least the provided value.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `isVersionAtLeast`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -185,13 +191,11 @@ impl TelegramWebApp {
         let method = method.to_owned();
         let params = params.clone();
         let promise = one_shot_promise(move |resolve, reject| {
-            let resolve_for_cb = resolve.clone();
-            let reject_for_cb = reject.clone();
             let cb = Closure::once_into_js(move |err: JsValue, result: JsValue| {
                 if err.is_null() || err.is_undefined() {
-                    let _ = resolve_for_cb.call1(&JsValue::NULL, &result);
+                    let _ = resolve.call1(&JsValue::NULL, &result);
                 } else {
-                    let _ = reject_for_cb.call1(&JsValue::NULL, &err);
+                    let _ = reject.call1(&JsValue::NULL, &err);
                 }
             });
             let f = Reflect::get(&webapp, &"invokeCustomMethod".into())?;

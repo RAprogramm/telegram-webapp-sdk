@@ -89,6 +89,7 @@ impl TelegramWebApp {
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let _ = app.is_closing_confirmation_enabled();
     /// ```
+    #[must_use]
     pub fn is_closing_confirmation_enabled(&self) -> bool {
         Reflect::get(&self.inner, &"isClosingConfirmationEnabled".into())
             .ok()
@@ -136,6 +137,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_fullscreen();
     /// }
     /// ```
+    #[must_use]
     pub fn is_fullscreen(&self) -> bool {
         Reflect::get(&self.inner, &"isFullscreen".into())
             .ok()
@@ -183,6 +185,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_orientation_locked();
     /// }
     /// ```
+    #[must_use]
     pub fn is_orientation_locked(&self) -> bool {
         Reflect::get(&self.inner, &"isOrientationLocked".into())
             .ok()
@@ -230,6 +233,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_vertical_swipes_enabled();
     /// }
     /// ```
+    #[must_use]
     pub fn is_vertical_swipes_enabled(&self) -> bool {
         Reflect::get(&self.inner, &"isVerticalSwipesEnabled".into())
             .ok()
@@ -247,6 +251,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_active();
     /// }
     /// ```
+    #[must_use]
     pub fn is_active(&self) -> bool {
         Reflect::get(&self.inner, &"isActive".into())
             .ok()
@@ -265,6 +270,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_expanded();
     /// }
     /// ```
+    #[must_use]
     pub fn is_expanded(&self) -> bool {
         Reflect::get(&self.inner, &"isExpanded".into())
             .ok()

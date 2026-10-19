@@ -41,10 +41,7 @@ impl TelegramWebApp {
             logger::error(&format!("{name}.{method} is not a function"));
             JsValue::from_str("not a function")
         })?;
-        let result = match arg {
-            Some(v) => func.call1(&btn, v),
-            None => func.call0(&btn)
-        };
+        let result = arg.map_or_else(|| func.call0(&btn), |v| func.call1(&btn, v));
         result.inspect_err(|_| logger::error(&format!("{name}.{method} call failed")))?;
         Ok(())
     }
@@ -153,6 +150,11 @@ impl TelegramWebApp {
 
     /// Enable a bottom button, allowing user interaction.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
@@ -167,6 +169,11 @@ impl TelegramWebApp {
 
     /// Disable a bottom button, preventing user interaction.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::{BottomButton, TelegramWebApp};
@@ -180,6 +187,11 @@ impl TelegramWebApp {
     }
 
     /// Show the circular loading indicator on a bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -199,6 +211,11 @@ impl TelegramWebApp {
     }
 
     /// Hide the loading indicator on a bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -222,6 +239,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_bottom_button_visible(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn is_bottom_button_visible(&self, button: BottomButton) -> bool {
         self.bottom_button_property(button, "isVisible")
             .and_then(|v| v.as_bool())
@@ -238,6 +256,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_bottom_button_active(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn is_bottom_button_active(&self, button: BottomButton) -> bool {
         self.bottom_button_property(button, "isActive")
             .and_then(|v| v.as_bool())
@@ -254,6 +273,7 @@ impl TelegramWebApp {
     ///     let _ = app.is_bottom_button_progress_visible(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn is_bottom_button_progress_visible(&self, button: BottomButton) -> bool {
         self.bottom_button_property(button, "isProgressVisible")
             .and_then(|v| v.as_bool())
@@ -270,6 +290,7 @@ impl TelegramWebApp {
     ///     let _ = app.bottom_button_text(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn bottom_button_text(&self, button: BottomButton) -> Option<String> {
         self.bottom_button_property(button, "text")?.as_string()
     }
@@ -289,6 +310,7 @@ impl TelegramWebApp {
     ///     }
     /// }
     /// ```
+    #[must_use]
     pub fn bottom_button_icon_custom_emoji_id(&self, button: BottomButton) -> Option<String> {
         self.bottom_button_property(button, "iconCustomEmojiId")?
             .as_string()
@@ -304,6 +326,7 @@ impl TelegramWebApp {
     ///     let _ = app.bottom_button_text_color(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn bottom_button_text_color(&self, button: BottomButton) -> Option<String> {
         self.bottom_button_property(button, "textColor")?
             .as_string()
@@ -319,6 +342,7 @@ impl TelegramWebApp {
     ///     let _ = app.bottom_button_color(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn bottom_button_color(&self, button: BottomButton) -> Option<String> {
         self.bottom_button_property(button, "color")?.as_string()
     }
@@ -333,6 +357,7 @@ impl TelegramWebApp {
     ///     let _ = app.bottom_button_has_shine_effect(BottomButton::Main);
     /// }
     /// ```
+    #[must_use]
     pub fn bottom_button_has_shine_effect(&self, button: BottomButton) -> bool {
         self.bottom_button_property(button, "hasShineEffect")
             .and_then(|v| v.as_bool())
@@ -340,6 +365,11 @@ impl TelegramWebApp {
     }
 
     /// Update bottom button state via `setParams`.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `params` cannot be serialised into a JS
+    /// object, when the button object is missing from `Telegram.WebApp`, when
+    /// `setParams` is absent or is not a function, or when the JS call throws.
     ///
     /// # Examples
     /// ```no_run
@@ -363,6 +393,11 @@ impl TelegramWebApp {
     }
 
     /// Update secondary button state via `setParams`, including position.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `params` cannot be serialised into a JS
+    /// object, when the button object is missing from `Telegram.WebApp`, when
+    /// `setParams` is absent or is not a function, or when the JS call throws.
     ///
     /// # Examples
     /// ```no_run
@@ -396,9 +431,10 @@ impl TelegramWebApp {
     ///     let _ = app.secondary_button_position();
     /// }
     /// ```
+    #[must_use]
     pub fn secondary_button_position(&self) -> Option<SecondaryButtonPosition> {
         self.bottom_button_property(BottomButton::Secondary, "position")
-            .and_then(SecondaryButtonPosition::from_js_value)
+            .and_then(|position| SecondaryButtonPosition::from_js_value(&position))
     }
 
     /// Set callback for `onClick()` on a bottom button.
@@ -507,6 +543,7 @@ impl TelegramWebApp {
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let _ = app.is_back_button_visible();
     /// ```
+    #[must_use]
     pub fn is_back_button_visible(&self) -> bool {
         Reflect::get(&self.inner, &"BackButton".into())
             .ok()
@@ -570,6 +607,7 @@ impl TelegramWebApp {
     }
 
     /// Returns whether the native settings button is visible.
+    #[must_use]
     pub fn is_settings_button_visible(&self) -> bool {
         Reflect::get(&self.inner, &"SettingsButton".into())
             .ok()
@@ -582,30 +620,55 @@ impl TelegramWebApp {
 
     /// Legacy alias for [`Self::show_bottom_button`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn show_main_button(&self) -> Result<(), JsValue> {
         self.show_bottom_button(BottomButton::Main)
     }
 
     /// Legacy alias for [`Self::hide_bottom_button`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn hide_main_button(&self) -> Result<(), JsValue> {
         self.hide_bottom_button(BottomButton::Main)
     }
 
     /// Legacy alias for [`Self::set_bottom_button_text`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_main_button_text(&self, text: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text(BottomButton::Main, text)
     }
 
     /// Legacy alias for [`Self::set_bottom_button_color`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_main_button_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_color(BottomButton::Main, color)
     }
 
     /// Legacy alias for [`Self::set_bottom_button_text_color`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_main_button_text_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text_color(BottomButton::Main, color)
     }
@@ -614,6 +677,11 @@ impl TelegramWebApp {
     ///
     /// Legacy alias for [`Self::set_bottom_button_icon_custom_emoji_id`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -629,6 +697,11 @@ impl TelegramWebApp {
 
     /// Enable the main bottom button.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -642,6 +715,11 @@ impl TelegramWebApp {
     }
 
     /// Disable the main bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -657,6 +735,11 @@ impl TelegramWebApp {
 
     /// Show progress on the main bottom button.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -670,6 +753,11 @@ impl TelegramWebApp {
     }
 
     /// Hide progress indicator from the main bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -685,12 +773,22 @@ impl TelegramWebApp {
 
     /// Update the main button state via
     /// [`set_bottom_button_params`](Self::set_bottom_button_params).
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `params` cannot be serialised into a JS
+    /// object, when the button object is missing from `Telegram.WebApp`, when
+    /// `setParams` is absent or is not a function, or when the JS call throws.
     pub fn set_main_button_params(&self, params: &BottomButtonParams<'_>) -> Result<(), JsValue> {
         self.set_bottom_button_params(BottomButton::Main, params)
     }
 
     /// Legacy alias for [`Self::set_bottom_button_callback`] with
     /// [`BottomButton::Main`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when its `onClick` property is not a function, or
+    /// when the JavaScript call itself throws.
     pub fn set_main_button_callback<F>(
         &self,
         callback: F
@@ -704,6 +802,10 @@ impl TelegramWebApp {
     /// Remove callback for the main button.
     ///
     /// Legacy alias for [`Self::remove_bottom_button_callback`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the handle's `offClick` method is missing
+    /// or is not a function, or when the JavaScript call itself throws.
     pub fn remove_main_button_callback(
         &self,
         handle: EventHandle<dyn FnMut()>
@@ -714,26 +816,51 @@ impl TelegramWebApp {
     // === Secondary button convenience methods ===
 
     /// Show the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn show_secondary_button(&self) -> Result<(), JsValue> {
         self.show_bottom_button(BottomButton::Secondary)
     }
 
     /// Hide the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn hide_secondary_button(&self) -> Result<(), JsValue> {
         self.hide_bottom_button(BottomButton::Secondary)
     }
 
     /// Set text for the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_secondary_button_text(&self, text: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text(BottomButton::Secondary, text)
     }
 
     /// Set color for the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_secondary_button_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_color(BottomButton::Secondary, color)
     }
 
     /// Set text color for the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     pub fn set_secondary_button_text_color(&self, color: &str) -> Result<(), JsValue> {
         self.set_bottom_button_text_color(BottomButton::Secondary, color)
     }
@@ -742,6 +869,11 @@ impl TelegramWebApp {
     ///
     /// Convenience alias for [`Self::set_bottom_button_icon_custom_emoji_id`]
     /// with [`BottomButton::Secondary`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -757,6 +889,11 @@ impl TelegramWebApp {
 
     /// Enable the secondary bottom button.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -770,6 +907,11 @@ impl TelegramWebApp {
     }
 
     /// Disable the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -785,6 +927,11 @@ impl TelegramWebApp {
 
     /// Show progress on the secondary bottom button.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -799,6 +946,11 @@ impl TelegramWebApp {
 
     /// Hide progress indicator from the secondary bottom button.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when the underlying method is absent or is not a
+    /// function, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -812,6 +964,11 @@ impl TelegramWebApp {
     }
 
     /// Set callback for the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the button object is missing from
+    /// `Telegram.WebApp`, when its `onClick` property is not a function, or
+    /// when the JavaScript call itself throws.
     pub fn set_secondary_button_callback<F>(
         &self,
         callback: F
@@ -823,6 +980,10 @@ impl TelegramWebApp {
     }
 
     /// Remove callback for the secondary bottom button.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when the handle's `offClick` method is missing
+    /// or is not a function, or when the JavaScript call itself throws.
     pub fn remove_secondary_button_callback(
         &self,
         handle: EventHandle<dyn FnMut()>

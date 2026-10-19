@@ -5,10 +5,15 @@ use js_sys::{Function, Reflect};
 use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::window;
 
-/// Adds an event listener for Telegram.WebApp.onEvent(name, callback)
+/// Adds an event listener for `Telegram.WebApp.onEvent(name, callback)`
 ///
 /// # Safety
 /// You must keep the closure alive for as long as it's needed.
+///
+/// # Errors
+/// Returns an error when there is no browser `window`, when `Telegram.WebApp`
+/// is absent from it, when `onEvent` is missing or is not a callable function,
+/// or when the JavaScript call itself throws.
 pub fn on_event(event_name: &str, callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     let webapp = get_webapp_object()?;
     let func = Reflect::get(&webapp, &JsValue::from_str("onEvent"))?.dyn_into::<Function>()?;
@@ -19,6 +24,11 @@ pub fn on_event(event_name: &str, callback: &Closure<dyn Fn()>) -> Result<(), Js
 /// Removes a previously registered event listener.
 ///
 /// This is optional but recommended for cleanup.
+///
+/// # Errors
+/// Returns an error when there is no browser `window`, when `Telegram.WebApp`
+/// is absent from it, when `offEvent` is missing or is not a callable function,
+/// or when the JavaScript call itself throws.
 pub fn off_event(event_name: &str, callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     let webapp = get_webapp_object()?;
     let func = Reflect::get(&webapp, &JsValue::from_str("offEvent"))?.dyn_into::<Function>()?;

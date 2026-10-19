@@ -15,7 +15,8 @@ use crate::mock::data::MockTelegramUser;
 /// - `query_id`: optional inline query identifier to embed in the payload
 ///
 /// # Returns
-/// Properly URL-encoded initData string for Telegram WebApp emulation.
+/// Properly URL-encoded initData string for Telegram `WebApp` emulation.
+#[must_use]
 pub fn generate_mock_init_data(
     user: &MockTelegramUser,
     auth_date: &str,

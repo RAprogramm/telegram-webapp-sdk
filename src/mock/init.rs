@@ -11,10 +11,15 @@ use crate::{
     mock::config::MockTelegramConfig
 };
 
-/// Injects a customizable mock Telegram WebApp environment for local
+/// Injects a customizable mock Telegram `WebApp` environment for local
 /// development.
 ///
 /// Should be used only in `#[cfg(debug_assertions)]` environments.
+///
+/// # Errors
+/// Returns an error when there is no browser `window` to attach the mock to, or
+/// when one of the `Reflect::set` assignments on the global object is refused
+/// by the JavaScript engine.
 pub fn mock_telegram_webapp(config: MockTelegramConfig) -> Result<(), JsValue> {
     let win = window().ok_or_else(|| JsValue::from_str("window not available"))?;
 
@@ -38,6 +43,8 @@ pub fn mock_telegram_webapp(config: MockTelegramConfig) -> Result<(), JsValue> {
     )?;
     send_data_fn.forget();
 
+    let theme = theme_params_object(&config)?;
+
     // === Property mocks ===
     let user = config.user.unwrap_or_else(|| MockTelegramUser {
         id: 1,
@@ -50,98 +57,6 @@ pub fn mock_telegram_webapp(config: MockTelegramConfig) -> Result<(), JsValue> {
 
     let init_data = generate_mock_init_data(&user, &auth_date, &hash, config.query_id.as_deref());
     Reflect::set(&webapp, &"initData".into(), &JsValue::from_str(&init_data))?;
-
-    let theme = Object::new();
-    Reflect::set(
-        &theme,
-        &"bg_color".into(),
-        &JsValue::from_str(config.bg_color.as_deref().unwrap_or("#17212b"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"text_color".into(),
-        &JsValue::from_str(config.text_color.as_deref().unwrap_or("#ffffff"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"hint_color".into(),
-        &JsValue::from_str(config.hint_color.as_deref().unwrap_or("#888888"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"link_color".into(),
-        &JsValue::from_str(config.link_color.as_deref().unwrap_or("#2689bf"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"button_color".into(),
-        &JsValue::from_str(config.button_color.as_deref().unwrap_or("#0088cc"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"button_text_color".into(),
-        &JsValue::from_str(config.button_text_color.as_deref().unwrap_or("#ffffff"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"secondary_bg_color".into(),
-        &JsValue::from_str(config.secondary_bg_color.as_deref().unwrap_or("#f0f0f0"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"header_bg_color".into(),
-        &JsValue::from_str(config.header_bg_color.as_deref().unwrap_or("#1d1f21"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"bottom_bar_bg_color".into(),
-        &JsValue::from_str(config.bottom_bar_bg_color.as_deref().unwrap_or("#1f2226"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"accent_text_color".into(),
-        &JsValue::from_str(config.accent_text_color.as_deref().unwrap_or("#2eaee3"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"section_bg_color".into(),
-        &JsValue::from_str(config.section_bg_color.as_deref().unwrap_or("#222529"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"section_header_text_color".into(),
-        &JsValue::from_str(
-            config
-                .section_header_text_color
-                .as_deref()
-                .unwrap_or("#c8c9cb")
-        )
-    )?;
-    Reflect::set(
-        &theme,
-        &"section_separator_color".into(),
-        &JsValue::from_str(
-            config
-                .section_separator_color
-                .as_deref()
-                .unwrap_or("#2a2c30")
-        )
-    )?;
-    Reflect::set(
-        &theme,
-        &"subtitle_text_color".into(),
-        &JsValue::from_str(config.subtitle_text_color.as_deref().unwrap_or("#909398"))
-    )?;
-    Reflect::set(
-        &theme,
-        &"destructive_text_color".into(),
-        &JsValue::from_str(
-            config
-                .destructive_text_color
-                .as_deref()
-                .unwrap_or("#e33e3e")
-        )
-    )?;
     Reflect::set(&webapp, &"themeParams".into(), &theme)?;
 
     Reflect::set(
@@ -162,4 +77,80 @@ pub fn mock_telegram_webapp(config: MockTelegramConfig) -> Result<(), JsValue> {
     success("Mock Telegram.WebApp environment injected");
 
     Ok(())
+}
+
+/// Builds the `themeParams` object from the mock configuration.
+///
+/// Every colour falls back to the default Telegram dark palette when the
+/// corresponding field of `config` is `None`.
+///
+/// # Errors
+/// Returns an error when one of the `Reflect::set` assignments on the freshly
+/// created plain object is refused by the JavaScript engine.
+fn theme_params_object(config: &MockTelegramConfig) -> Result<Object, JsValue> {
+    let theme = Object::new();
+    let colors: [(&str, Option<&str>, &str); 15] = [
+        ("bg_color", config.bg_color.as_deref(), "#17212b"),
+        ("text_color", config.text_color.as_deref(), "#ffffff"),
+        ("hint_color", config.hint_color.as_deref(), "#888888"),
+        ("link_color", config.link_color.as_deref(), "#2689bf"),
+        ("button_color", config.button_color.as_deref(), "#0088cc"),
+        (
+            "button_text_color",
+            config.button_text_color.as_deref(),
+            "#ffffff"
+        ),
+        (
+            "secondary_bg_color",
+            config.secondary_bg_color.as_deref(),
+            "#f0f0f0"
+        ),
+        (
+            "header_bg_color",
+            config.header_bg_color.as_deref(),
+            "#1d1f21"
+        ),
+        (
+            "bottom_bar_bg_color",
+            config.bottom_bar_bg_color.as_deref(),
+            "#1f2226"
+        ),
+        (
+            "accent_text_color",
+            config.accent_text_color.as_deref(),
+            "#2eaee3"
+        ),
+        (
+            "section_bg_color",
+            config.section_bg_color.as_deref(),
+            "#222529"
+        ),
+        (
+            "section_header_text_color",
+            config.section_header_text_color.as_deref(),
+            "#c8c9cb"
+        ),
+        (
+            "section_separator_color",
+            config.section_separator_color.as_deref(),
+            "#2a2c30"
+        ),
+        (
+            "subtitle_text_color",
+            config.subtitle_text_color.as_deref(),
+            "#909398"
+        ),
+        (
+            "destructive_text_color",
+            config.destructive_text_color.as_deref(),
+            "#e33e3e"
+        )
+    ];
+
+    for (key, value, fallback) in colors {
+        let value = value.unwrap_or(fallback);
+        Reflect::set(&theme, &key.into(), &JsValue::from_str(value))?;
+    }
+
+    Ok(theme)
 }

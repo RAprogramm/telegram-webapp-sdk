@@ -121,7 +121,7 @@ mod tests {
             text:       AttrValue::from("Press"),
             color:      Some(AttrValue::from("#000000")),
             text_color: Some(AttrValue::from("#ffffff")),
-            on_click:   Callback::from(move |_| clicked_clone.set(true))
+            on_click:   Callback::from(move |()| clicked_clone.set(true))
         };
         let document = window().unwrap().document().unwrap();
         yew::Renderer::<BottomButton>::with_root_and_props(document.body().unwrap().into(), props)

@@ -37,7 +37,7 @@ pub struct EventHandle<T: ?Sized> {
 }
 
 impl<T: ?Sized> EventHandle<T> {
-    pub(super) fn new(
+    pub(super) const fn new(
         target: Object,
         method: &'static str,
         event: Option<String>,
@@ -86,20 +86,14 @@ impl<T: ?Sized> Drop for EventHandle<T> {
             return;
         }
 
-        let f = match Reflect::get(&self.target, &self.method.into()) {
-            Ok(f) => f,
-            Err(_) => {
-                logger::error("Failed to get unregister method");
-                return;
-            }
+        let Ok(f) = Reflect::get(&self.target, &self.method.into()) else {
+            logger::error("Failed to get unregister method");
+            return;
         };
 
-        let func = match f.dyn_ref::<Function>() {
-            Some(func) => func,
-            None => {
-                logger::error(&format!("{} is not a function", self.method));
-                return;
-            }
+        let Some(func) = f.dyn_ref::<Function>() else {
+            logger::error(&format!("{} is not a function", self.method));
+            return;
         };
 
         let result = match &self.event {
@@ -131,8 +125,8 @@ pub enum BottomButton {
 impl BottomButton {
     pub(super) const fn js_name(self) -> &'static str {
         match self {
-            BottomButton::Main => "MainButton",
-            BottomButton::Secondary => "SecondaryButton"
+            Self::Main => "MainButton",
+            Self::Secondary => "SecondaryButton"
         }
     }
 }
@@ -164,7 +158,7 @@ pub enum SecondaryButtonPosition {
 }
 
 impl SecondaryButtonPosition {
-    pub(super) fn from_js_value(value: JsValue) -> Option<Self> {
+    pub(super) fn from_js_value(value: &JsValue) -> Option<Self> {
         let as_str = value.as_string()?;
         match as_str.as_str() {
             "top" => Some(Self::Top),
@@ -383,17 +377,17 @@ pub enum BackgroundEvent {
 impl BackgroundEvent {
     pub(super) const fn as_str(self) -> &'static str {
         match self {
-            BackgroundEvent::MainButtonClicked => "mainButtonClicked",
-            BackgroundEvent::BackButtonClicked => "backButtonClicked",
-            BackgroundEvent::SettingsButtonClicked => "settingsButtonClicked",
-            BackgroundEvent::WriteAccessRequested => "writeAccessRequested",
-            BackgroundEvent::ContactRequested => "contactRequested",
-            BackgroundEvent::InvoiceClosed => "invoiceClosed",
-            BackgroundEvent::PopupClosed => "popupClosed",
-            BackgroundEvent::QrTextReceived => "qrTextReceived",
-            BackgroundEvent::ClipboardTextReceived => "clipboardTextReceived",
-            BackgroundEvent::RequestedChatSent => "requestedChatSent",
-            BackgroundEvent::RequestedChatFailed => "requestedChatFailed"
+            Self::MainButtonClicked => "mainButtonClicked",
+            Self::BackButtonClicked => "backButtonClicked",
+            Self::SettingsButtonClicked => "settingsButtonClicked",
+            Self::WriteAccessRequested => "writeAccessRequested",
+            Self::ContactRequested => "contactRequested",
+            Self::InvoiceClosed => "invoiceClosed",
+            Self::PopupClosed => "popupClosed",
+            Self::QrTextReceived => "qrTextReceived",
+            Self::ClipboardTextReceived => "clipboardTextReceived",
+            Self::RequestedChatSent => "requestedChatSent",
+            Self::RequestedChatFailed => "requestedChatFailed"
         }
     }
 }

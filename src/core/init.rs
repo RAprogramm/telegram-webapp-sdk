@@ -16,7 +16,7 @@ use crate::core::{
 };
 
 /// Typed initialization errors for better error handling and debugging.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InitError {
     /// Browser `window` object is not available
     WindowUnavailable,
@@ -51,11 +51,11 @@ impl std::error::Error for InitError {}
 
 impl From<InitError> for JsValue {
     fn from(err: InitError) -> Self {
-        JsValue::from_str(&err.to_string())
+        Self::from_str(&err.to_string())
     }
 }
 
-/// Check if Telegram WebApp environment is available.
+/// Check if Telegram `WebApp` environment is available.
 ///
 /// Returns `true` if `window.Telegram.WebApp` exists and is defined.
 ///
@@ -69,13 +69,13 @@ impl From<InitError> for JsValue {
 ///     println!("Running in regular browser");
 /// }
 /// ```
+#[must_use]
 pub fn is_telegram_available() -> bool {
     window()
         .and_then(|w| Reflect::get(&w, &"Telegram".into()).ok())
         .filter(|tg| !tg.is_undefined())
         .and_then(|tg| Reflect::get(&tg, &"WebApp".into()).ok())
-        .filter(|webapp| !webapp.is_undefined())
-        .is_some()
+        .is_some_and(|webapp| !webapp.is_undefined())
 }
 
 /// Attempt to initialize SDK without panicking if Telegram environment is
@@ -105,10 +105,10 @@ pub fn try_init_sdk() -> Result<bool, InitError> {
     if !is_telegram_available() {
         return Ok(false);
     }
-    init_sdk_typed().map(|_| true)
+    init_sdk_typed().map(|()| true)
 }
 
-/// Internal typed version of init_sdk for use by try_init_sdk.
+/// Internal typed version of `init_sdk` for use by `try_init_sdk`.
 fn init_sdk_typed() -> Result<(), InitError> {
     let win = window().ok_or(InitError::WindowUnavailable)?;
     let telegram =
@@ -184,7 +184,7 @@ fn init_sdk_typed() -> Result<(), InitError> {
     Ok(())
 }
 
-/// Initializes Telegram WebApp SDK by extracting and validating context.
+/// Initializes Telegram `WebApp` SDK by extracting and validating context.
 ///
 /// - Parses `initData` (urlencoded) with embedded JSON.
 /// - Parses `themeParams` (object).
