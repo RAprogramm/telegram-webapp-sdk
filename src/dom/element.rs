@@ -336,8 +336,8 @@ mod tests {
         let child = make("span");
         parent.append(&child).expect("ok");
         assert!(parent.first_element_child().is_some());
-        // UFCS because `web_sys::Element::remove` also exists and shadows the trait
-        // method.
+        // UFCS because `web_sys::Element::remove` also exists and shadows the
+        // trait method.
         ElementExt::remove(&child).expect("detach");
         assert!(parent.first_element_child().is_none());
 

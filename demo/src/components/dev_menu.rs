@@ -25,7 +25,8 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     }),
     // Touches main bottom button
     ("main-button", |tg| {
-        // These setters are infallible in the SDK; wrap in Ok to fit the Handler type.
+        // These setters are infallible in the SDK; wrap in Ok to fit the
+        // Handler type.
         let _ = tg.set_bottom_button_text(BottomButton::Main, "Clicked!");
         let _ = tg.show_bottom_button(BottomButton::Main);
         Ok(())
@@ -59,7 +60,8 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
 ];
 
 pub fn setup_dev_menu() {
-    // Try to get document; silently return if not available (e.g., not in browser)
+    // Try to get document; silently return if not available (e.g., not in
+    // browser)
     let doc = match window().and_then(|w| w.document()) {
         Some(doc) => doc,
         None => return
@@ -73,9 +75,11 @@ pub fn setup_dev_menu() {
             // No need to clone function pointers; they're Copy.
             let handler = *handler;
 
-            // Create JS callback that invokes our handler, logging errors to console
+            // Create JS callback that invokes our handler, logging errors to
+            // console
             let cb = Closure::<dyn FnMut()>::new(move || {
-                // Collapse nested ifs via let-chains to satisfy clippy::collapsible-if
+                // Collapse nested ifs via let-chains to satisfy
+                // clippy::collapsible-if
                 if let Some(tg) = TelegramWebApp::instance()
                     && let Err(err) = handler(&tg)
                 {
