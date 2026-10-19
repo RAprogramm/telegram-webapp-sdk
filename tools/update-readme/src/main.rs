@@ -188,22 +188,22 @@ fn workspace_root(start: &Path) -> Option<PathBuf> {
     None
 }
 
-/// Picks the WebApp API version to advertise: the probed value when it differs
-/// from the declared one, otherwise the declared value. A failed probe (e.g. no
-/// network) is non-fatal and falls back to the declared version.
+/// Picks the `WebApp` API version to advertise: the probed value when it
+/// differs from the declared one, otherwise the declared value. A failed probe
+/// (e.g. no network) is non-fatal and falls back to the declared version.
 fn resolve_latest_version<E: std::fmt::Display>(
     declared: &str,
     probed: Result<String, E>
 ) -> String {
     match probed {
         Ok(latest) => {
-            if latest != declared {
+            if latest == declared {
+                declared.to_owned()
+            } else {
                 eprintln!(
                     "WEBAPP_API.md declares latest version {declared} but source reports {latest}. Using source version."
                 );
                 latest
-            } else {
-                declared.to_owned()
             }
         }
         Err(error) => {
@@ -215,7 +215,7 @@ fn resolve_latest_version<E: std::fmt::Display>(
     }
 }
 
-/// Applies every managed section (MSRV badge, WebApp API badges, coverage
+/// Applies every managed section (MSRV badge, `WebApp` API badges, coverage
 /// summary) and rewrites the crate version in dependency examples, returning
 /// the updated README contents.
 fn assemble_readme(
@@ -294,9 +294,9 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
     let commit_short: String = status.coverage_commit.chars().take(7).collect();
     let is_up_to_date = status.covered_version == status.latest_version;
     let status_text = if is_up_to_date {
-        format!("up to date ({})", commit_short)
+        format!("up to date ({commit_short})")
     } else {
-        format!("update needed ({})", commit_short)
+        format!("update needed ({commit_short})")
     };
     let coverage_message = encode_badge_component(&status_text);
     let coverage_colour = if is_up_to_date {
