@@ -9,14 +9,17 @@
 mod version_probe;
 
 use std::{
-    env, fs,
+    env, fmt, fs,
     path::{Path, PathBuf}
 };
 
 use masterror::Error;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use regex::Regex;
-use serde::Deserialize;
+use serde::{
+    Deserialize, Deserializer,
+    de::{self, Error as _, MapAccess, Visitor}
+};
 use version_probe::discover_latest_version;
 
 const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
@@ -59,6 +62,10 @@ enum ReadmeUpdateError {
     RustVersionMissing,
     #[error("version field missing in Cargo.toml")]
     PackageVersionMissing,
+    #[error("{field} inherits from workspace, but [workspace.package] is missing")]
+    InheritanceSourceMissing { field: String },
+    #[error("{field} inherits from workspace, but [workspace.package].{field} is missing")]
+    InheritanceValueMissing { field: String },
     #[error("failed to write README.md: {0}")]
     WriteReadme(std::io::Error)
 }
@@ -95,17 +102,100 @@ struct WebAppApiStatus {
     latest_version_probe_url: String
 }
 
+/// A `[package]` field that may hold a literal value or inherit it from the
+/// workspace through `field.workspace = true`.
+///
+/// Cargo lets inheritable manifest keys (`version`, `rust-version`, ...) be
+/// written either as a plain string or as a `{ workspace = true }` table. This
+/// type deserializes both shapes so inherited values can be resolved from
+/// `[workspace.package]`.
+///
+/// ```text
+/// rust-version = "1.99"          // Inheritable::Value("1.99")
+/// rust-version.workspace = true  // Inheritable::Workspace
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Inheritable {
+    /// A literal value written directly in `[package]`.
+    Value(String),
+    /// A `{ workspace = true }` marker delegating to `[workspace.package]`.
+    Workspace
+}
+
+impl<'de> Deserialize<'de> for Inheritable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>
+    {
+        deserializer.deserialize_any(InheritableVisitor)
+    }
+}
+
+/// Accepts either a string (a literal value) or a `{ workspace = true }` table
+/// (inheritance), rejecting any other shape.
+struct InheritableVisitor;
+
+impl<'de> Visitor<'de> for InheritableVisitor {
+    type Value = Inheritable;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a version string or a table with `workspace = true`")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error
+    {
+        Ok(Inheritable::Value(value.to_owned()))
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>
+    {
+        let mut inherited = None;
+        while let Some(key) = map.next_key::<String>()? {
+            if key == "workspace" {
+                inherited = Some(map.next_value::<bool>()?);
+            } else {
+                let _ = map.next_value::<de::IgnoredAny>()?;
+            }
+        }
+        match inherited {
+            Some(true) => Ok(Inheritable::Workspace),
+            Some(false) => Err(A::Error::custom(
+                "inheritable field sets `workspace = false`, expected `true`"
+            )),
+            None => Err(A::Error::missing_field("workspace"))
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct CargoPackage {
-    version:      Option<String>,
+    version:      Option<Inheritable>,
     repository:   Option<String>,
+    #[serde(rename = "rust-version")]
+    rust_version: Option<Inheritable>
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoWorkspacePackage {
+    version:      Option<String>,
     #[serde(rename = "rust-version")]
     rust_version: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
+struct CargoWorkspace {
+    #[serde(rename = "package")]
+    package: Option<CargoWorkspacePackage>
+}
+
+#[derive(Debug, Deserialize)]
 struct CargoToml {
-    package: CargoPackage
+    package:   CargoPackage,
+    workspace: Option<CargoWorkspace>
 }
 
 fn main() -> Result<(), ReadmeUpdateError> {
@@ -147,14 +237,24 @@ fn run() -> Result<(), ReadmeUpdateError> {
         .package
         .repository
         .ok_or(ReadmeUpdateError::RepositoryMissing)?;
-    let rust_version = cargo
-        .package
-        .rust_version
-        .ok_or(ReadmeUpdateError::RustVersionMissing)?;
-    let package_version = cargo
-        .package
-        .version
-        .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
+    let workspace_package = cargo
+        .workspace
+        .as_ref()
+        .and_then(|workspace| workspace.package.as_ref());
+    let rust_version = resolve_inheritable(
+        "rust-version",
+        cargo.package.rust_version,
+        workspace_package,
+        |package| package.rust_version.clone()
+    )?
+    .ok_or(ReadmeUpdateError::RustVersionMissing)?;
+    let package_version = resolve_inheritable(
+        "version",
+        cargo.package.version,
+        workspace_package,
+        |package| package.version.clone()
+    )?
+    .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
 
     let updated = assemble_readme(
         &readme_content,
@@ -285,6 +385,38 @@ fn parse_status(content: &str) -> Result<WebAppApiStatus, ReadmeUpdateError> {
 
 fn parse_cargo_toml(cargo_toml: &str) -> Result<CargoToml, ReadmeUpdateError> {
     toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)
+}
+
+/// Resolves an inheritable `[package]` field to its concrete string value.
+///
+/// A literal value is returned unchanged. A `workspace = true` marker is looked
+/// up in `[workspace.package]` through `select`; a missing workspace section or
+/// a missing key there yields a descriptive error rather than a panic. A field
+/// absent from `[package]` resolves to `None`, preserving the previous optional
+/// behaviour.
+///
+/// `field` is the manifest key name, used only to build error messages.
+fn resolve_inheritable(
+    field: &str,
+    value: Option<Inheritable>,
+    workspace: Option<&CargoWorkspacePackage>,
+    select: impl FnOnce(&CargoWorkspacePackage) -> Option<String>
+) -> Result<Option<String>, ReadmeUpdateError> {
+    match value {
+        None => Ok(None),
+        Some(Inheritable::Value(text)) => Ok(Some(text)),
+        Some(Inheritable::Workspace) => {
+            let package =
+                workspace.ok_or_else(|| ReadmeUpdateError::InheritanceSourceMissing {
+                    field: field.to_owned()
+                })?;
+            select(package)
+                .map(Some)
+                .ok_or_else(|| ReadmeUpdateError::InheritanceValueMissing {
+                    field: field.to_owned()
+                })
+        }
+    }
 }
 
 fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
@@ -501,7 +633,10 @@ rust-version = "1.91"
 repository = "https://github.com/test/test"
 "#;
         let cargo = parse_cargo_toml(toml).expect("parse");
-        assert_eq!(cargo.package.rust_version.as_deref(), Some("1.91"));
+        assert_eq!(
+            cargo.package.rust_version.as_ref(),
+            Some(&Inheritable::Value("1.91".to_owned()))
+        );
         assert_eq!(
             cargo.package.repository.as_deref(),
             Some("https://github.com/test/test")
@@ -518,6 +653,113 @@ version = "1.0.0"
         let cargo = parse_cargo_toml(toml).expect("parse");
         assert!(cargo.package.rust_version.is_none());
         assert!(cargo.package.repository.is_none());
+    }
+
+    fn resolve_rust_version(cargo_toml: &str) -> Result<Option<String>, ReadmeUpdateError> {
+        let cargo = parse_cargo_toml(cargo_toml)?;
+        let workspace = cargo
+            .workspace
+            .as_ref()
+            .and_then(|workspace| workspace.package.as_ref());
+        resolve_inheritable(
+            "rust-version",
+            cargo.package.rust_version,
+            workspace,
+            |package| package.rust_version.clone()
+        )
+    }
+
+    #[test]
+    fn resolve_rust_version_keeps_plain_string() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version = "1.91"
+repository = "https://github.com/test/test"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert_eq!(resolved.as_deref(), Some("1.91"));
+    }
+
+    #[test]
+    fn resolve_rust_version_reads_workspace_package() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+
+[workspace.package]
+rust-version = "1.99"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert_eq!(resolved.as_deref(), Some("1.99"));
+    }
+
+    #[test]
+    fn resolve_rust_version_missing_workspace_section_errors() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+"#;
+        let error = resolve_rust_version(toml).expect_err("missing workspace section");
+        assert!(matches!(
+            error,
+            ReadmeUpdateError::InheritanceSourceMissing { .. }
+        ));
+    }
+
+    #[test]
+    fn resolve_rust_version_missing_workspace_key_errors() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+
+[workspace.package]
+version = "1.0.0"
+"#;
+        let error = resolve_rust_version(toml).expect_err("missing workspace key");
+        assert!(matches!(
+            error,
+            ReadmeUpdateError::InheritanceValueMissing { .. }
+        ));
+    }
+
+    #[test]
+    fn resolve_rust_version_absent_field_is_none() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+repository = "https://github.com/test/test"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert!(resolved.is_none());
+    }
+
+    #[test]
+    fn resolve_inheritable_rejects_workspace_false() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = false
+repository = "https://github.com/test/test"
+"#;
+        let error = parse_cargo_toml(toml).expect_err("workspace = false is invalid");
+        let message = error.to_string();
+        assert!(
+            message.contains("invalid type") || message.contains("workspace"),
+            "unexpected error: {message}"
+        );
     }
 
     #[test]
