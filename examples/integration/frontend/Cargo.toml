@@ -2,6 +2,9 @@
 name = "webapp-integration-frontend"
 version = "0.1.0"
 edition = "2024"
+# This crate is excluded from the workspace, so it cannot inherit rust-version.
+# Kept in sync with [workspace.package] rust-version by `cargo make check-msrv`.
+rust-version = "1.99"
 publish = false
 
 [lib]

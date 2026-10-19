@@ -54,6 +54,14 @@ jobs:
       - name: Check formatting
         run: cargo +nightly-2025-08-01 fmt --all -- --check
 
+      - name: Install cargo-make
+        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        with:
+          tool: cargo-make
+
+      - name: Check MSRV consistency
+        run: cargo make check-msrv
+
       - name: REUSE Compliance
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6
 
