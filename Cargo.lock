@@ -5325,7 +5325,7 @@ dependencies = [
 
 [[package]]
 name = "telegram-webapp-sdk"
-version = "0.11.3"
+version = "0.11.4"
 dependencies = [
  "codspeed-divan-compat",
  "inventory",
