@@ -96,3 +96,9 @@ exclude = ["examples/integration/frontend"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 wasm-bindgen-futures = "0.4"
+divan = { version = "6.0.0", package = "codspeed-divan-compat" }
+
+[[bench]]
+name = "sdk"
+harness = false
+required-features = ["mock"]
