@@ -25,6 +25,7 @@ use masterror::Error;
 
 mod check_all;
 mod conformance;
+mod docs_check;
 mod site;
 
 /// Errors surfaced by the development tasks.
@@ -83,7 +84,11 @@ pub enum TaskError {
         url:   String,
         #[source]
         error: reqwest::Error
-    }
+    },
+    #[error("docs reference API paths that do not exist: {missing}")]
+    DocsApiDrift { missing: String },
+    #[error("wiki/_Sidebar.md is inconsistent: {detail}")]
+    DocsSidebar { detail: String }
 }
 
 fn main() -> Result<(), TaskError> {
@@ -95,6 +100,7 @@ fn main() -> Result<(), TaskError> {
     match command.as_str() {
         "check-all" => check_all::run(),
         "conformance" => conformance::run(parse_conformance_js(args)?.as_deref()),
+        "docs-check" => docs_check::run(),
         "site" => site::run(parse_site_out(args)?.as_deref()),
         "help" | "--help" | "-h" => {
             print_usage();
@@ -157,6 +163,11 @@ fn parse_conformance_js<I: Iterator<Item = OsString>>(
 /// Returns the workspace root directory (the parent of the xtask package).
 ///
 /// Relies on `CARGO_MANIFEST_DIR`, which cargo sets for the running binary.
+///
+/// # Errors
+/// Returns [`TaskError::ManifestDir`] when `CARGO_MANIFEST_DIR` is not set,
+/// or [`TaskError::WorkspaceRootMissing`] when the manifest directory has no
+/// parent.
 pub fn repo_root() -> Result<PathBuf, TaskError> {
     let manifest = env::var("CARGO_MANIFEST_DIR").map_err(TaskError::ManifestDir)?;
     Path::new(&manifest)
@@ -166,6 +177,7 @@ pub fn repo_root() -> Result<PathBuf, TaskError> {
 }
 
 /// Wraps an I/O failure with the action and path that produced it.
+#[must_use]
 pub fn io_error(action: &str, path: &Path, error: std::io::Error) -> TaskError {
     TaskError::Io {
         action: action.to_string(),
@@ -179,9 +191,11 @@ fn print_usage() {
         "xtask — development tasks for telegram-webapp-sdk
 
 Commands:
-  check-all             run fmt, clippy, tests, doctests, wasm check, README sync
+  check-all             run the full local mirror of the CI verification suite
   conformance [--js F]  verify every WEBAPP_API.md entry exists in the official
                         telegram-web-app.js bridge (F: local bridge copy)
+  docs-check            verify API paths referenced in README/wiki/skills exist
+                        in the crate and the wiki sidebar is symmetric
   site [--out DIR]      build the multilingual docs site from wiki/ with mdBook
                         (default output: <workspace>/target/site)
   help                  show this message

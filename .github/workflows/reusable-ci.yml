@@ -265,6 +265,9 @@ jobs:
       - name: WebApp API conformance
         run: cargo +${{ needs.setup.outputs.msrv }} run -p xtask -- conformance
 
+      - name: Docs API check
+        run: cargo +${{ needs.setup.outputs.msrv }} run -p xtask -- docs-check
+
       - name: Package (dry-run)
         run: cargo +${{ needs.setup.outputs.msrv }} package --locked
 

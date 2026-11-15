@@ -32,7 +32,8 @@ tests/              integration tests (native + wasm_bindgen_test)
 benches/            Divan benchmarks (codspeed)
 demo/ examples/     example apps (workspace members)
 tools/update-readme README generator/validator (see below)
-xtask/              maintenance tasks in Rust: check-all, site (see below)
+xtask/              maintenance tasks in Rust: check-all, conformance,
+                    docs-check, site (see below)
 site/               docs-site landing page (the builder lives in xtask)
 wiki/               docs-site source pages (synced to the GitHub Wiki)
 WEBAPP_API.md       WebApp API coverage checklist + status metadata
@@ -70,6 +71,8 @@ cargo build --release --all-features
 cargo bench                                         # Divan benchmarks
 cargo run -p update-readme                          # regenerate README sections
 cargo run -p xtask -- site --out /tmp/site          # build docs site (needs mdbook)
+cargo run -p xtask -- conformance                   # WEBAPP_API.md vs the official bridge
+cargo run -p xtask -- docs-check                    # API names in docs vs the real public API
 ```
 
 Wasm tests run in a real browser and are a blocking CI gate:
@@ -114,7 +117,8 @@ the tool and commit the result after touching either source.
 ### Before committing
 
 1. `cargo run -p xtask -- check-all` must pass (fmt, clippy `-D warnings`,
-   nextest, doctests, wasm check, README sync).
+   nextest, doctests, wasm check, conformance, MSRV sync, docs-check, README
+   sync).
 2. If you touched test code or anything browser-facing, also run the wasm
    suite locally.
 3. Never commit red.
