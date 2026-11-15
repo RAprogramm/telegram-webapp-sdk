@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.3](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.2...v0.11.3) - 2026-07-19
+
+### CI/CD
+
+- *(ci)* bump taiki-e/install-action from 2.82.10 to 2.83.2 ([#263](https://github.com/RAprogramm/telegram-webapp-sdk/issues/263))
+
+### Dependencies
+
+- deps(cargo)(deps): bump regex ([#262](https://github.com/RAprogramm/telegram-webapp-sdk/issues/262))
+
 ## [0.11.2](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.1...v0.11.2) - 2026-07-08
 
 ### Documentation

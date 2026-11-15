@@ -25,10 +25,10 @@ jobs:
     name: Build site from wiki
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install mdBook
-        uses: taiki-e/install-action@50414676f9f5d50a65992c6dd2ed02641263226c # v2
+        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2
         with:
           tool: mdbook@0.5.3
 

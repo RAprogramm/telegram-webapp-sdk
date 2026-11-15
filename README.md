@@ -17,6 +17,7 @@
 [![codecov](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graph/badge.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
 [![Hits-of-Code](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk?branch=main)](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk/view?branch=main)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/RAprogramm/telegram-webapp-sdk?utm_source=badge)
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
 [![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.6-blue)](https://core.telegram.org/bots/webapps)
