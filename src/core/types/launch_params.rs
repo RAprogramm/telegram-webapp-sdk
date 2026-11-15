@@ -11,7 +11,7 @@ pub struct LaunchParams {
     /// Host platform the Mini App is running on, from `tgWebAppPlatform`
     /// (e.g. `"android"`, `"ios"`, `"tdesktop"`, `"web"`).
     pub tg_web_app_platform:      Option<String>,
-    /// Version of the Telegram WebApp API supported by the host, from
+    /// Version of the Telegram `WebApp` API supported by the host, from
     /// `tgWebAppVersion`.
     pub tg_web_app_version:       Option<String>,
     /// Deep-link start parameter passed to the Mini App, from

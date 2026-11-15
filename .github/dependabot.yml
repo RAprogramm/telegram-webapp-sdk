@@ -13,7 +13,7 @@ updates:
       time: "09:00"
       timezone: "Asia/Ho_Chi_Minh"
     open-pull-requests-limit: 10
-    versioning-strategy: "auto"      # для Cargo допустимо только: auto | lockfile-only
+    versioning-strategy: "auto"      # for Cargo only: auto | lockfile-only are allowed
     cooldown:
       default-days: 1
       semver-minor-days: 2
@@ -28,6 +28,10 @@ updates:
         applies-to: "version-updates"
         update-types: ["minor", "patch"]
         patterns: ["*"]
+      cargo-major:
+        applies-to: "version-updates"
+        update-types: ["major"]
+        patterns: ["*"]
 
   # 2) GitHub Actions
   - package-ecosystem: "github-actions"
@@ -38,5 +42,21 @@ updates:
       time: "09:10"
       timezone: "Asia/Ho_Chi_Minh"
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 1
+      semver-minor-days: 2
+      semver-patch-days: 2
     commit-message:
       prefix: "deps(ci)"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "-"
+    groups:
+      ci-minor-patch:
+        applies-to: "version-updates"
+        update-types: ["minor", "patch"]
+        patterns: ["*"]
+      ci-major:
+        applies-to: "version-updates"
+        update-types: ["major"]
+        patterns: ["*"]

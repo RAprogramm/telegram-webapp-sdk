@@ -17,11 +17,13 @@ pub struct Router {
 
 impl Router {
     /// Creates a new router instance
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Registers a path and its render function
+    #[must_use]
     pub fn register(mut self, path: &str, render: RenderFn) -> Self {
         self.routes.insert(path.to_string(), render);
         self
@@ -68,7 +70,7 @@ impl Router {
             if let Some(page) = self.routes.get(&path) {
                 page();
             } else {
-                log(&format!("⚠️ Route not found: {}", path));
+                log(&format!("⚠️ Route not found: {path}"));
             }
         }
     }

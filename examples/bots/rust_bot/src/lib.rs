@@ -3,8 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Order data structure received from the Burger King demo WebApp
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+/// Order data structure received from the Burger King demo `WebApp`
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct OrderData {
     /// Unique order identifier
     pub id:          u32,
@@ -59,7 +59,7 @@ mod tests {
             price_cents: 1234
         };
 
-        let price_dollars = order.price_cents as f64 / 100.0;
+        let price_dollars = f64::from(order.price_cents) / 100.0;
 
         assert_eq!(price_dollars, 12.34);
     }

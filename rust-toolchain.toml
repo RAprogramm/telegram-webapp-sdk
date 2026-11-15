@@ -1,0 +1,9 @@
+# Pins the development toolchain to the MSRV so local clippy/rustc match CI
+# exactly; clippy gains lints between releases and an unpinned channel lets the
+# ruleset drift. CI installs its toolchains explicitly and is unaffected.
+# The formatting gate intentionally uses a pinned nightly: `cargo +nightly fmt`.
+[toolchain]
+channel = "1.100.0"
+components = ["clippy", "rustfmt"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

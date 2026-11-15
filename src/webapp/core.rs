@@ -1,38 +1,16 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-use js_sys::{Function, Object, Promise, Reflect};
+use js_sys::{Function, Object, Reflect};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
-use wasm_bindgen_futures::JsFuture;
 use web_sys::window;
 
+pub(super) use crate::utils::promise::{await_one_shot, one_shot_promise};
 use crate::{core::context::TelegramContext, webapp::TelegramWebApp};
-
-/// Build a `Promise` whose executor invokes `f` synchronously with the
-/// `resolve` and `reject` callables. If `f` returns `Err`, the promise is
-/// rejected with that value immediately. Used to wrap one-shot Telegram
-/// callbacks into async-friendly futures.
-pub(super) fn one_shot_promise<F>(f: F) -> Promise
-where
-    F: FnOnce(Function, Function) -> Result<(), JsValue>
-{
-    let mut executor = Some(f);
-    Promise::new(&mut |resolve, reject| {
-        let Some(invoke) = executor.take() else {
-            return;
-        };
-        if let Err(err) = invoke(resolve, reject.clone()) {
-            let _ = reject.call1(&JsValue::NULL, &err);
-        }
-    })
-}
-
-pub(super) async fn await_one_shot(promise: Promise) -> Result<JsValue, JsValue> {
-    JsFuture::from(promise).await
-}
 
 impl TelegramWebApp {
     /// Get instance of `Telegram.WebApp` or `None` if not present
+    #[must_use]
     pub fn instance() -> Option<Self> {
         let win = window()?;
         let tg = Reflect::get(&win, &"Telegram".into()).ok()?;
@@ -92,7 +70,12 @@ impl TelegramWebApp {
         self.call1("sendData", &data.into())
     }
 
-    /// Returns whether the WebApp version is at least the provided value.
+    /// Returns whether the `WebApp` version is at least the provided value.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `isVersionAtLeast`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -185,13 +168,11 @@ impl TelegramWebApp {
         let method = method.to_owned();
         let params = params.clone();
         let promise = one_shot_promise(move |resolve, reject| {
-            let resolve_for_cb = resolve.clone();
-            let reject_for_cb = reject.clone();
             let cb = Closure::once_into_js(move |err: JsValue, result: JsValue| {
                 if err.is_null() || err.is_undefined() {
-                    let _ = resolve_for_cb.call1(&JsValue::NULL, &result);
+                    let _ = resolve.call1(&JsValue::NULL, &result);
                 } else {
-                    let _ = reject_for_cb.call1(&JsValue::NULL, &err);
+                    let _ = reject.call1(&JsValue::NULL, &err);
                 }
             });
             let f = Reflect::get(&webapp, &"invokeCustomMethod".into())?;

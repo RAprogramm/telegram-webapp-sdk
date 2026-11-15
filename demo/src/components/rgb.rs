@@ -12,6 +12,10 @@ pub struct RGB;
 
 impl RGB {
     /// Build the DOM node for a given `#RRGGBB` string.
+    ///
+    /// # Errors
+    /// Returns an error when there is no browser `window` or document, or when
+    /// the browser refuses to create the `span` and `i` elements.
     pub fn render(color: &str) -> AppResult<HtmlElement> {
         let doc = window()
             .ok_or_else(|| AppError::internal("no window"))?

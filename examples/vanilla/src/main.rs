@@ -8,6 +8,13 @@ mod ui;
 use telegram_webapp_sdk::{core::init::init_sdk, webapp::TelegramWebApp};
 use wasm_bindgen::prelude::*;
 
+/// Boots the mini app: parses the launch context, marks the `WebApp` as ready
+/// and mounts the DOM UI.
+///
+/// # Errors
+/// Returns a `JsValue` error when `init_sdk` cannot read the launch context,
+/// when `Telegram.WebApp` is absent from the page, or when the `ready` call
+/// itself throws.
 #[wasm_bindgen]
 pub fn main() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();

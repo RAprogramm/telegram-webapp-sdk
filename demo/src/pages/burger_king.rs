@@ -52,7 +52,7 @@ telegram_page!(
         for item in &items {
             match render_item(item) {
                 Ok(el) => page.append(&el),
-                Err(err) => logger::error(&format!("render_item failed: {:?}", err))
+                Err(err) => logger::error(&format!("render_item failed: {err:?}"))
             }
         }
     }
@@ -67,7 +67,7 @@ fn render_item(item: &MenuItem) -> Result<Element, JsValue> {
     label.set_inner_html(&format!(
         "{} - ${:.2}",
         item.name,
-        item.price_cents as f64 / 100.0
+        f64::from(item.price_cents) / 100.0
     ));
     container.append_child(&label)?;
 
@@ -77,7 +77,7 @@ fn render_item(item: &MenuItem) -> Result<Element, JsValue> {
     let click = Closure::<dyn FnMut()>::new(move || {
         if let Some(app) = TelegramWebApp::instance() {
             if let Err(err) = app.send_data(&item_clone.payload()) {
-                logger::error(&format!("send_data failed: {:?}", err));
+                logger::error(&format!("send_data failed: {err:?}"));
             }
         } else {
             logger::error("Telegram WebApp instance not found");

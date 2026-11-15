@@ -2,12 +2,12 @@
 
 <!--
 [webapp_api_status]
-latest_version = "9.6"
-covered_version = "9.6"
-coverage_commit = "53276fd"
-coverage_date = "2026-05-13"
+latest_version = "10.4"
+covered_version = "10.1"
+coverage_commit = "713034a"
+coverage_date = "2026-11-15"
 source_url = "https://core.telegram.org/bots/webapps"
-latest_version_probe_url = "https://telegram.org/js/telegram-web-app.js"
+latest_version_probe_url = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp"
 -->
 
 This checklist tracks support for the [Telegram Web Apps JavaScript API](https://core.telegram.org/bots/webapps). Mark items as they are implemented.
@@ -27,7 +27,6 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] showPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] showScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] closeScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
-- [x] shareURL ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] shareMessage ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] shareToStory ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] requestWriteAccess ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
@@ -60,8 +59,6 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] show ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] hide ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] setText ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
-- [x] setColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
-- [x] setTextColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] onClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] offClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] enable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
@@ -111,6 +108,12 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] notificationOccurred ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 - [x] selectionChanged ([9896d92](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9896d92))
 
+### Serverless
+- [x] call ([713034a](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a))
+
+### WebAppInitData
+- [x] chat_join_request_query_id ([713034a](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a))
+
 ## Properties
 
 - [x] isActive ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
@@ -125,24 +128,28 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 ### Accelerometer
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getAcceleration ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] x ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] y ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] z ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### Gyroscope
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getAngularVelocity ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] x ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] y ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] z ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### DeviceOrientation
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getOrientation ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] alpha ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] beta ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] gamma ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### LocationManager
 - [x] init ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [x] getLocation ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [x] openSettings ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [x] onLocationManagerUpdated ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [x] onLocationRequested ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 
 ### BiometricManager
 - [x] init ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
@@ -168,16 +175,16 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] getKeys ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 
 ### DeviceStorage
-- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] setItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] getItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] removeItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ### SecureStorage
-- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] restore ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] setItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] getItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] restoreItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] removeItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ## Background events
@@ -193,13 +200,17 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
+| `locationManagerUpdated` | none (Bot API 8.0) |
+| `locationRequested` | none (Bot API 8.0) |
 | `requestedChatSent` | none (Bot API 9.6) |
 | `requestedChatFailed` | object `{ error: String }` (Bot API 9.6) |
 
 ## Remaining WebApp Features
 
-The SDK currently covers the complete Telegram Mini Apps (WebApp) API 9.6
-surface, which is the latest Mini App version exposed by `telegram-web-app.js`.
-Bot API has since advanced to 10.1, but versions 9.7 through 10.1 introduced no
-new WebApp methods, fields, or events, so no additional surface is pending. If
-you spot a gap, please open an issue so it can be addressed quickly.
+The SDK currently covers the complete Telegram Mini Apps (WebApp) API 10.1
+surface: the 9.6 method set plus `WebAppInitData.chat_join_request_query_id`
+(Bot API 10.1) and the `Serverless` object introduced with Telegram Serverless
+in October 2026. Bot API has since advanced to 10.4, but versions 10.2 through
+10.4 introduced no new WebApp methods, fields, or events, so no additional
+surface is pending. If you spot a gap, please open an issue so it can be
+addressed quickly.

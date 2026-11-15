@@ -104,7 +104,7 @@ let _ = (ok, button_id, code);
 ## Navigation and links
 
 `open_link` (with optional `OpenLinkOptions`), `open_telegram_link`,
-`switch_inline_query`, `share_url`, `share_message` / `share_to_story`,
+`switch_inline_query`, `share_message` / `share_to_story`,
 `request_chat`, `add_to_home_screen`, and `check_home_screen_status`.
 
 ## Theme and colors
@@ -124,14 +124,14 @@ and `unlock_orientation`.
 ## Storage
 
 - **CloudStorage** — `api::cloud_storage::{get_item, set_item, remove_item, get_items, remove_items, get_keys}` (each returns a JS `Promise`).
-- **DeviceStorage** — `api::device_storage::{set, get, remove, clear}` (`async`).
-- **SecureStorage** — `api::secure_storage::{set, get, restore, remove, clear}` (`async`).
+- **DeviceStorage** — `api::device_storage::{set_item, get_item, remove_item, clear}` (`async`).
+- **SecureStorage** — `api::secure_storage::{set_item, get_item, restore_item, remove_item, clear}` (`async`).
 
 ```rust,no_run
-use telegram_webapp_sdk::api::device_storage::{get, set};
+use telegram_webapp_sdk::api::device_storage::{get_item, set_item};
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-set("theme", "dark").await?;
-let value: Option<String> = get("theme").await?;
+set_item("theme", "dark").await?;
+let value: Option<String> = get_item("theme").await?;
 let _ = value;
 # Ok(())
 # }

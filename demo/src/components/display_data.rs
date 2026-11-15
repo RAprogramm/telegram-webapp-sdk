@@ -14,6 +14,10 @@ pub struct DisplayDataRow {
 
 /// Renders a `<section>` with a header and rows of title + value.
 /// If a value starts with `#`, we render a little color‐circle before it.
+///
+/// # Errors
+/// Returns an error when there is no browser `window` or document, or when the
+/// browser refuses to create or append one of the elements.
 pub fn render_display_data(header: &str, rows: &[DisplayDataRow]) -> AppResult<Element> {
     let document = window()
         .ok_or_else(|| AppError::internal("no window"))?

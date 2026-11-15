@@ -30,21 +30,24 @@ fn build_user_card(doc: &Document) -> web_sys::Element {
     let card = doc.create_element("div").unwrap();
     card.set_class("card user-card");
 
-    let ctx = TelegramContext::get(|ctx| ctx.clone());
-    let (name, username, is_premium) =
-        if let Some(user) = ctx.as_ref().and_then(|c| c.init_data.user.as_ref()) {
-            (
-                format!(
-                    "{} {}",
-                    user.first_name,
-                    user.last_name.as_deref().unwrap_or("")
-                ),
-                user.username.clone().map(|u| format!("@{}", u)),
-                user.is_premium.unwrap_or(false)
-            )
-        } else {
-            ("Guest".to_string(), None, false)
-        };
+    let ctx = TelegramContext::get(Clone::clone);
+    let (name, username, is_premium) = ctx
+        .as_ref()
+        .and_then(|c| c.init_data.user.as_ref())
+        .map_or_else(
+            || ("Guest".to_string(), None, false),
+            |user| {
+                (
+                    format!(
+                        "{} {}",
+                        user.first_name,
+                        user.last_name.as_deref().unwrap_or("")
+                    ),
+                    user.username.clone().map(|u| format!("@{u}")),
+                    user.is_premium.unwrap_or(false)
+                )
+            }
+        );
 
     let name_el = doc.create_element("div").unwrap();
     name_el.set_class("user-name");

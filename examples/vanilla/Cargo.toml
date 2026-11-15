@@ -7,7 +7,6 @@ publish = false
 
 [dependencies]
 wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = [
     "Window",
     "Document",
@@ -24,16 +23,14 @@ web-sys = { version = "0.3", features = [
     "Text",
     "DomRect",
 ] }
-serde_json = "1"
 console_error_panic_hook = "0.1"
 telegram-webapp-sdk = { path = "../..", features = ["mock"] }
-
-[dependencies.trunk]
-version = "0.21"
-optional = true
 
 [[bin]]
 name = "vanilla"
 path = "src/main.rs"
 test = false
 bench = false
+
+[lints]
+workspace = true

@@ -15,6 +15,7 @@ impl TelegramWebApp {
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let _ = app.viewport_height();
     /// ```
+    #[must_use]
     pub fn viewport_height(&self) -> Option<f64> {
         Reflect::get(&self.inner, &"viewportHeight".into())
             .ok()?
@@ -29,6 +30,7 @@ impl TelegramWebApp {
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let _ = app.viewport_width();
     /// ```
+    #[must_use]
     pub fn viewport_width(&self) -> Option<f64> {
         Reflect::get(&self.inner, &"viewportWidth".into())
             .ok()?
@@ -43,6 +45,7 @@ impl TelegramWebApp {
     /// # let app = TelegramWebApp::instance().unwrap();
     /// let _ = app.viewport_stable_height();
     /// ```
+    #[must_use]
     pub fn viewport_stable_height(&self) -> Option<f64> {
         Reflect::get(&self.inner, &"viewportStableHeight".into())
             .ok()?
@@ -72,6 +75,7 @@ impl TelegramWebApp {
     ///     let _ = app.safe_area_inset();
     /// }
     /// ```
+    #[must_use]
     pub fn safe_area_inset(&self) -> Option<SafeAreaInset> {
         self.safe_area_from_property("safeAreaInset")
     }
@@ -86,6 +90,7 @@ impl TelegramWebApp {
     ///     let _ = app.content_safe_area_inset();
     /// }
     /// ```
+    #[must_use]
     pub fn content_safe_area_inset(&self) -> Option<SafeAreaInset> {
         self.safe_area_from_property("contentSafeAreaInset")
     }

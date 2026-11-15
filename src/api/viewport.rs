@@ -8,12 +8,13 @@ use web_sys::window;
 use crate::logger::{debug, warn};
 
 /// Returns the current viewport height in pixels.
+#[must_use]
 pub fn get_viewport_height() -> Option<f64> {
     let webapp = webapp_object().ok()?;
     let value = Reflect::get(&webapp, &"viewportHeight".into()).ok()?;
     let result = value.as_f64();
     if let Some(px) = result {
-        debug(&format!("viewportHeight: {}px", px));
+        debug(&format!("viewportHeight: {px}px"));
     } else {
         warn("viewportHeight is not a number");
     }
@@ -27,12 +28,13 @@ pub fn get_viewport_height() -> Option<f64> {
 /// # use telegram_webapp_sdk::api::viewport::get_viewport_width;
 /// let _ = get_viewport_width();
 /// ```
+#[must_use]
 pub fn get_viewport_width() -> Option<f64> {
     let webapp = webapp_object().ok()?;
     let value = Reflect::get(&webapp, &"viewportWidth".into()).ok()?;
     let result = value.as_f64();
     if let Some(px) = result {
-        debug(&format!("viewportWidth: {}px", px));
+        debug(&format!("viewportWidth: {px}px"));
     } else {
         warn("viewportWidth is not a number");
     }
@@ -46,12 +48,13 @@ pub fn get_viewport_width() -> Option<f64> {
 /// # use telegram_webapp_sdk::api::viewport::get_viewport_stable_height;
 /// let _ = get_viewport_stable_height();
 /// ```
+#[must_use]
 pub fn get_viewport_stable_height() -> Option<f64> {
     let webapp = webapp_object().ok()?;
     let value = Reflect::get(&webapp, &"viewportStableHeight".into()).ok()?;
     let result = value.as_f64();
     if let Some(px) = result {
-        debug(&format!("viewportStableHeight: {}px", px));
+        debug(&format!("viewportStableHeight: {px}px"));
     } else {
         warn("viewportStableHeight is not a number");
     }
@@ -59,12 +62,13 @@ pub fn get_viewport_stable_height() -> Option<f64> {
 }
 
 /// Returns whether the Mini App is currently expanded.
+#[must_use]
 pub fn get_is_expanded() -> Option<bool> {
     let webapp = webapp_object().ok()?;
     let value = Reflect::get(&webapp, &"isExpanded".into()).ok()?;
     let result = value.as_bool();
     if let Some(exp) = result {
-        debug(&format!("isExpanded: {}", exp));
+        debug(&format!("isExpanded: {exp}"));
     } else {
         warn("isExpanded is not a boolean");
     }

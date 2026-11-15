@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Mocked Telegram user, mirroring the Telegram WebApp `WebAppUser` object.
+/// Mocked Telegram user, mirroring the Telegram `WebApp` `WebAppUser` object.
 #[derive(Serialize, Deserialize, Default)]
 pub struct MockTelegramUser {
     /// Unique identifier of the user.

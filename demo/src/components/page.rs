@@ -6,6 +6,7 @@ use web_sys::{Document, Element, window};
 use crate::components::{nav_link::nav_link, page_layout::PageLayout};
 
 /// Creates a page with a header and list of children
+#[must_use]
 pub fn render_page(title: &str, children: Vec<Element>, back: Option<&str>) -> PageLayout {
     let layout = PageLayout::new(title);
     let _document = document();
