@@ -47,6 +47,7 @@ const STEPS: &[(&str, &str, &[&str])] = &[
         "cargo",
         &["run", "-p", "xtask", "--", "conformance"]
     ),
+    ("msrv sync", "cargo", &["make", "check-msrv"]),
     ("readme refresh", "cargo", &["run", "-p", "update-readme"]),
     ("readme sync", "git", &["diff", "--exit-code", "README.md"])
 ];
