@@ -20,8 +20,8 @@
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/RAprogramm/telegram-webapp-sdk?utm_source=badge)
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
-[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.6-blue)](https://core.telegram.org/bots/webapps)
-[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2853276fd%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd)
+[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-10.4-blue)](https://core.telegram.org/bots/webapps)
+[![Coverage](https://img.shields.io/badge/Coverage-update%20needed%20%28713034a%29-orange)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a)
 <!-- webapp_api_badges:end -->
 [![Wiki](https://img.shields.io/badge/Wiki-Documentation-0088cc?logo=github)](https://github.com/RAprogramm/telegram-webapp-sdk/wiki)
 
@@ -85,6 +85,7 @@ The top section represents the entire project. Proceeding with folders and final
 - [Haptic feedback](#haptic-feedback)
 - [Device storage](#device-storage)
 - [Secure storage](#secure-storage)
+- [Serverless endpoints](#serverless-endpoints)
 - [Biometric authentication](#biometric-authentication)
 - [Location manager](#location-manager)
 - [Device sensors](#device-sensors)
@@ -104,7 +105,7 @@ The top section represents the entire project. Proceeding with folders and final
 - Optional macros for automatic initialization and routing.
 - DOM helpers for ergonomic element manipulation.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
-  step with the Telegram `WebApp` API 9.6 feature set.
+  step with the Telegram `WebApp` API 10.1 feature set.
   
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -806,6 +807,28 @@ let _ = restore("token").await?;
 # }
 ```
 <p align="right"><a href="#readme-top">Back to top</a></p>
+## Serverless endpoints
+
+Call the bot's [Telegram Serverless](https://core.telegram.org/bots/serverless)
+endpoints from a hosted Mini App:
+
+```rust,no_run
+use serde::Deserialize;
+use telegram_webapp_sdk::api::serverless::call;
+
+#[derive(Deserialize)]
+struct Profile {
+    name: String,
+}
+
+# async fn run() -> Result<(), telegram_webapp_sdk::api::serverless::EndpointError> {
+let profile: Profile = call("getProfile", &serde_json::json!({ "lang": "en" })).await?;
+assert!(!profile.name.is_empty());
+# Ok(())
+# }
+```
+
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Biometric authentication
 
 Guard privileged actions behind the `BiometricManager` API:
@@ -919,7 +942,7 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**`WebApp` API coverage:** version `9.6` matches the latest Telegram `WebApp` API release `9.6`. Synced in commit [53276fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd) (recorded on 2026-05-13).
+**`WebApp` API coverage:** version `10.1` lags behind the latest Telegram `WebApp` API release `10.4`. Synced in commit [713034a](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a) (recorded on 2026-11-15).
 <!-- webapp_api_summary:end -->
 
 See [`WEBAPP_API.md`](./WEBAPP_API.md) for a checklist of supported Telegram `WebApp` JavaScript API methods and features.
