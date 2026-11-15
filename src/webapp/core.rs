@@ -1,35 +1,12 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-use js_sys::{Function, Object, Promise, Reflect};
+use js_sys::{Function, Object, Reflect};
 use wasm_bindgen::{JsCast, JsValue, prelude::Closure};
-use wasm_bindgen_futures::JsFuture;
 use web_sys::window;
 
+pub(super) use crate::utils::promise::{await_one_shot, one_shot_promise};
 use crate::{core::context::TelegramContext, webapp::TelegramWebApp};
-
-/// Build a `Promise` whose executor invokes `f` synchronously with the
-/// `resolve` and `reject` callables. If `f` returns `Err`, the promise is
-/// rejected with that value immediately. Used to wrap one-shot Telegram
-/// callbacks into async-friendly futures.
-pub(super) fn one_shot_promise<F>(f: F) -> Promise
-where
-    F: FnOnce(Function, Function) -> Result<(), JsValue>
-{
-    let mut executor = Some(f);
-    Promise::new(&mut |resolve, reject| {
-        let Some(invoke) = executor.take() else {
-            return;
-        };
-        if let Err(err) = invoke(resolve, reject.clone()) {
-            let _ = reject.call1(&JsValue::NULL, &err);
-        }
-    })
-}
-
-pub(super) async fn await_one_shot(promise: Promise) -> Result<JsValue, JsValue> {
-    JsFuture::from(promise).await
-}
 
 impl TelegramWebApp {
     /// Get instance of `Telegram.WebApp` or `None` if not present

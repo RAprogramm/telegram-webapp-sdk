@@ -113,12 +113,12 @@ fn wire_main_button(app: &TelegramWebApp) -> Result<(), JsValue> {
 /// # Errors
 /// Returns a `JsValue` error when the storage roundtrip fails.
 async fn record_visit() -> Result<String, JsValue> {
-    let previous = device_storage::get(VISITS_KEY).await?;
+    let previous = device_storage::get_item(VISITS_KEY).await?;
     let visits = previous
         .and_then(|raw| raw.parse::<u32>().ok())
         .unwrap_or(0)
         + 1;
-    device_storage::set(VISITS_KEY, &visits.to_string()).await?;
+    device_storage::set_item(VISITS_KEY, &visits.to_string()).await?;
     let _ = impact_occurred(HapticImpactStyle::Light);
     Ok(format!("Visits stored in DeviceStorage: {visits}"))
 }

@@ -31,9 +31,9 @@ Local to the current device, not synced:
 ```rust
 use telegram_webapp_sdk::api::device_storage;
 
-device_storage::set("tab", "settings").await?;
-let tab: Option<String> = device_storage::get("tab").await?;
-device_storage::remove("tab").await?;
+device_storage::set_item("tab", "settings").await?;
+let tab: Option<String> = device_storage::get_item("tab").await?;
+device_storage::remove_item("tab").await?;
 device_storage::clear().await?;
 ```
 
@@ -45,17 +45,22 @@ Encrypted at rest; requires biometric access first
 ```rust
 use telegram_webapp_sdk::api::secure_storage;
 
-secure_storage::set("token", secret).await?;
-let token: Option<String> = secure_storage::get("token").await?;
-let restored: Option<String> = secure_storage::restore("token").await?;
+secure_storage::set_item("token", secret).await?;
+let stored = secure_storage::get_item("token").await?;
+let token: Option<String> = stored.value;
+let restored: Option<String> = secure_storage::restore_item("token").await?;
 ```
 
 ## Rules
 
 - Never store secrets in cloud or device storage; only secure storage is
   encrypted.
-- Treat `Ok(None)` from `get` as "absent", not an error.
+- Treat `Ok(None)` from `get_item` as "absent", not an error.
+- `secure_storage::get_item` returns `SecureStorageValue { value, can_restore }`;
+  `can_restore` reports whether the client can restore the key from this device.
 - Errors from the JS bridge carry the client's message; log the full
   `JsValue` string, it names the failing method.
-- In tests, mocks must return `Promise.resolve(...)` for every storage call
-  — the SDK awaits Promises, raw values fail with a cast error.
+- Cloud storage functions return a `js_sys::Promise` and test mocks must
+  resolve it (`Promise.resolve(...)`); device and secure storage wrap the
+  bridge callbacks `(err, value)` — mocks must invoke the callback with
+  `null` on success and a string error otherwise.

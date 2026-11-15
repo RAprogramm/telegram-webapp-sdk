@@ -27,7 +27,6 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] showPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] showScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
 - [x] closeScanQrPopup ([840ace1](https://github.com/RAprogramm/telegram-webapp-sdk/commit/840ace1))
-- [x] shareURL ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
 - [x] shareMessage ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] shareToStory ([4b10c98](https://github.com/RAprogramm/telegram-webapp-sdk/commit/4b10c98))
 - [x] requestWriteAccess ([a098e00](https://github.com/RAprogramm/telegram-webapp-sdk/commit/a098e00))
@@ -60,8 +59,6 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] show ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] hide ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] setText ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
-- [x] setColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
-- [x] setTextColor ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] onClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] offClick ([7d524fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/7d524fd))
 - [x] enable ([92abbf7](https://github.com/RAprogramm/telegram-webapp-sdk/commit/92abbf7))
@@ -131,24 +128,28 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 ### Accelerometer
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getAcceleration ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] x ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] y ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] z ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### Gyroscope
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getAngularVelocity ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] x ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] y ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] z ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### DeviceOrientation
 - [x] start ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 - [x] stop ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
-- [x] getOrientation ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] alpha ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] beta ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
+- [x] gamma ([9428d51](https://github.com/RAprogramm/telegram-webapp-sdk/commit/9428d51))
 
 ### LocationManager
 - [x] init ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [x] getLocation ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 - [x] openSettings ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [x] onLocationManagerUpdated ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
-- [x] onLocationRequested ([10ca55c](https://github.com/RAprogramm/telegram-webapp-sdk/commit/10ca55c))
 
 ### BiometricManager
 - [x] init ([8c34fbd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/8c34fbd))
@@ -174,16 +175,16 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 - [x] getKeys ([ae2a302](https://github.com/RAprogramm/telegram-webapp-sdk/commit/ae2a302))
 
 ### DeviceStorage
-- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] setItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] getItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] removeItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ### SecureStorage
-- [x] set ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] get ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] restore ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
-- [x] remove ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] setItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] getItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] restoreItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
+- [x] removeItem ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 - [x] clear ([0905616](https://github.com/RAprogramm/telegram-webapp-sdk/commit/0905616))
 
 ## Background events
@@ -199,6 +200,8 @@ This checklist tracks support for the [Telegram Web Apps JavaScript API](https:/
 | `popupClosed` | object `{ button_id: Option<String> }` |
 | `qrTextReceived` | scanned text `String` |
 | `clipboardTextReceived` | clipboard text `String` |
+| `locationManagerUpdated` | none (Bot API 8.0) |
+| `locationRequested` | none (Bot API 8.0) |
 | `requestedChatSent` | none (Bot API 9.6) |
 | `requestedChatFailed` | object `{ error: String }` (Bot API 9.6) |
 

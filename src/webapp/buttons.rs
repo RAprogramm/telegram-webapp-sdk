@@ -82,7 +82,11 @@ impl TelegramWebApp {
         self.bottom_button_method(button, "setText", Some(&text.into()))
     }
 
-    /// Set bottom button color (`setColor(color)`).
+    /// Set bottom button color.
+    ///
+    /// The bridge has no `setColor` method: the color is applied through
+    /// `setParams({ color })`, which validates the `#RRGGBB` format and
+    /// throws `WebAppBottomButtonParamInvalid` for a malformed value.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
@@ -98,10 +102,20 @@ impl TelegramWebApp {
         button: BottomButton,
         color: &str
     ) -> Result<(), JsValue> {
-        self.bottom_button_method(button, "setColor", Some(&color.into()))
+        self.set_bottom_button_params(
+            button,
+            &BottomButtonParams {
+                color: Some(color),
+                ..Default::default()
+            }
+        )
     }
 
-    /// Set bottom button text color (`setTextColor(color)`).
+    /// Set bottom button text color.
+    ///
+    /// The bridge has no `setTextColor` method: the color is applied through
+    /// `setParams({ text_color })`, which validates the `#RRGGBB` format and
+    /// throws `WebAppBottomButtonParamInvalid` for a malformed value.
     ///
     /// # Errors
     /// Returns [`JsValue`] if the underlying JS call fails.
@@ -117,7 +131,13 @@ impl TelegramWebApp {
         button: BottomButton,
         color: &str
     ) -> Result<(), JsValue> {
-        self.bottom_button_method(button, "setTextColor", Some(&color.into()))
+        self.set_bottom_button_params(
+            button,
+            &BottomButtonParams {
+                text_color: Some(color),
+                ..Default::default()
+            }
+        )
     }
 
     /// Set custom emoji icon for a bottom button (Bot API 9.5+).

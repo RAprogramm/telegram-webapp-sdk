@@ -172,30 +172,6 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.shareURL(url, text)`.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.share_url("https://example.com", Some("Check this"))
-    ///     .unwrap();
-    /// ```
-    ///
-    /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn share_url(&self, url: &str, text: Option<&str>) -> Result<(), JsValue> {
-        let f = Reflect::get(&self.inner, &"shareURL".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("shareURL is not a function"))?;
-        match text {
-            Some(t) => func.call2(&self.inner, &url.into(), &t.into())?,
-            None => func.call1(&self.inner, &url.into())?
-        };
-        Ok(())
-    }
-
     /// Callback variant of [`Self::request_chat`] (Bot API 9.6+).
     ///
     /// # Errors

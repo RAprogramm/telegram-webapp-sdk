@@ -3,3 +3,6 @@
 
 /// Detection of the Telegram `WebApp` runtime environment.
 pub mod check_env;
+
+/// Promise helpers for callback-style Telegram APIs.
+pub mod promise;

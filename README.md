@@ -550,7 +550,7 @@ app.off_event(handle)?;
 
 ## Sharing
 
-Share links, prepared messages, or stories and join voice chats:
+Share prepared messages or stories and join voice chats:
 
 ```rust,no_run
 use js_sys::Object;
@@ -558,7 +558,6 @@ use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
-app.share_url("https://example.com", Some("Check this out"))?;
 let sent: bool = app.share_message("msg-id").await?;
 let _ = sent;
 let params = Object::new();
@@ -782,11 +781,11 @@ selection_changed()?;
 Persist lightweight data on the user's device:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::device_storage::{set, get};
+use telegram_webapp_sdk::api::device_storage::{get_item, set_item};
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-set("theme", "dark").await?;
-let value = get("theme").await?;
+set_item("theme", "dark").await?;
+let value = get_item("theme").await?;
 # Ok(())
 # }
 ```
@@ -798,11 +797,11 @@ let value = get("theme").await?;
 Store sensitive data encrypted and restorable:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::secure_storage::{set, restore};
+use telegram_webapp_sdk::api::secure_storage::{restore_item, set_item};
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-set("token", "secret").await?;
-let _ = restore("token").await?;
+set_item("token", "secret").await?;
+let _ = restore_item("token").await?;
 # Ok(())
 # }
 ```

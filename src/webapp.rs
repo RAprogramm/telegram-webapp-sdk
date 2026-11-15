@@ -136,15 +136,17 @@ mod tests {
         let received = Rc::new(RefCell::new(None));
         let rc_clone = Rc::clone(&received);
 
-        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
-            *rc_clone.borrow_mut() = v.as_string();
+        let set_params_cb = Closure::<dyn FnMut(JsValue)>::new(move |params: JsValue| {
+            *rc_clone.borrow_mut() = Reflect::get(&params, &"color".into())
+                .ok()
+                .and_then(|v| v.as_string());
         });
         let _ = Reflect::set(
             &main_button,
-            &"setColor".into(),
-            set_color_cb.as_ref().unchecked_ref()
+            &"setParams".into(),
+            set_params_cb.as_ref().unchecked_ref()
         );
-        set_color_cb.forget();
+        set_params_cb.forget();
 
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
 
@@ -162,15 +164,17 @@ mod tests {
         let received = Rc::new(RefCell::new(None));
         let rc_clone = Rc::clone(&received);
 
-        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
-            *rc_clone.borrow_mut() = v.as_string();
+        let set_params_cb = Closure::<dyn FnMut(JsValue)>::new(move |params: JsValue| {
+            *rc_clone.borrow_mut() = Reflect::get(&params, &"color".into())
+                .ok()
+                .and_then(|v| v.as_string());
         });
         let _ = Reflect::set(
             &secondary_button,
-            &"setColor".into(),
-            set_color_cb.as_ref().unchecked_ref()
+            &"setParams".into(),
+            set_params_cb.as_ref().unchecked_ref()
         );
-        set_color_cb.forget();
+        set_params_cb.forget();
 
         let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
 
@@ -188,15 +192,17 @@ mod tests {
         let received = Rc::new(RefCell::new(None));
         let rc_clone = Rc::clone(&received);
 
-        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
-            *rc_clone.borrow_mut() = v.as_string();
+        let set_params_cb = Closure::<dyn FnMut(JsValue)>::new(move |params: JsValue| {
+            *rc_clone.borrow_mut() = Reflect::get(&params, &"text_color".into())
+                .ok()
+                .and_then(|v| v.as_string());
         });
         let _ = Reflect::set(
             &main_button,
-            &"setTextColor".into(),
-            set_color_cb.as_ref().unchecked_ref()
+            &"setParams".into(),
+            set_params_cb.as_ref().unchecked_ref()
         );
-        set_color_cb.forget();
+        set_params_cb.forget();
 
         let _ = Reflect::set(&webapp, &"MainButton".into(), &main_button);
 
@@ -214,15 +220,17 @@ mod tests {
         let received = Rc::new(RefCell::new(None));
         let rc_clone = Rc::clone(&received);
 
-        let set_color_cb = Closure::<dyn FnMut(JsValue)>::new(move |v: JsValue| {
-            *rc_clone.borrow_mut() = v.as_string();
+        let set_params_cb = Closure::<dyn FnMut(JsValue)>::new(move |params: JsValue| {
+            *rc_clone.borrow_mut() = Reflect::get(&params, &"text_color".into())
+                .ok()
+                .and_then(|v| v.as_string());
         });
         let _ = Reflect::set(
             &secondary_button,
-            &"setTextColor".into(),
-            set_color_cb.as_ref().unchecked_ref()
+            &"setParams".into(),
+            set_params_cb.as_ref().unchecked_ref()
         );
-        set_color_cb.forget();
+        set_params_cb.forget();
 
         let _ = Reflect::set(&webapp, &"SecondaryButton".into(), &secondary_button);
 
@@ -1101,37 +1109,6 @@ mod tests {
                 .as_string()
                 .as_deref(),
             Some("hi"),
-        );
-    }
-
-    #[wasm_bindgen_test]
-    #[allow(dead_code, clippy::unused_unit)]
-    fn share_url_calls_js() {
-        let webapp = setup_webapp();
-        let share = Function::new_with_args(
-            "url, text",
-            "this.shared_url = url; this.shared_text = text;"
-        );
-        let _ = Reflect::set(&webapp, &"shareURL".into(), &share);
-
-        let app = TelegramWebApp::instance().unwrap();
-        let url = "https://example.com";
-        let text = "check";
-        app.share_url(url, Some(text)).unwrap();
-
-        assert_eq!(
-            Reflect::get(&webapp, &"shared_url".into())
-                .unwrap()
-                .as_string()
-                .as_deref(),
-            Some(url),
-        );
-        assert_eq!(
-            Reflect::get(&webapp, &"shared_text".into())
-                .unwrap()
-                .as_string()
-                .as_deref(),
-            Some(text),
         );
     }
 
