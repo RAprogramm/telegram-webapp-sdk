@@ -4,6 +4,22 @@ The repository ships several runnable examples, wired into the Cargo workspace.
 Each shows a different integration style — from a full Trunk-built Mini App down
 to a plain WASM binary and the bot side of a full-stack app.
 
+## `examples/minimal` — golden path
+
+The canonical starting point: the shortest complete Mini App. It falls back to
+the SDK mock when `Telegram.WebApp` is absent, calls `init_sdk()`, marks the
+interface `ready()` + `expand()`, greets the launching user from the parsed
+`TelegramContext`, and wires the MainButton to fire haptic feedback and
+persist a visit counter through `DeviceStorage`.
+
+```bash
+cd examples/minimal
+trunk serve        # http://localhost:8081
+```
+
+Read it top to bottom before writing your own app — every step it takes is one
+the SDK docs explain in detail.
+
 ## `demo/` — Trunk WASM app
 
 A complete Mini App built with the `macros` and `mock` features. It uses

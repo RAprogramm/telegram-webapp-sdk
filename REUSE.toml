@@ -53,6 +53,7 @@ SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
 path = [
+  "examples/minimal/index.html",
   "examples/vanilla/index.html",
   "examples/vanilla/style.css",
   "examples/integration/frontend/Cargo.lock",

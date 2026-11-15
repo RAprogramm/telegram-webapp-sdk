@@ -84,6 +84,7 @@ full = ["macros", "yew", "leptos", "mock"]
 [workspace]
 members = [
   "demo",
+  "examples/minimal",
   "examples/vanilla",
   "examples/bots/rust_bot",
   "examples/integration/backend",

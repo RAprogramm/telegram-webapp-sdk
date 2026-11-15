@@ -17,6 +17,7 @@
 - [Framework Integration](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Framework-Integration-en)
 - [Mock & Testing](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Testing-en)
 - [Examples](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Examples-en)
+- [Recipes](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Recipes-en)
 
 ---
 
@@ -33,6 +34,7 @@
 - [Интеграция с фреймворками](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Интеграция)
 - [Мок и тестирование](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Тестирование)
 - [Примеры](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Примеры)
+- [Рецепты](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Рецепты)
 
 ---
 

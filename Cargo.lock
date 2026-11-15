@@ -1884,6 +1884,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "minimal-example"
+version = "0.1.0"
+dependencies = [
+ "telegram-webapp-sdk",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "mio"
 version = "1.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
