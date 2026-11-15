@@ -50,6 +50,20 @@ fn init_sdk_propagates_query_id() -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen_test]
+fn init_sdk_propagates_chat_join_request_query_id() -> Result<(), JsValue> {
+    install_webapp("chat_join_request_query_id=join-777&auth_date=1&hash=abc")?;
+
+    init_sdk()?;
+
+    let query_id = TelegramContext::get(|ctx| ctx.init_data.chat_join_request_query_id.clone())
+        .ok_or_else(|| JsValue::from_str("context not initialized"))?;
+
+    assert_eq!(query_id, Some("join-777".to_string()));
+
+    Ok(())
+}
+
+#[wasm_bindgen_test]
 fn get_raw_init_data_returns_error_when_not_initialized() {
     let result = TelegramContext::get_raw_init_data();
 

@@ -14,35 +14,59 @@ pub struct TelegramInitDataInternal {
     /// Unique query identifier of the Mini App session. Present when the app is
     /// opened from an inline keyboard button and required to answer via
     /// `answerWebAppQuery`.
-    pub query_id:       Option<String>,
+    pub query_id: Option<String>,
+    /// Unique identifier of the chat join request query that launched the Mini
+    /// App, required to process the query via `answerChatJoinRequestQuery`.
+    pub chat_join_request_query_id: Option<String>,
     /// JSON-encoded string describing the current user, as delivered by
     /// Telegram. Deserialized into a `WebAppUser` only after validation.
-    pub user:           Option<String>,
+    pub user: Option<String>,
     /// JSON-encoded string describing the chat partner in a private chat the
     /// bot was attached to when launched from the attachment menu.
-    pub receiver:       Option<String>,
+    pub receiver: Option<String>,
     /// JSON-encoded string describing the chat the Mini App was launched from,
     /// present for group, supergroup and channel chats.
-    pub chat:           Option<String>,
+    pub chat: Option<String>,
     /// Type of chat the Mini App was opened in: `"sender"`, `"private"`,
     /// `"group"`, `"supergroup"` or `"channel"`.
-    pub chat_type:      Option<String>,
+    pub chat_type: Option<String>,
     /// Global identifier of the chat the Mini App was launched from, used to
     /// validate that messages belong to the same chat.
-    pub chat_instance:  Option<String>,
+    pub chat_instance: Option<String>,
     /// Value of the `startattach`/`start_param` deep-link parameter used to
     /// launch the Mini App.
-    pub start_param:    Option<String>,
+    pub start_param: Option<String>,
     /// Number of seconds after which a message can be sent via
     /// `answerWebAppQuery`, used for rate limiting.
     pub can_send_after: Option<u64>,
     /// Unix timestamp (in seconds) at which the `initData` was created and
     /// signed by Telegram.
-    pub auth_date:      u64,
+    pub auth_date: u64,
     /// Hex-encoded HMAC-SHA256 signature of the data-check string, used to
     /// verify that the `initData` originates from Telegram.
-    pub hash:           String,
+    pub hash: String,
     /// Optional Ed25519 signature of the `initData`, provided for third-party
     /// validation of the payload.
-    pub signature:      Option<String>
+    pub signature: Option<String>
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_urlencoded::from_str;
+
+    use super::*;
+
+    #[test]
+    fn deserialize_internal_with_join_request_query_id() {
+        let encoded = "chat_join_request_query_id=join-42&auth_date=1&hash=h";
+        let raw: TelegramInitDataInternal = from_str(encoded).unwrap();
+        assert_eq!(raw.chat_join_request_query_id.as_deref(), Some("join-42"));
+    }
+
+    #[test]
+    fn deserialize_internal_without_join_request_query_id() {
+        let encoded = "auth_date=1&hash=h";
+        let raw: TelegramInitDataInternal = from_str(encoded).unwrap();
+        assert_eq!(raw.chat_join_request_query_id, None);
+    }
 }

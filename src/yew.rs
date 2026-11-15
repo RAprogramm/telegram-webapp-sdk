@@ -159,8 +159,9 @@ mod tests {
         #[wasm_bindgen_test]
         fn hook_works_with_initialized_context() {
             let init_data = TelegramInitData {
-                query_id:       Some(String::from("test_query_2")),
-                user:           Some(TelegramUser {
+                query_id: Some(String::from("test_query_2")),
+                chat_join_request_query_id: None,
+                user: Some(TelegramUser {
                     id: 987_654_321,
                     is_bot: Some(false),
                     first_name: String::from("Test2"),
@@ -172,15 +173,15 @@ mod tests {
                     allows_write_to_pm: Some(true),
                     photo_url: None
                 }),
-                receiver:       None,
-                chat:           None,
-                chat_type:      None,
-                chat_instance:  None,
-                start_param:    None,
+                receiver: None,
+                chat: None,
+                chat_type: None,
+                chat_instance: None,
+                start_param: None,
                 can_send_after: None,
-                auth_date:      9_876_543_210,
-                hash:           String::from("test_hash_2"),
-                signature:      None
+                auth_date: 9_876_543_210,
+                hash: String::from("test_hash_2"),
+                signature: None
             };
 
             let theme_params = TelegramThemeParams {

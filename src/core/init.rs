@@ -159,6 +159,7 @@ fn init_sdk_typed() -> Result<(), InitError> {
     // === 3. Construct final typed initData ===
     let init_data = TelegramInitData {
         query_id: raw.query_id,
+        chat_join_request_query_id: raw.chat_join_request_query_id,
         user,
         receiver,
         chat,
