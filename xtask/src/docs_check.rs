@@ -402,4 +402,134 @@ mod tests {
         assert_eq!(reexported_names("crate::macros::*"), [] as [String; 0]);
         assert_eq!(reexported_names("self"), [] as [String; 0]);
     }
+
+    fn write_fixture(dir: &Path, rel: &str, body: &str) {
+        let path = dir.join(rel);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, body).unwrap();
+    }
+
+    #[test]
+    fn build_api_index_collects_declarations_modules_and_reexports() {
+        let tmp = tempfile::tempdir().unwrap();
+        let src = tmp.path().join("src");
+        write_fixture(
+            &src,
+            "lib.rs",
+            "pub mod api;\npub mod webapp;\npub use webapp::TelegramWebApp;\n"
+        );
+        write_fixture(
+            &src,
+            "api.rs",
+            "pub mod sub;\npub async fn call() {}\nfn hidden() {}\n"
+        );
+        write_fixture(&src, "api/sub.rs", "pub struct Nested;\n");
+        write_fixture(
+            &src,
+            "webapp.rs",
+            "pub mod types;\npub use types::{Thing};\n"
+        );
+        write_fixture(&src, "webapp/types.rs", "pub struct Thing;\n");
+
+        let index = build_api_index(&src).unwrap();
+        assert!(index.items.contains("api::call"));
+        assert!(index.items.contains("api::sub::Nested"));
+        assert!(index.modules.contains("api::sub"));
+        assert!(index.modules.contains("webapp::types"));
+        assert!(index.items.contains("webapp::Thing"));
+        assert!(index.items.contains("TelegramWebApp"));
+        assert!(!index.items.contains("api::hidden"));
+    }
+
+    #[test]
+    fn unknown_paths_flags_missing_and_ignores_valid_and_foreign() {
+        let tmp = tempfile::tempdir().unwrap();
+        let mut index = ApiIndex::default();
+        index.modules.insert("api".to_string());
+        index.items.insert("api::call".to_string());
+        index.items.insert("webapp::TelegramWebApp".to_string());
+        let doc = tmp.path().join("doc.md");
+        fs::write(
+            &doc,
+            concat!(
+                "# Title\n\n",
+                "```rust\n",
+                "use telegram_webapp_sdk::api::call;\n",
+                "use telegram_webapp_sdk::api::ghost;\n",
+                "let v = webapp::TelegramWebApp::send_data();\n",
+                "let g = webapp::Ghost::new();\n",
+                "```\n",
+                "```bash\n",
+                "webapp::NotCounted\n",
+                "```\n"
+            )
+        )
+        .unwrap();
+
+        let issues = unknown_paths_in(&doc, &index).unwrap();
+        assert_eq!(issues.len(), 2);
+        assert!(issues[0].contains("api::ghost"));
+        assert!(issues[0].contains(":5:"));
+        assert!(issues[1].contains("webapp::Ghost"));
+        assert!(issues[1].contains(":7:"));
+    }
+
+    #[test]
+    fn sidebar_accepts_balanced_sections_with_all_pages_linked() {
+        let tmp = tempfile::tempdir().unwrap();
+        let wiki = tmp.path();
+        fs::write(wiki.join("Home-en.md"), "# Home\n").unwrap();
+        fs::write(wiki.join("Главная.md"), "# Главная\n").unwrap();
+        fs::write(
+            wiki.join("_Sidebar.md"),
+            concat!(
+                "## 🇬🇧 English\n\n- [Home](https://x/wiki/Home-en)\n\n",
+                "## 🇷🇺 Русский\n\n- [Главная](https://x/wiki/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F)\n\n",
+                "## 📚 Reference\n"
+            )
+        )
+        .unwrap();
+
+        assert_eq!(
+            check_sidebar(&wiki.join("_Sidebar.md"), wiki).unwrap(),
+            [] as [String; 0]
+        );
+    }
+
+    #[test]
+    fn sidebar_reports_asymmetry_and_orphan_pages() {
+        let tmp = tempfile::tempdir().unwrap();
+        let wiki = tmp.path();
+        fs::write(wiki.join("Home-en.md"), "# Home\n").unwrap();
+        fs::write(wiki.join("Extra-en.md"), "# Extra\n").unwrap();
+        fs::write(wiki.join("Orphan-en.md"), "# Orphan\n").unwrap();
+        fs::write(wiki.join("Главная.md"), "# Главная\n").unwrap();
+        fs::write(
+            wiki.join("_Sidebar.md"),
+            concat!(
+                "## 🇬🇧 English\n\n- [Home](https://x/wiki/Home-en)\n",
+                "- [Extra](https://x/wiki/Extra-en)\n\n",
+                "## 🇷🇺 Русский\n\n- [Главная](https://x/wiki/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F)\n\n",
+                "## 📚 Reference\n"
+            )
+        )
+        .unwrap();
+
+        let issues = check_sidebar(&wiki.join("_Sidebar.md"), wiki).unwrap();
+        assert!(
+            issues
+                .iter()
+                .any(|i| i.contains("2 English pages but 1 Russian"))
+        );
+        assert!(
+            issues
+                .iter()
+                .any(|i| i.contains("Orphan-en.md is not linked"))
+        );
+    }
+
+    #[test]
+    fn run_passes_on_the_real_repository() {
+        run().unwrap();
+    }
 }
