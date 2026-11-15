@@ -22,3 +22,6 @@ name = "minimal"
 path = "src/main.rs"
 test = false
 bench = false
+
+[lints]
+workspace = true

@@ -12,7 +12,7 @@
 //!    [`TelegramContext`].
 //! 3. `ready()` + `expand()` — signal Telegram that the interface is up.
 //! 4. Greet the launching user from the parsed context.
-//! 5. Wire the MainButton: each click fires haptic feedback and persists a
+//! 5. Wire the `MainButton`: each click fires haptic feedback and persists a
 //!    visit counter through `DeviceStorage`.
 //!
 //! Inside Telegram the platform injects `telegram-web-app.js` itself; the app
@@ -45,11 +45,11 @@ use web_sys::window;
 const VISITS_KEY: &str = "minimal_visits";
 
 /// Boots the mini app: installs the mock when needed, initializes the SDK,
-/// marks the interface ready, renders the greeting and wires the MainButton.
+/// marks the interface ready, renders the greeting and wires the `MainButton`.
 ///
 /// # Errors
 /// Returns a `JsValue` error when the mock cannot be installed, `init_sdk`
-/// cannot parse the launch context, the WebApp handle is unavailable, or a
+/// cannot parse the launch context, the `WebApp` handle is unavailable, or a
 /// bridge call (`ready`, `expand`, button wiring) throws.
 #[wasm_bindgen]
 pub fn main() -> Result<(), JsValue> {
@@ -84,7 +84,7 @@ fn render_greeting() -> Result<(), JsValue> {
     set_text("greeting", &greeting)
 }
 
-/// Labels the MainButton and attaches the visit-recording callback.
+/// Labels the `MainButton` and attaches the visit-recording callback.
 ///
 /// The returned [`EventHandle`] is intentionally leaked: the callback must
 /// outlive this function, and dropping the handle would unregister it.

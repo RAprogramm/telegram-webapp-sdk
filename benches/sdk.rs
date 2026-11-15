@@ -115,7 +115,10 @@ fn parse_init_data(raw: &str) -> TelegramInitData {
 }
 
 mod init_data {
-    use super::*;
+    use super::{
+        Bencher, TelegramChat, TelegramInitDataInternal, TelegramUser, black_box, parse_init_data,
+        sample_chat_json, sample_init_data, sample_user
+    };
 
     #[divan::bench]
     fn urlencoded_internal(bencher: Bencher) {
@@ -163,7 +166,7 @@ mod init_data {
 }
 
 mod theme {
-    use super::*;
+    use super::{Bencher, TelegramThemeParams, black_box, full_theme};
 
     #[divan::bench]
     fn css_vars_full(bencher: Bencher) {
@@ -192,7 +195,9 @@ mod theme {
 }
 
 mod mock {
-    use super::*;
+    use super::{
+        Bencher, MOCK_CONFIG, MockTelegramConfig, black_box, generate_mock_init_data, sample_user
+    };
 
     #[divan::bench]
     fn generate_init_data(bencher: Bencher) {

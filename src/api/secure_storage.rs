@@ -14,7 +14,7 @@ use web_sys::window;
 use crate::utils::promise::{await_one_shot, one_shot_promise};
 
 /// Value read from Telegram's secure storage.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SecureStorageValue {
     /// Stored value, absent when the key is not stored on the device.
     pub value:       Option<String>,

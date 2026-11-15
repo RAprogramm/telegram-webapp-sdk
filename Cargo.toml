@@ -17,6 +17,16 @@ all-features = true
 [workspace.package]
 rust-version = "1.100"
 
+[workspace.lints.clippy]
+# The lint floor lives in the manifest so every `cargo clippy` (local, CI,
+# agents) enforces it, not only the CI command line. `priority = -1` lets the
+# individual allowances below win over the denied groups.
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+# The bridge is single-threaded wasm: `JsFuture` is `!Send` by design, so every
+# future awaiting `Telegram.WebApp` is `!Send` and a `Send` bound is meaningless.
+future_not_send = "allow"
+
 [workspace.dependencies]
 inventory = "0.3"
 masterror = "0.32"
@@ -107,3 +117,6 @@ divan = { version = "6.0.0", package = "codspeed-divan-compat" }
 name = "sdk"
 harness = false
 required-features = ["mock"]
+
+[lints]
+workspace = true

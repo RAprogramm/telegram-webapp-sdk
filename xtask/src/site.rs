@@ -9,7 +9,7 @@
 //!
 //! Example: `cargo run -p xtask -- site --out "$RUNNER_TEMP/site"`.
 
-use std::{collections::HashMap, fs, path::Path, process::Command};
+use std::{collections::HashMap, fmt::Write as _, fs, path::Path, process::Command};
 
 use percent_encoding::percent_decode_str;
 use regex::Regex;
@@ -54,10 +54,7 @@ enum ItemKind {
 pub fn run(out_dir: Option<&Path>) -> Result<(), TaskError> {
     let root = repo_root()?;
     let wiki_dir = root.join("wiki");
-    let out_dir = match out_dir {
-        Some(dir) => dir.to_path_buf(),
-        None => root.join("target").join("site")
-    };
+    let out_dir = out_dir.map_or_else(|| root.join("target").join("site"), Path::to_path_buf);
 
     let sidebar = read_file(&wiki_dir.join("_Sidebar.md"))?;
     let books = parse_sidebar(&sidebar)?;
@@ -199,7 +196,7 @@ fn llms_txt(books: &HashMap<String, Vec<SidebarItem>>) -> String {
         let Some(items) = books.get(*code) else {
             continue;
         };
-        text.push_str(&format!("## Documentation ({name})\n\n"));
+        let _ = write!(text, "## Documentation ({name})\n\n");
         for item in items {
             if item.kind == ItemKind::Part {
                 continue;
@@ -207,10 +204,11 @@ fn llms_txt(books: &HashMap<String, Vec<SidebarItem>>) -> String {
             let Some(slug) = item.slug.as_deref() else {
                 continue;
             };
-            text.push_str(&format!(
-                "- [{}]({SITE_BASE_URL}{code}/{slug}.html)\n",
+            let _ = writeln!(
+                text,
+                "- [{}]({SITE_BASE_URL}{code}/{slug}.html)",
                 item.title
-            ));
+            );
         }
         text.push('\n');
     }
@@ -295,12 +293,14 @@ fn build_book(
         match item.kind {
             ItemKind::Home => {
                 let slug = item.slug.as_deref().unwrap_or_default();
-                summary.push_str(&format!("[{}]({slug}.md)\n\n", item.title));
+                let _ = write!(summary, "[{}]({slug}.md)\n\n", item.title);
             }
-            ItemKind::Part => summary.push_str(&format!("# {}\n\n", item.title)),
+            ItemKind::Part => {
+                let _ = write!(summary, "# {}\n\n", item.title);
+            }
             ItemKind::Page => {
                 let slug = item.slug.as_deref().unwrap_or_default();
-                summary.push_str(&format!("- [{}]({slug}.md)\n", item.title));
+                let _ = writeln!(summary, "- [{}]({slug}.md)", item.title);
             }
         }
     }

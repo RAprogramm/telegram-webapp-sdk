@@ -18,7 +18,7 @@
 //!    [`EndpointError`](telegram_webapp_sdk::api::serverless::EndpointError),
 //!    which is also part of the demo).
 //! 2. `init_sdk()` + `ready()` + `expand()`.
-//! 3. MainButton click calls the `getVisits` endpoint, which increments and
+//! 3. `MainButton` click calls the `getVisits` endpoint, which increments and
 //!    returns a per-user counter stored in the platform database.
 //!
 //! See `README.md` in this directory for the end-to-end setup with your own
@@ -48,11 +48,11 @@ struct Visits {
 }
 
 /// Boots the mini app: installs the mock when needed, initializes the SDK,
-/// marks the interface ready, renders the greeting and wires the MainButton.
+/// marks the interface ready, renders the greeting and wires the `MainButton`.
 ///
 /// # Errors
 /// Returns a `JsValue` error when the mock cannot be installed, `init_sdk`
-/// cannot parse the launch context, the WebApp handle is unavailable, or a
+/// cannot parse the launch context, the `WebApp` handle is unavailable, or a
 /// bridge call (`ready`, `expand`, button wiring) throws.
 #[wasm_bindgen]
 pub fn main() -> Result<(), JsValue> {
@@ -87,7 +87,7 @@ fn render_greeting() -> Result<(), JsValue> {
     set_text("greeting", &greeting)
 }
 
-/// Labels the MainButton and attaches the Serverless call.
+/// Labels the `MainButton` and attaches the Serverless call.
 ///
 /// The returned [`EventHandle`] is intentionally leaked: the callback must
 /// outlive this function, and dropping the handle would unregister it.

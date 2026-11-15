@@ -29,3 +29,6 @@ name = "demo"
 path = "src/main.rs"
 test = false
 bench = false
+
+[lints]
+workspace = true

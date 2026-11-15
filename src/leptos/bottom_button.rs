@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+#![expect(
+    clippy::empty_enums,
+    reason = "leptos #[component] expands to a TypedBuilder with an empty state enum"
+)]
+
 use std::{cell::RefCell, collections::HashMap};
 
 use leptos::prelude::*;
@@ -49,7 +54,10 @@ thread_local! {
 /// }
 /// ```
 #[component]
-#[must_use]
+#[expect(
+    clippy::must_use_candidate,
+    reason = "the #[must_use] attribute is stripped by the #[component] expansion"
+)]
 pub fn BottomButton<F>(
     /// Reactive text label displayed on the button.
     #[prop(into)]
