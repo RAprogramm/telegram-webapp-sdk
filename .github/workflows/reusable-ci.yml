@@ -262,6 +262,9 @@ jobs:
             exit 1
           fi
 
+      - name: WebApp API conformance
+        run: cargo +${{ needs.setup.outputs.msrv }} run -p xtask -- conformance
+
       - name: Package (dry-run)
         run: cargo +${{ needs.setup.outputs.msrv }} package --locked
 

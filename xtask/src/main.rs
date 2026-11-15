@@ -24,12 +24,13 @@ use std::{
 use masterror::Error;
 
 mod check_all;
+mod conformance;
 mod site;
 
 /// Errors surfaced by the development tasks.
 #[derive(Debug, Error)]
 pub enum TaskError {
-    #[error("unknown command `{command}`; expected one of: check-all, site, help")]
+    #[error("unknown command `{command}`; expected one of: check-all, conformance, site, help")]
     UnknownCommand { command: String },
     #[error("unknown option `{option}`")]
     UnknownOption { option: String },
@@ -74,7 +75,15 @@ pub enum TaskError {
     #[error("`mdbook build` for language `{lang}` exited with {status}")]
     MdbookFailed { lang: String, status: String },
     #[error("verification steps failed: {failed}")]
-    ChecksFailed { failed: String }
+    ChecksFailed { failed: String },
+    #[error("WEBAPP_API.md lists entries absent from the official bridge: {missing}")]
+    ConformanceDrift { missing: String },
+    #[error("failed to fetch the bridge script from {url}: {error}")]
+    ConformanceFetch {
+        url:   String,
+        #[source]
+        error: reqwest::Error
+    }
 }
 
 fn main() -> Result<(), TaskError> {
@@ -85,6 +94,7 @@ fn main() -> Result<(), TaskError> {
     );
     match command.as_str() {
         "check-all" => check_all::run(),
+        "conformance" => conformance::run(parse_conformance_js(args)?.as_deref()),
         "site" => site::run(parse_site_out(args)?.as_deref()),
         "help" | "--help" | "-h" => {
             print_usage();
@@ -119,6 +129,31 @@ fn parse_site_out<I: Iterator<Item = OsString>>(args: I) -> Result<Option<PathBu
     Ok(out)
 }
 
+/// Parses the optional `--js FILE` option of the `conformance` subcommand.
+///
+/// Returns the explicit bridge-script path, or `None` when the script should
+/// be downloaded (with cache fallback).
+fn parse_conformance_js<I: Iterator<Item = OsString>>(
+    args: I
+) -> Result<Option<PathBuf>, TaskError> {
+    let mut iter = args;
+    let mut js: Option<PathBuf> = None;
+    while let Some(arg) = iter.next() {
+        let text = arg.to_string_lossy().into_owned();
+        if text == "--js" {
+            let value = iter.next().ok_or_else(|| TaskError::MissingOptionValue {
+                option: "--js".to_string()
+            })?;
+            js = Some(PathBuf::from(value));
+        } else {
+            return Err(TaskError::UnknownOption {
+                option: text
+            });
+        }
+    }
+    Ok(js)
+}
+
 /// Returns the workspace root directory (the parent of the xtask package).
 ///
 /// Relies on `CARGO_MANIFEST_DIR`, which cargo sets for the running binary.
@@ -145,6 +180,8 @@ fn print_usage() {
 
 Commands:
   check-all             run fmt, clippy, tests, doctests, wasm check, README sync
+  conformance [--js F]  verify every WEBAPP_API.md entry exists in the official
+                        telegram-web-app.js bridge (F: local bridge copy)
   site [--out DIR]      build the multilingual docs site from wiki/ with mdBook
                         (default output: <workspace>/target/site)
   help                  show this message

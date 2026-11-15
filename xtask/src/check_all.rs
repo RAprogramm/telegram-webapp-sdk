@@ -42,6 +42,11 @@ const STEPS: &[(&str, &str, &[&str])] = &[
             "--all-features"
         ]
     ),
+    (
+        "conformance",
+        "cargo",
+        &["run", "-p", "xtask", "--", "conformance"]
+    ),
     ("readme refresh", "cargo", &["run", "-p", "update-readme"]),
     ("readme sync", "git", &["diff", "--exit-code", "README.md"])
 ];
