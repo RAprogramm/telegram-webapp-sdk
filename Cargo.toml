@@ -95,6 +95,9 @@ exclude = ["examples/integration/frontend"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 wasm-bindgen-futures = "0.4"
+any_spawner = { version = "0.3", features = ["wasm-bindgen"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 divan = { version = "6.0.0", package = "codspeed-divan-compat" }
 
 [[bench]]

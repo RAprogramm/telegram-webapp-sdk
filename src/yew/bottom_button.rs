@@ -95,9 +95,9 @@ mod tests {
         webapp
     }
 
-    #[wasm_bindgen_test]
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn renders_and_registers_callback() {
+    async fn renders_and_registers_callback() {
         let webapp = setup_webapp();
         let main = Object::new();
 
@@ -124,8 +124,14 @@ mod tests {
             on_click:   Callback::from(move |()| clicked_clone.set(true))
         };
         let document = window().unwrap().document().unwrap();
-        yew::Renderer::<BottomButton>::with_root_and_props(document.body().unwrap().into(), props)
-            .render();
+        let root = document.create_element("div").unwrap();
+        document.body().unwrap().append_child(&root).unwrap();
+        yew::Renderer::<BottomButton>::with_root_and_props(root.into(), props).render();
+
+        for _ in 0..64 {
+            let _ = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::NULL))
+                .await;
+        }
 
         let show_called = Reflect::get(&main, &"show_called".into())
             .unwrap_or(JsValue::FALSE)

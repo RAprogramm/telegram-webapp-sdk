@@ -100,6 +100,7 @@ fn parse_init_data(raw: &str) -> TelegramInitData {
         .unwrap();
     TelegramInitData {
         query_id: raw.query_id,
+        chat_join_request_query_id: raw.chat_join_request_query_id,
         user,
         receiver,
         chat,

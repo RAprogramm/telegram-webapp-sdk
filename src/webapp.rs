@@ -982,10 +982,11 @@ mod tests {
         let app = TelegramWebApp::instance().unwrap();
         let status = Rc::new(RefCell::new(String::new()));
         let status_clone = Rc::clone(&status);
-        app.on_invoice_closed(move |s| {
-            *status_clone.borrow_mut() = s;
-        })
-        .unwrap();
+        let _handle = app
+            .on_invoice_closed(move |s| {
+                *status_clone.borrow_mut() = s;
+            })
+            .unwrap();
 
         let cb = Reflect::get(&webapp, &"cb".into())
             .unwrap()

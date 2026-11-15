@@ -222,10 +222,9 @@ jobs:
           echo "Using chromedriver: ${CHROMEDRIVER}"
 
       - name: Run wasm tests
-        # Informational gate: this suite has never been executed before, so it
-        # reports without blocking the pipeline. Flip this to false once the
-        # pre-existing browser failures are gone.
-        continue-on-error: true
+        # Blocking gate: the browser suite is green (navigation-safe tests,
+        # lifecycle-ordered context tests, Promise-returning storage mocks).
+        continue-on-error: false
         run: cargo +${{ needs.setup.outputs.msrv }} test --target wasm32-unknown-unknown --all-features
 
   # 📦 Build & Package

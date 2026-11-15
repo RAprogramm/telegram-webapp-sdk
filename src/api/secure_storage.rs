@@ -178,7 +178,7 @@ mod tests {
     #[allow(dead_code)]
     async fn get_calls_js() {
         let storage = setup_secure_storage();
-        let func = Function::new_with_args("k", "return this[k];");
+        let func = Function::new_with_args("k", "return Promise.resolve(this[k]);");
         let _ = Reflect::set(&storage, &"get".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));
         let value = get("a").await.unwrap();
@@ -195,7 +195,7 @@ mod tests {
     #[allow(dead_code)]
     async fn restore_calls_js() {
         let storage = setup_secure_storage();
-        let func = Function::new_with_args("k", "return this[k];");
+        let func = Function::new_with_args("k", "return Promise.resolve(this[k]);");
         let _ = Reflect::set(&storage, &"restore".into(), &func);
         let _ = Reflect::set(&storage, &"a".into(), &JsValue::from_str("b"));
         let value = restore("a").await.unwrap();

@@ -3040,6 +3040,7 @@ checksum = "07dd1d452d2c3dc94a4e1c5c3c9a3cc88c2ef5926674b75881e454c4dc3a14c4"
 name = "telegram-webapp-sdk"
 version = "0.12.0"
 dependencies = [
+ "any_spawner",
  "codspeed-divan-compat",
  "inventory",
  "js-sys",

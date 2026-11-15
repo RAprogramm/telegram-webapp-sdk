@@ -187,22 +187,28 @@ mod tests {
 
         use super::super::get_launch_params;
 
-        #[allow(dead_code)]
         #[wasm_bindgen_test]
-        fn get_launch_params_returns_error_without_window() {
-            let err = get_launch_params().unwrap_err();
-            assert_eq!(err, JsValue::from_str("no window"));
+        fn get_launch_params_defaults_platform_in_browser() -> Result<(), JsValue> {
+            let params = get_launch_params()?;
+            assert_eq!(params.tg_web_app_platform.as_deref(), Some("web"));
+            assert!(params.tg_web_app_version.is_none());
+            assert!(params.tg_web_app_start_param.is_none());
+            Ok(())
         }
 
         #[wasm_bindgen_test]
         fn get_launch_params_reads_first_query_parameter() -> Result<(), JsValue> {
             let window = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
             let location = window.location();
-            let original_search = location.search().unwrap_or_default();
+            let history = window.history()?;
+            let original_href = location.href()?;
+            let probe_url = format!(
+                "{}{}?tgWebAppPlatform=android&tgWebAppVersion=9.2&tgWebAppStartParam=hello%2Bworld+test&tgWebAppShowSettings=1&tgWebAppBotInline=0",
+                location.origin()?,
+                location.pathname()?
+            );
 
-            location.set_search(
-                "?tgWebAppPlatform=android&tgWebAppVersion=9.2&tgWebAppStartParam=hello%2Bworld+test&tgWebAppShowSettings=1&tgWebAppBotInline=0"
-            )?;
+            history.replace_state_with_url(&JsValue::NULL, "", Some(&probe_url))?;
 
             let params = get_launch_params()?;
             assert_eq!(params.tg_web_app_platform.as_deref(), Some("android"));
@@ -214,7 +220,7 @@ mod tests {
             assert_eq!(params.tg_web_app_show_settings, Some(true));
             assert_eq!(params.tg_web_app_bot_inline, Some(false));
 
-            location.set_search(&original_search)?;
+            history.replace_state_with_url(&JsValue::NULL, "", Some(&original_href))?;
             Ok(())
         }
     }
