@@ -18,6 +18,7 @@ use crate::{TaskError, io_error, repo_root};
 
 const REPO_URL: &str = "https://github.com/RAprogramm/telegram-webapp-sdk";
 const WIKI_URL: &str = "https://github.com/RAprogramm/telegram-webapp-sdk/wiki/";
+const SITE_BASE_URL: &str = "https://raprogramm.github.io/telegram-webapp-sdk/";
 const LANGUAGES: &[(&str, &str)] = &[("English", "en"), ("Русский", "ru")];
 
 const HOME_PATTERN: &str = r"^\*\*\[(.+?)\]\((\S+?)\)\*\*$";
@@ -84,6 +85,7 @@ pub fn run(out_dir: Option<&Path>) -> Result<(), TaskError> {
         build_book(lang, items, &wiki_dir, work.path(), &out_dir, &slug_lang)?;
     }
 
+    write_file(&out_dir.join("llms.txt"), &llms_txt(&books))?;
     copy_file(
         &root.join("site").join("landing.html"),
         &out_dir.join("index.html")
@@ -174,6 +176,52 @@ fn build_slug_index(books: &HashMap<String, Vec<SidebarItem>>) -> HashMap<String
                 .filter_map(move |item| item.slug.clone().map(|slug| (slug, lang.clone())))
         })
         .collect()
+}
+
+/// Renders the `llms.txt` index of the built site in the llmstxt.org format:
+/// project summary, one section per language book, and optional links.
+///
+/// # Examples
+/// ```text
+/// # telegram-webapp-sdk
+/// > Rust SDK for building Telegram Mini Apps ...
+/// ## Documentation (English)
+/// - [Home](https://raprogramm.github.io/telegram-webapp-sdk/en/Home-en.html)
+/// ```
+fn llms_txt(books: &HashMap<String, Vec<SidebarItem>>) -> String {
+    let mut text = String::from(
+        "# telegram-webapp-sdk\n\n> Rust SDK for building Telegram Mini Apps (WebApps) \
+         targeting wasm32-unknown-unknown: full `Telegram.WebApp` JS API bindings, Yew and \
+         Leptos integrations, routing macros, a mock runtime for local development, and \
+         typed errors that explain how to recover.\n\n"
+    );
+    for (name, code) in LANGUAGES {
+        let Some(items) = books.get(*code) else {
+            continue;
+        };
+        text.push_str(&format!("## Documentation ({name})\n\n"));
+        for item in items {
+            if item.kind == ItemKind::Part {
+                continue;
+            }
+            let Some(slug) = item.slug.as_deref() else {
+                continue;
+            };
+            text.push_str(&format!(
+                "- [{}]({SITE_BASE_URL}{code}/{slug}.html)\n",
+                item.title
+            ));
+        }
+        text.push('\n');
+    }
+    text.push_str(
+        "## Optional\n\n\
+         - [API reference](https://docs.rs/telegram-webapp-sdk)\n\
+         - [Crate page](https://crates.io/crates/telegram-webapp-sdk)\n\
+         - [Source repository]({REPO_URL})\n\
+         - [WebApp API coverage checklist]({REPO_URL}/blob/main/WEBAPP_API.md)\n"
+    );
+    text
 }
 
 /// Rewrites wiki links: same book becomes `slug.md`, other book becomes
@@ -314,4 +362,92 @@ fn copy_file(from: &Path, to: &Path) -> Result<(), TaskError> {
             error
         })
         .map(|_| ())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use super::{TaskError, build_slug_index, llms_txt, parse_sidebar, rewrite_links, slug_of};
+
+    const SIDEBAR: &str = "## 🌐 Language\n\n\
+        [🇬🇧 English](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Home-en) | \
+        [🇷🇺 Русский](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Главная)\n\n\
+        ---\n\n## 🇬🇧 English\n\n\
+        **[Home](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Home-en)**\n\n\
+        **Getting Started**\n\
+        - [Installation](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Installation-en)\n\n\
+        ---\n\n## 🇷🇺 Русский\n\n\
+        **[Главная](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Главная)**\n";
+
+    #[test]
+    fn parse_sidebar_discovers_books_and_items() {
+        let books = parse_sidebar(SIDEBAR).expect("sidebar parses");
+        let english = books.get("en").expect("english book present");
+        assert_eq!(english.len(), 3);
+        assert_eq!(english[0].title, "Home");
+        assert_eq!(english[0].slug.as_deref(), Some("Home-en"));
+        assert_eq!(english[1].title, "Getting Started");
+        assert_eq!(english[1].slug, None);
+        assert_eq!(english[2].slug.as_deref(), Some("Installation-en"));
+        let russian = books.get("ru").expect("russian book present");
+        assert_eq!(russian[0].slug.as_deref(), Some("Главная"));
+    }
+
+    #[test]
+    fn parse_sidebar_without_language_sections_yields_nothing() {
+        let books = parse_sidebar("## 🌐 Language\n\n- [x](y)\n").expect("parses");
+        assert!(books.is_empty());
+    }
+
+    #[test]
+    fn slug_of_decodes_percent_escapes_and_rejects_invalid_utf8() {
+        let decoded = slug_of("https://host/wiki/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F")
+            .expect("valid utf-8");
+        assert_eq!(decoded, "Главная");
+        assert!(matches!(
+            slug_of("https://host/wiki/%FF"),
+            Err(TaskError::SlugDecode { .. })
+        ));
+    }
+
+    #[test]
+    fn rewrite_links_rewrites_known_and_keeps_unknown_targets() {
+        let books = parse_sidebar(SIDEBAR).expect("sidebar parses");
+        let slug_lang = build_slug_index(&books);
+        let text = "[en](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Installation-en) \
+                    [anchor](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Home-en#top) \
+                    [ru](https://github.com/RAprogramm/telegram-webapp-sdk/wiki/Главная) \
+                    [ext](https://example.com/x) [rel](unknown-page)";
+        let rewritten = rewrite_links(text, "en", &slug_lang).expect("regex builds");
+        assert!(rewritten.contains("](Installation-en.md)"));
+        assert!(rewritten.contains("](Home-en.md#top)"));
+        assert!(rewritten.contains("](../ru/Главная.html)"));
+        assert!(rewritten.contains("](https://example.com/x)"));
+        assert!(rewritten.contains("](unknown-page)"));
+    }
+
+    #[test]
+    fn llms_txt_lists_pages_per_language_and_optional_links() {
+        let books = parse_sidebar(SIDEBAR).expect("sidebar parses");
+        let text = llms_txt(&books);
+        assert!(text.starts_with("# telegram-webapp-sdk\n"));
+        assert!(text.contains("## Documentation (English)"));
+        assert!(text.contains(
+            "- [Home](https://raprogramm.github.io/telegram-webapp-sdk/en/Home-en.html)"
+        ));
+        assert!(text.contains("## Documentation (Русский)"));
+        assert!(text.contains(
+            "- [Главная](https://raprogramm.github.io/telegram-webapp-sdk/ru/Главная.html)"
+        ));
+        assert!(text.contains("## Optional"));
+        assert!(!text.contains("Getting Started"));
+    }
+
+    #[test]
+    fn llms_txt_without_books_omits_language_sections() {
+        let text = llms_txt(&HashMap::new());
+        assert!(!text.contains("## Documentation"));
+        assert!(text.contains("## Optional"));
+    }
 }

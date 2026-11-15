@@ -22,8 +22,16 @@ const STEPS: &[(&str, &str, &[&str])] = &[
             "warnings"
         ]
     ),
-    ("tests", "cargo", &["nextest", "run", "--all-features"]),
-    ("doctests", "cargo", &["test", "--doc", "--all-features"]),
+    (
+        "tests",
+        "cargo",
+        &["nextest", "run", "--workspace", "--all-features"]
+    ),
+    (
+        "doctests",
+        "cargo",
+        &["test", "--doc", "--workspace", "--all-features"]
+    ),
     (
         "wasm check",
         "cargo",

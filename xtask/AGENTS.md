@@ -18,10 +18,11 @@ cargo run -p xtask -- help
 - Errors: one `TaskError` enum in `main.rs` with `masterror` derive; every
   variant message must say what failed and where.
 - Never `unwrap()`/`expect()` — propagate through `TaskError`.
-- `site` must keep producing byte-identical output to the retired
+- `site` must keep producing byte-identical mdBook output to the retired
   `site/build.py` (mdBook 0.5.3): same SUMMARY structure, same link
-  rewriting, same landing page assembly. Verify with a fresh `mdbook` build
-  before changing it.
+  rewriting, same landing page assembly. `llms.txt` at the output root is an
+  intentional addition on top of the Python builder's output. Verify with a
+  fresh `mdbook` build before changing it.
 - `check-all` mirrors CI: every step runs even after a failure and the final
   error lists all failed steps. Keep the step list in sync with
   `.github/workflows/reusable-ci.yml`.
