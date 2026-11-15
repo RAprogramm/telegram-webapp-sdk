@@ -20,6 +20,23 @@ trunk serve        # http://localhost:8081
 Read it top to bottom before writing your own app — every step it takes is one
 the SDK docs explain in detail.
 
+## `examples/serverless` — Mini App on Telegram Serverless
+
+A full-stack demo whose backend runs on [Telegram
+Serverless](https://core.telegram.org/bots/serverless) instead of a self-hosted
+server: the Rust frontend calls the `getVisits` endpoint through
+`api::serverless::call`, and the endpoint (a JavaScript module in
+`tgcloud/endpoints/`) keeps a per-user counter in the platform's built-in
+database. One `npm run deploy` ships frontend and backend together to
+`https://app<app_id>.tgcloud.ai/`. The directory `README.md` walks through the
+@BotFather setup.
+
+```bash
+cd examples/serverless
+trunk serve          # local UI with the mock; http://localhost:8082
+npm run deploy       # build + tgcloud push (after `npx tgcloud login`)
+```
+
 ## `demo/` — Trunk WASM app
 
 A complete Mini App built with the `macros` and `mock` features. It uses

@@ -85,6 +85,7 @@ full = ["macros", "yew", "leptos", "mock"]
 members = [
   "demo",
   "examples/minimal",
+  "examples/serverless",
   "examples/vanilla",
   "examples/bots/rust_bot",
   "examples/integration/backend",
