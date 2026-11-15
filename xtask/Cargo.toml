@@ -1,0 +1,16 @@
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2024"
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "xtask"
+path = "src/main.rs"
+
+[dependencies]
+masterror = { workspace = true }
+regex = "1"
+percent-encoding = "2"
+tempfile = "3"

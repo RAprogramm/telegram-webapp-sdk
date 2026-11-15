@@ -88,6 +88,7 @@ members = [
   "examples/bots/rust_bot",
   "examples/integration/backend",
   "tools/update-readme",
+  "xtask",
 ]
 default-members = ["."]
 exclude = ["examples/integration/frontend"]
