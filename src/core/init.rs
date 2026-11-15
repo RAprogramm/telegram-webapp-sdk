@@ -44,8 +44,8 @@ impl std::fmt::Display for InitError {
             Self::TelegramUnavailable => write!(
                 f,
                 "window.Telegram is undefined — open the app inside a Telegram chat as a Mini \
-                 App, or enable the `mock` feature and call mock::mock_telegram_webapp() to \
-                 develop in a plain browser"
+                 App, or enable the `mock` feature and call mock::init::mock_telegram_webapp() \
+                 to develop in a plain browser"
             ),
             Self::WebAppUnavailable => write!(
                 f,
