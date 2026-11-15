@@ -31,7 +31,7 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-telegram-webapp-sdk = { version = "0.12", features = ["mock"] }
+telegram-webapp-sdk = { version = "0.13", features = ["mock"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element"] }
