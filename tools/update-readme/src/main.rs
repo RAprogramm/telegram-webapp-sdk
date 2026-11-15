@@ -486,23 +486,22 @@ fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
     let commit_short: String = status.coverage_commit.chars().take(7).collect();
     let relation = if status.covered_version == status.latest_version {
         format!(
-            "matches the latest Telegram WebApp API release `{}`",
+            "matches the latest Telegram `WebApp` API release `{}`",
             status.latest_version
         )
     } else {
         format!(
-            "lags behind the latest Telegram WebApp API release `{}`",
+            "lags behind the latest Telegram `WebApp` API release `{}`",
             status.latest_version
         )
     };
     let date_suffix = status
         .coverage_date
         .as_deref()
-        .map(|date| format!(" (recorded on {date})"))
-        .unwrap_or_default();
+        .map_or_default(|date| format!(" (recorded on {date})"));
 
     format!(
-        "**WebApp API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.
+        "**`WebApp` API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.
 ",
         covered = status.covered_version,
         relation = relation,

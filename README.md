@@ -5,13 +5,13 @@
 
 <a id="readme-top"></a>
 
-# Telegram WebApp SDK
+# Telegram `WebApp` SDK
 
 [![Crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 [![docs.rs](https://img.shields.io/docsrs/telegram-webapp-sdk)](https://docs.rs/telegram-webapp-sdk)
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 <!-- msrv_badge:start -->
-![MSRV](https://img.shields.io/badge/MSRV-1.99-blue)
+![MSRV](https://img.shields.io/badge/MSRV-1.100-blue)
 <!-- msrv_badge:end -->
 ![License](https://img.shields.io/badge/License-MIT-informational)
 [![codecov](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graph/badge.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
@@ -104,7 +104,7 @@ The top section represents the entire project. Proceeding with folders and final
 - Optional macros for automatic initialization and routing.
 - DOM helpers for ergonomic element manipulation.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
-  step with the Telegram WebApp API 9.6 feature set.
+  step with the Telegram `WebApp` API 9.6 feature set.
   
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -808,7 +808,7 @@ let _ = restore("token").await?;
 <p align="right"><a href="#readme-top">Back to top</a></p>
 ## Biometric authentication
 
-Guard privileged actions behind the BiometricManager API:
+Guard privileged actions behind the `BiometricManager` API:
 
 ```rust,no_run
 use telegram_webapp_sdk::api::biometric::{
@@ -919,10 +919,10 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.6` matches the latest Telegram WebApp API release `9.6`. Synced in commit [53276fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd) (recorded on 2026-05-13).
+**`WebApp` API coverage:** version `9.6` matches the latest Telegram `WebApp` API release `9.6`. Synced in commit [53276fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd) (recorded on 2026-05-13).
 <!-- webapp_api_summary:end -->
 
-See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
+See [`WEBAPP_API.md`](./WEBAPP_API.md) for a checklist of supported Telegram `WebApp` JavaScript API methods and features.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
