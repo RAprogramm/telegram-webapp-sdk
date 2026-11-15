@@ -42,7 +42,7 @@ pub fn main() -> Result<(), JsValue> {
 ```toml
 # Cargo.toml
 [dependencies]
-telegram-webapp-sdk = { version = "0.12", features = ["mock"] }
+telegram-webapp-sdk = { version = "0.13", features = ["mock"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 ```
