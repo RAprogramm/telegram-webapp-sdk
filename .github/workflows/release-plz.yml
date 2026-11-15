@@ -94,7 +94,7 @@ jobs:
           PR_JSON: ${{ steps.release_pr.outputs.pr }}
         run: |
           set -euo pipefail
-          branch=$(printf '%s' "$PR_JSON" | jq -er '.head.ref')
+          branch=$(printf '%s' "$PR_JSON" | jq -er '.head_branch')
           git fetch origin "$branch"
           git checkout "$branch"
           cargo run -p update-readme
