@@ -28,6 +28,13 @@ const SUMMARY_START: &str = "<!-- webapp_api_summary:start -->";
 const SUMMARY_END: &str = "<!-- webapp_api_summary:end -->";
 const MSRV_START: &str = "<!-- msrv_badge:start -->";
 const MSRV_END: &str = "<!-- msrv_badge:end -->";
+
+/// Docs outside `README.md` that pin the crate version in install examples;
+/// their `telegram-webapp-sdk = "…"` lines are rewritten from `Cargo.toml`.
+const VERSION_SYNCED_DOCS: &[&str] = &[
+    "skills/telegram-miniapp-rust/SKILL.md",
+    "skills/telegram-miniapp-rust/scripts/scaffold.sh"
+];
 const DEFAULT_SOURCE_URL: &str = "https://core.telegram.org/bots/webapps";
 const DEFAULT_VERSION_PROBE_URL: &str = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp";
 const BADGE_LINK_LABEL: &str = "Telegram WebApp API";
@@ -67,7 +74,13 @@ enum ReadmeUpdateError {
     #[error("{field} inherits from workspace, but [workspace.package].{field} is missing")]
     InheritanceValueMissing { field: String },
     #[error("failed to write README.md: {0}")]
-    WriteReadme(std::io::Error)
+    WriteReadme(std::io::Error),
+    #[error("failed to write file {path}: {error}")]
+    WriteFile {
+        path:  String,
+        #[source]
+        error: std::io::Error
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -266,6 +279,22 @@ fn run() -> Result<(), ReadmeUpdateError> {
 
     if updated != readme_content {
         fs::write(&readme_path, updated).map_err(ReadmeUpdateError::WriteReadme)?;
+    }
+
+    let dependency_version = major_minor(&package_version);
+    for relative in VERSION_SYNCED_DOCS {
+        let path = root.join(relative);
+        let content = fs::read_to_string(&path).map_err(|error| ReadmeUpdateError::ReadFile {
+            path: path.display().to_string(),
+            error
+        })?;
+        let synced = rewrite_crate_version(&content, &dependency_version);
+        if synced != content {
+            fs::write(&path, synced).map_err(|error| ReadmeUpdateError::WriteFile {
+                path: path.display().to_string(),
+                error
+            })?;
+        }
     }
 
     Ok(())
@@ -843,6 +872,15 @@ See https://docs.rs/telegram-webapp-sdk for details.
                 .contains(r#"telegram-webapp-sdk = { version = "0.11", features = ["macros"] }"#)
         );
         assert!(updated.contains("https://docs.rs/telegram-webapp-sdk for details."));
+    }
+
+    #[test]
+    fn version_synced_docs_exist_in_the_repository() {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let root = workspace_root(Path::new(&manifest_dir)).unwrap();
+        for relative in VERSION_SYNCED_DOCS {
+            assert!(root.join(relative).is_file(), "missing {relative}");
+        }
     }
 
     #[test]

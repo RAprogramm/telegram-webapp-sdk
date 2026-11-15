@@ -1,7 +1,9 @@
 # AGENTS.md — tools/update-readme
 
 Generator and validator for the managed sections of the root `README.md`
-(MSRV badge, WebApp API badges and summary, crate version in examples).
+(MSRV badge, WebApp API badges and summary, crate version in examples). It
+also rewrites the crate version in the skill install examples listed in
+`VERSION_SYNCED_DOCS` (`skills/telegram-miniapp-rust/`).
 
 ## Rules
 

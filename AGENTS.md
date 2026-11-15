@@ -87,7 +87,8 @@ and a `wasm-bindgen-cli` version matching `Cargo.lock`
 
 `tools/update-readme` rewrites the managed README sections (MSRV badge,
 WebApp API badges and summary, crate version in examples) from `WEBAPP_API.md`
-metadata and `Cargo.toml`. CI fails if the README is out of sync — always run
+metadata and `Cargo.toml`, and syncs the crate version in the skill install
+examples. CI fails if the README is out of sync — always run
 the tool and commit the result after touching either source.
 
 ## Workflows
