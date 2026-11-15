@@ -15,11 +15,11 @@ categories = ["web-programming", "wasm"]
 all-features = true
 
 [workspace.package]
-rust-version = "1.99"
+rust-version = "1.100"
 
 [workspace.dependencies]
 inventory = "0.3"
-masterror = "0.31"
+masterror = "0.32"
 
 
 [lib]
@@ -51,7 +51,6 @@ web-sys = { version = "0.3", features = [
 percent-encoding = "2"
 urlencoding = { version = "2", optional = true }
 inventory = { workspace = true, optional = true }
-toml = "1"
 
 [build-dependencies]
 version_check = "0.9"
