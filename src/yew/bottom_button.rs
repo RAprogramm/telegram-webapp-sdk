@@ -126,7 +126,7 @@ mod tests {
         let document = window().unwrap().document().unwrap();
         let root = document.create_element("div").unwrap();
         document.body().unwrap().append_child(&root).unwrap();
-        yew::Renderer::<BottomButton>::with_root_and_props(root.into(), props).render();
+        yew::Renderer::<BottomButton>::with_root_and_props(root, props).render();
 
         for _ in 0..64 {
             let _ = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::NULL))
