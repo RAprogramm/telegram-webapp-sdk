@@ -288,13 +288,11 @@ pub struct BottomButtonParams<'a> {
 ///     let _ = app.set_secondary_button_params(&params);
 /// }
 /// ```
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct SecondaryButtonParams<'a> {
     /// Parameters shared with the main button (text, colors, visibility, …).
-    #[serde(flatten)]
     pub common:   BottomButtonParams<'a>,
     /// Placement of the secondary button relative to the main button.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<SecondaryButtonPosition>
 }
 

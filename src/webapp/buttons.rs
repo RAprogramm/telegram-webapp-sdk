@@ -417,7 +417,12 @@ impl TelegramWebApp {
         &self,
         params: &SecondaryButtonParams<'_>
     ) -> Result<(), JsValue> {
-        let value = to_value(params).map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let value = to_value(&params.common).map_err(|err| JsValue::from_str(&err.to_string()))?;
+        if let Some(position) = params.position {
+            let position =
+                to_value(&position).map_err(|err| JsValue::from_str(&err.to_string()))?;
+            Reflect::set(&value, &"position".into(), &position)?;
+        }
         self.bottom_button_method(BottomButton::Secondary, "setParams", Some(&value))
     }
 
