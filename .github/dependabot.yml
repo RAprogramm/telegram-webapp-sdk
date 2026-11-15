@@ -44,8 +44,6 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 1
-      semver-minor-days: 2
-      semver-patch-days: 2
     commit-message:
       prefix: "deps(ci)"
       include: "scope"
