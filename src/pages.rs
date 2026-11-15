@@ -15,6 +15,7 @@ pub struct Page {
 collect!(Page);
 
 /// Returns iterator over registered pages.
-pub fn iter() -> inventory::iter<Page> {
+#[must_use]
+pub const fn iter() -> inventory::iter<Page> {
     inventory::iter::<Page>
 }

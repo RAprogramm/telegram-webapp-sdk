@@ -20,13 +20,10 @@ pub struct SafeAreaState {
 
 impl SafeAreaState {
     fn snapshot(app: Option<&TelegramWebApp>) -> Self {
-        match app {
-            Some(app) => Self {
-                area:    app.safe_area_inset(),
-                content: app.content_safe_area_inset()
-            },
-            None => Self::default()
-        }
+        app.map_or_else(Self::default, |app| Self {
+            area:    app.safe_area_inset(),
+            content: app.content_safe_area_inset()
+        })
     }
 }
 
@@ -40,7 +37,7 @@ pub fn use_safe_area() -> SafeAreaState {
 
     {
         let state = state.clone();
-        use_effect_with((), move |_| {
+        use_effect_with((), move |()| {
             let stash: HandleList = Rc::new(RefCell::new(Vec::new()));
             if let Some(app) = TelegramWebApp::instance() {
                 {
@@ -54,9 +51,8 @@ pub fn use_safe_area() -> SafeAreaState {
                 }
                 {
                     let app_for_handler = app.clone();
-                    let state_for_handler = state.clone();
                     if let Ok(handle) = app.on_content_safe_area_changed(move || {
-                        state_for_handler.set(SafeAreaState::snapshot(Some(&app_for_handler)));
+                        state.set(SafeAreaState::snapshot(Some(&app_for_handler)));
                     }) {
                         stash.borrow_mut().push(handle);
                     }

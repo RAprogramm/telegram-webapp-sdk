@@ -34,12 +34,14 @@ pub struct Router {
 
 impl Router {
     /// Creates an empty router.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Adds a page handler associated with `path` and returns the updated
     /// router.
+    #[must_use]
     pub fn register(mut self, path: &'static str, handler: fn()) -> Self {
         self.pages.push(Page {
             path,

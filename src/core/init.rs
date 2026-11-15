@@ -16,7 +16,7 @@ use crate::core::{
 };
 
 /// Typed initialization errors for better error handling and debugging.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InitError {
     /// Browser `window` object is not available
     WindowUnavailable,
@@ -35,14 +35,40 @@ pub enum InitError {
 impl std::fmt::Display for InitError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::WindowUnavailable => write!(f, "Browser window object is not available"),
-            Self::TelegramUnavailable => write!(f, "window.Telegram is undefined"),
-            Self::WebAppUnavailable => write!(f, "Telegram.WebApp is undefined"),
-            Self::InitDataParseFailed(msg) => write!(f, "Failed to parse initData: {msg}"),
-            Self::ThemeParamsParseFailed(msg) => {
-                write!(f, "Failed to parse theme parameters: {msg}")
-            }
-            Self::ContextInitFailed(msg) => write!(f, "Failed to initialize context: {msg}")
+            Self::WindowUnavailable => write!(
+                f,
+                "Browser window object is not available — the SDK needs a DOM window; \
+                 run the app compiled for wasm32-unknown-unknown in a browser page, not in a \
+                 Web Worker or a native binary"
+            ),
+            Self::TelegramUnavailable => write!(
+                f,
+                "window.Telegram is undefined — open the app inside a Telegram chat as a Mini \
+                 App, or enable the `mock` feature and call mock::init::mock_telegram_webapp() \
+                 to develop in a plain browser"
+            ),
+            Self::WebAppUnavailable => write!(
+                f,
+                "Telegram.WebApp is undefined — load the official \
+                 https://telegram.org/js/telegram-web-app.js script in the page <head> before \
+                 the app bundle"
+            ),
+            Self::InitDataParseFailed(msg) => write!(
+                f,
+                "Failed to parse initData: {msg} — pass the raw URL-encoded string from \
+                 Telegram.WebApp.initData unchanged; never hand-craft or re-encode it"
+            ),
+            Self::ThemeParamsParseFailed(msg) => write!(
+                f,
+                "Failed to parse theme parameters: {msg} — Telegram.WebApp.themeParams must be \
+                 the object injected by the client; call init_sdk() only after the client has \
+                 initialized the WebApp object"
+            ),
+            Self::ContextInitFailed(msg) => write!(
+                f,
+                "Failed to initialize context: {msg} — init_sdk() may run only once per page \
+                 load; reuse the initialized context via TelegramContext::get() instead"
+            )
         }
     }
 }
@@ -51,11 +77,11 @@ impl std::error::Error for InitError {}
 
 impl From<InitError> for JsValue {
     fn from(err: InitError) -> Self {
-        JsValue::from_str(&err.to_string())
+        Self::from_str(&err.to_string())
     }
 }
 
-/// Check if Telegram WebApp environment is available.
+/// Check if Telegram `WebApp` environment is available.
 ///
 /// Returns `true` if `window.Telegram.WebApp` exists and is defined.
 ///
@@ -69,13 +95,13 @@ impl From<InitError> for JsValue {
 ///     println!("Running in regular browser");
 /// }
 /// ```
+#[must_use]
 pub fn is_telegram_available() -> bool {
     window()
         .and_then(|w| Reflect::get(&w, &"Telegram".into()).ok())
         .filter(|tg| !tg.is_undefined())
         .and_then(|tg| Reflect::get(&tg, &"WebApp".into()).ok())
-        .filter(|webapp| !webapp.is_undefined())
-        .is_some()
+        .is_some_and(|webapp| !webapp.is_undefined())
 }
 
 /// Attempt to initialize SDK without panicking if Telegram environment is
@@ -105,10 +131,10 @@ pub fn try_init_sdk() -> Result<bool, InitError> {
     if !is_telegram_available() {
         return Ok(false);
     }
-    init_sdk_typed().map(|_| true)
+    init_sdk_typed().map(|()| true)
 }
 
-/// Internal typed version of init_sdk for use by try_init_sdk.
+/// Internal typed version of `init_sdk` for use by `try_init_sdk`.
 fn init_sdk_typed() -> Result<(), InitError> {
     let win = window().ok_or(InitError::WindowUnavailable)?;
     let telegram =
@@ -159,6 +185,7 @@ fn init_sdk_typed() -> Result<(), InitError> {
     // === 3. Construct final typed initData ===
     let init_data = TelegramInitData {
         query_id: raw.query_id,
+        chat_join_request_query_id: raw.chat_join_request_query_id,
         user,
         receiver,
         chat,
@@ -184,7 +211,7 @@ fn init_sdk_typed() -> Result<(), InitError> {
     Ok(())
 }
 
-/// Initializes Telegram WebApp SDK by extracting and validating context.
+/// Initializes Telegram `WebApp` SDK by extracting and validating context.
 ///
 /// - Parses `initData` (urlencoded) with embedded JSON.
 /// - Parses `themeParams` (object).

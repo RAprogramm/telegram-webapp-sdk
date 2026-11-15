@@ -19,7 +19,7 @@ pub struct MockTelegramConfig {
     pub auth_date: Option<String>,
     /// Hash used to verify the authenticity of the init data.
     pub hash: Option<String>,
-    /// Unique identifier of the WebApp query, used to answer inline queries.
+    /// Unique identifier of the `WebApp` query, used to answer inline queries.
     pub query_id: Option<String>,
     /// Value mocking the `bg_color` theme parameter (hex color string).
     pub bg_color: Option<String>,
@@ -61,12 +61,17 @@ pub struct MockTelegramConfig {
     pub destructive_text_color: Option<String>,
     /// Mocked platform identifier (e.g. `android`, `ios`, `tdesktop`).
     pub platform: Option<String>,
-    /// Mocked Telegram WebApp version string (e.g. `7.0`).
+    /// Mocked Telegram `WebApp` version string (e.g. `7.0`).
     pub version: Option<String>
 }
 
 impl MockTelegramConfig {
     /// Loads configuration from a TOML file.
+    ///
+    /// # Errors
+    /// Returns an error when `path` cannot be read (missing file, no
+    /// permission) or when its contents are not valid TOML for
+    /// [`MockTelegramConfig`].
     pub fn from_file(path: &str) -> Result<Self, Error> {
         let content = fs::read_to_string(path)?;
         toml::from_str(&content).map_err(|e| Error::new(ErrorKind::InvalidData, e))

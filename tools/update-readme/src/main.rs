@@ -9,14 +9,17 @@
 mod version_probe;
 
 use std::{
-    env, fs,
+    env, fmt, fs,
     path::{Path, PathBuf}
 };
 
 use masterror::Error;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use regex::Regex;
-use serde::Deserialize;
+use serde::{
+    Deserialize, Deserializer,
+    de::{self, Error as _, MapAccess, Visitor}
+};
 use version_probe::discover_latest_version;
 
 const BADGES_START: &str = "<!-- webapp_api_badges:start -->";
@@ -25,6 +28,13 @@ const SUMMARY_START: &str = "<!-- webapp_api_summary:start -->";
 const SUMMARY_END: &str = "<!-- webapp_api_summary:end -->";
 const MSRV_START: &str = "<!-- msrv_badge:start -->";
 const MSRV_END: &str = "<!-- msrv_badge:end -->";
+
+/// Docs outside `README.md` that pin the crate version in install examples;
+/// their `telegram-webapp-sdk = "…"` lines are rewritten from `Cargo.toml`.
+const VERSION_SYNCED_DOCS: &[&str] = &[
+    "skills/telegram-miniapp-rust/SKILL.md",
+    "skills/telegram-miniapp-rust/scripts/scaffold.sh"
+];
 const DEFAULT_SOURCE_URL: &str = "https://core.telegram.org/bots/webapps";
 const DEFAULT_VERSION_PROBE_URL: &str = "https://raw.githubusercontent.com/tdlib/telegram-bot-api/master/telegram-bot-api/telegram-bot-api.cpp";
 const BADGE_LINK_LABEL: &str = "Telegram WebApp API";
@@ -59,8 +69,18 @@ enum ReadmeUpdateError {
     RustVersionMissing,
     #[error("version field missing in Cargo.toml")]
     PackageVersionMissing,
+    #[error("{field} inherits from workspace, but [workspace.package] is missing")]
+    InheritanceSourceMissing { field: String },
+    #[error("{field} inherits from workspace, but [workspace.package].{field} is missing")]
+    InheritanceValueMissing { field: String },
     #[error("failed to write README.md: {0}")]
-    WriteReadme(std::io::Error)
+    WriteReadme(std::io::Error),
+    #[error("failed to write file {path}: {error}")]
+    WriteFile {
+        path:  String,
+        #[source]
+        error: std::io::Error
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -95,17 +115,100 @@ struct WebAppApiStatus {
     latest_version_probe_url: String
 }
 
+/// A `[package]` field that may hold a literal value or inherit it from the
+/// workspace through `field.workspace = true`.
+///
+/// Cargo lets inheritable manifest keys (`version`, `rust-version`, ...) be
+/// written either as a plain string or as a `{ workspace = true }` table. This
+/// type deserializes both shapes so inherited values can be resolved from
+/// `[workspace.package]`.
+///
+/// ```text
+/// rust-version = "1.99"          // Inheritable::Value("1.99")
+/// rust-version.workspace = true  // Inheritable::Workspace
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Inheritable {
+    /// A literal value written directly in `[package]`.
+    Value(String),
+    /// A `{ workspace = true }` marker delegating to `[workspace.package]`.
+    Workspace
+}
+
+impl<'de> Deserialize<'de> for Inheritable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>
+    {
+        deserializer.deserialize_any(InheritableVisitor)
+    }
+}
+
+/// Accepts either a string (a literal value) or a `{ workspace = true }` table
+/// (inheritance), rejecting any other shape.
+struct InheritableVisitor;
+
+impl<'de> Visitor<'de> for InheritableVisitor {
+    type Value = Inheritable;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a version string or a table with `workspace = true`")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error
+    {
+        Ok(Inheritable::Value(value.to_owned()))
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>
+    {
+        let mut inherited = None;
+        while let Some(key) = map.next_key::<String>()? {
+            if key == "workspace" {
+                inherited = Some(map.next_value::<bool>()?);
+            } else {
+                let _ = map.next_value::<de::IgnoredAny>()?;
+            }
+        }
+        match inherited {
+            Some(true) => Ok(Inheritable::Workspace),
+            Some(false) => Err(A::Error::custom(
+                "inheritable field sets `workspace = false`, expected `true`"
+            )),
+            None => Err(A::Error::missing_field("workspace"))
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct CargoPackage {
-    version:      Option<String>,
+    version:      Option<Inheritable>,
     repository:   Option<String>,
+    #[serde(rename = "rust-version")]
+    rust_version: Option<Inheritable>
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoWorkspacePackage {
+    version:      Option<String>,
     #[serde(rename = "rust-version")]
     rust_version: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
+struct CargoWorkspace {
+    #[serde(rename = "package")]
+    package: Option<CargoWorkspacePackage>
+}
+
+#[derive(Debug, Deserialize)]
 struct CargoToml {
-    package: CargoPackage
+    package:   CargoPackage,
+    workspace: Option<CargoWorkspace>
 }
 
 fn main() -> Result<(), ReadmeUpdateError> {
@@ -147,14 +250,24 @@ fn run() -> Result<(), ReadmeUpdateError> {
         .package
         .repository
         .ok_or(ReadmeUpdateError::RepositoryMissing)?;
-    let rust_version = cargo
-        .package
-        .rust_version
-        .ok_or(ReadmeUpdateError::RustVersionMissing)?;
-    let package_version = cargo
-        .package
-        .version
-        .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
+    let workspace_package = cargo
+        .workspace
+        .as_ref()
+        .and_then(|workspace| workspace.package.as_ref());
+    let rust_version = resolve_inheritable(
+        "rust-version",
+        cargo.package.rust_version,
+        workspace_package,
+        |package| package.rust_version.clone()
+    )?
+    .ok_or(ReadmeUpdateError::RustVersionMissing)?;
+    let package_version = resolve_inheritable(
+        "version",
+        cargo.package.version,
+        workspace_package,
+        |package| package.version.clone()
+    )?
+    .ok_or(ReadmeUpdateError::PackageVersionMissing)?;
 
     let updated = assemble_readme(
         &readme_content,
@@ -166,6 +279,22 @@ fn run() -> Result<(), ReadmeUpdateError> {
 
     if updated != readme_content {
         fs::write(&readme_path, updated).map_err(ReadmeUpdateError::WriteReadme)?;
+    }
+
+    let dependency_version = major_minor(&package_version);
+    for relative in VERSION_SYNCED_DOCS {
+        let path = root.join(relative);
+        let content = fs::read_to_string(&path).map_err(|error| ReadmeUpdateError::ReadFile {
+            path: path.display().to_string(),
+            error
+        })?;
+        let synced = rewrite_crate_version(&content, &dependency_version);
+        if synced != content {
+            fs::write(&path, synced).map_err(|error| ReadmeUpdateError::WriteFile {
+                path: path.display().to_string(),
+                error
+            })?;
+        }
     }
 
     Ok(())
@@ -188,22 +317,22 @@ fn workspace_root(start: &Path) -> Option<PathBuf> {
     None
 }
 
-/// Picks the WebApp API version to advertise: the probed value when it differs
-/// from the declared one, otherwise the declared value. A failed probe (e.g. no
-/// network) is non-fatal and falls back to the declared version.
+/// Picks the `WebApp` API version to advertise: the probed value when it
+/// differs from the declared one, otherwise the declared value. A failed probe
+/// (e.g. no network) is non-fatal and falls back to the declared version.
 fn resolve_latest_version<E: std::fmt::Display>(
     declared: &str,
     probed: Result<String, E>
 ) -> String {
     match probed {
         Ok(latest) => {
-            if latest != declared {
+            if latest == declared {
+                declared.to_owned()
+            } else {
                 eprintln!(
                     "WEBAPP_API.md declares latest version {declared} but source reports {latest}. Using source version."
                 );
                 latest
-            } else {
-                declared.to_owned()
             }
         }
         Err(error) => {
@@ -215,7 +344,7 @@ fn resolve_latest_version<E: std::fmt::Display>(
     }
 }
 
-/// Applies every managed section (MSRV badge, WebApp API badges, coverage
+/// Applies every managed section (MSRV badge, `WebApp` API badges, coverage
 /// summary) and rewrites the crate version in dependency examples, returning
 /// the updated README contents.
 fn assemble_readme(
@@ -287,6 +416,38 @@ fn parse_cargo_toml(cargo_toml: &str) -> Result<CargoToml, ReadmeUpdateError> {
     toml::from_str(cargo_toml).map_err(ReadmeUpdateError::RepositoryParse)
 }
 
+/// Resolves an inheritable `[package]` field to its concrete string value.
+///
+/// A literal value is returned unchanged. A `workspace = true` marker is looked
+/// up in `[workspace.package]` through `select`; a missing workspace section or
+/// a missing key there yields a descriptive error rather than a panic. A field
+/// absent from `[package]` resolves to `None`, preserving the previous optional
+/// behaviour.
+///
+/// `field` is the manifest key name, used only to build error messages.
+fn resolve_inheritable(
+    field: &str,
+    value: Option<Inheritable>,
+    workspace: Option<&CargoWorkspacePackage>,
+    select: impl FnOnce(&CargoWorkspacePackage) -> Option<String>
+) -> Result<Option<String>, ReadmeUpdateError> {
+    match value {
+        None => Ok(None),
+        Some(Inheritable::Value(text)) => Ok(Some(text)),
+        Some(Inheritable::Workspace) => {
+            let package =
+                workspace.ok_or_else(|| ReadmeUpdateError::InheritanceSourceMissing {
+                    field: field.to_owned()
+                })?;
+            select(package)
+                .map(Some)
+                .ok_or_else(|| ReadmeUpdateError::InheritanceValueMissing {
+                    field: field.to_owned()
+                })
+        }
+    }
+}
+
 fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
     let latest_encoded = encode_badge_component(&status.latest_version);
     let badge_label = encode_badge_component(BADGE_LINK_LABEL);
@@ -294,9 +455,9 @@ fn render_badges(status: &WebAppApiStatus, commit_url: &str) -> String {
     let commit_short: String = status.coverage_commit.chars().take(7).collect();
     let is_up_to_date = status.covered_version == status.latest_version;
     let status_text = if is_up_to_date {
-        format!("up to date ({})", commit_short)
+        format!("up to date ({commit_short})")
     } else {
-        format!("update needed ({})", commit_short)
+        format!("update needed ({commit_short})")
     };
     let coverage_message = encode_badge_component(&status_text);
     let coverage_colour = if is_up_to_date {
@@ -354,23 +515,22 @@ fn render_summary(status: &WebAppApiStatus, commit_url: &str) -> String {
     let commit_short: String = status.coverage_commit.chars().take(7).collect();
     let relation = if status.covered_version == status.latest_version {
         format!(
-            "matches the latest Telegram WebApp API release `{}`",
+            "matches the latest Telegram `WebApp` API release `{}`",
             status.latest_version
         )
     } else {
         format!(
-            "lags behind the latest Telegram WebApp API release `{}`",
+            "lags behind the latest Telegram `WebApp` API release `{}`",
             status.latest_version
         )
     };
     let date_suffix = status
         .coverage_date
         .as_deref()
-        .map(|date| format!(" (recorded on {date})"))
-        .unwrap_or_default();
+        .map_or_default(|date| format!(" (recorded on {date})"));
 
     format!(
-        "**WebApp API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.
+        "**`WebApp` API coverage:** version `{covered}` {relation}. Synced in commit [{commit_short}]({commit_url}){date_suffix}.
 ",
         covered = status.covered_version,
         relation = relation,
@@ -501,7 +661,10 @@ rust-version = "1.91"
 repository = "https://github.com/test/test"
 "#;
         let cargo = parse_cargo_toml(toml).expect("parse");
-        assert_eq!(cargo.package.rust_version.as_deref(), Some("1.91"));
+        assert_eq!(
+            cargo.package.rust_version.as_ref(),
+            Some(&Inheritable::Value("1.91".to_owned()))
+        );
         assert_eq!(
             cargo.package.repository.as_deref(),
             Some("https://github.com/test/test")
@@ -518,6 +681,113 @@ version = "1.0.0"
         let cargo = parse_cargo_toml(toml).expect("parse");
         assert!(cargo.package.rust_version.is_none());
         assert!(cargo.package.repository.is_none());
+    }
+
+    fn resolve_rust_version(cargo_toml: &str) -> Result<Option<String>, ReadmeUpdateError> {
+        let cargo = parse_cargo_toml(cargo_toml)?;
+        let workspace = cargo
+            .workspace
+            .as_ref()
+            .and_then(|workspace| workspace.package.as_ref());
+        resolve_inheritable(
+            "rust-version",
+            cargo.package.rust_version,
+            workspace,
+            |package| package.rust_version.clone()
+        )
+    }
+
+    #[test]
+    fn resolve_rust_version_keeps_plain_string() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version = "1.91"
+repository = "https://github.com/test/test"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert_eq!(resolved.as_deref(), Some("1.91"));
+    }
+
+    #[test]
+    fn resolve_rust_version_reads_workspace_package() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+
+[workspace.package]
+rust-version = "1.99"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert_eq!(resolved.as_deref(), Some("1.99"));
+    }
+
+    #[test]
+    fn resolve_rust_version_missing_workspace_section_errors() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+"#;
+        let error = resolve_rust_version(toml).expect_err("missing workspace section");
+        assert!(matches!(
+            error,
+            ReadmeUpdateError::InheritanceSourceMissing { .. }
+        ));
+    }
+
+    #[test]
+    fn resolve_rust_version_missing_workspace_key_errors() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = true
+repository = "https://github.com/test/test"
+
+[workspace.package]
+version = "1.0.0"
+"#;
+        let error = resolve_rust_version(toml).expect_err("missing workspace key");
+        assert!(matches!(
+            error,
+            ReadmeUpdateError::InheritanceValueMissing { .. }
+        ));
+    }
+
+    #[test]
+    fn resolve_rust_version_absent_field_is_none() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+repository = "https://github.com/test/test"
+"#;
+        let resolved = resolve_rust_version(toml).expect("resolve");
+        assert!(resolved.is_none());
+    }
+
+    #[test]
+    fn resolve_inheritable_rejects_workspace_false() {
+        let toml = r#"
+[package]
+name = "test"
+version = "0.12.0"
+rust-version.workspace = false
+repository = "https://github.com/test/test"
+"#;
+        let error = parse_cargo_toml(toml).expect_err("workspace = false is invalid");
+        let message = error.to_string();
+        assert!(
+            message.contains("invalid type") || message.contains("workspace"),
+            "unexpected error: {message}"
+        );
     }
 
     #[test]
@@ -602,6 +872,15 @@ See https://docs.rs/telegram-webapp-sdk for details.
                 .contains(r#"telegram-webapp-sdk = { version = "0.11", features = ["macros"] }"#)
         );
         assert!(updated.contains("https://docs.rs/telegram-webapp-sdk for details."));
+    }
+
+    #[test]
+    fn version_synced_docs_exist_in_the_repository() {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let root = workspace_root(Path::new(&manifest_dir)).unwrap();
+        for relative in VERSION_SYNCED_DOCS {
+            assert!(root.join(relative).is_file(), "missing {relative}");
+        }
     }
 
     #[test]

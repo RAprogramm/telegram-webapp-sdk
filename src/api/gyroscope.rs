@@ -74,6 +74,7 @@ pub fn stop() -> Result<(), JsValue> {
 /// # use telegram_webapp_sdk::api::gyroscope::get_angular_velocity;
 /// let _ = get_angular_velocity();
 /// ```
+#[must_use]
 pub fn get_angular_velocity() -> Option<AngularVelocity> {
     let gyro = gyroscope_object().ok()?;
     let x = Reflect::get(&gyro, &"x".into()).ok()?.as_f64()?;
@@ -87,21 +88,37 @@ pub fn get_angular_velocity() -> Option<AngularVelocity> {
 }
 
 /// Registers a callback for `gyroscopeStarted` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_started(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("gyroscopeStarted", callback)
 }
 
 /// Registers a callback for `gyroscopeChanged` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_changed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("gyroscopeChanged", callback)
 }
 
 /// Registers a callback for `gyroscopeStopped` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_stopped(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("gyroscopeStopped", callback)
 }
 
 /// Registers a callback for `gyroscopeFailed` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_failed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("gyroscopeFailed", callback)
 }

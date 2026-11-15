@@ -74,6 +74,7 @@ pub fn stop() -> Result<(), JsValue> {
 /// # use telegram_webapp_sdk::api::device_orientation::get_orientation;
 /// let _ = get_orientation();
 /// ```
+#[must_use]
 pub fn get_orientation() -> Option<Orientation> {
     let orientation = device_orientation_object().ok()?;
     let alpha = Reflect::get(&orientation, &"alpha".into()).ok()?.as_f64()?;
@@ -87,21 +88,37 @@ pub fn get_orientation() -> Option<Orientation> {
 }
 
 /// Registers a callback for `deviceOrientationStarted` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_started(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("deviceOrientationStarted", callback)
 }
 
 /// Registers a callback for `deviceOrientationChanged` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_changed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("deviceOrientationChanged", callback)
 }
 
 /// Registers a callback for `deviceOrientationStopped` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_stopped(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("deviceOrientationStopped", callback)
 }
 
 /// Registers a callback for `deviceOrientationFailed` event.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_failed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("deviceOrientationFailed", callback)
 }

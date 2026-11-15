@@ -17,6 +17,13 @@ pub struct TelegramInitData {
     /// be used to respond through `answerWebAppQuery`.
     pub query_id: Option<String>,
 
+    /// Unique identifier for the chat join request query that launched the Mini
+    /// App.
+    ///
+    /// Present when the Mini App is opened from a chat join request and is
+    /// required to process the query through `answerChatJoinRequestQuery`.
+    pub chat_join_request_query_id: Option<String>,
+
     /// Information about the current Telegram user.
     pub user: Option<TelegramUser>,
 
@@ -48,4 +55,34 @@ pub struct TelegramInitData {
 
     /// Ed25519 signature used for third-party data validation (optional).
     pub signature: Option<String>
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_urlencoded::from_str;
+
+    use super::*;
+
+    #[test]
+    fn deserialize_init_data_with_join_request_query_id() {
+        let encoded = "chat_join_request_query_id=join-42&auth_date=1700000000&hash=abc";
+        let data: TelegramInitData = from_str(encoded).unwrap();
+        assert_eq!(data.chat_join_request_query_id.as_deref(), Some("join-42"));
+        assert_eq!(data.query_id, None);
+    }
+
+    #[test]
+    fn deserialize_init_data_without_join_request_query_id() {
+        let encoded = "query_id=inline-7&auth_date=1700000000&hash=abc";
+        let data: TelegramInitData = from_str(encoded).unwrap();
+        assert_eq!(data.chat_join_request_query_id, None);
+        assert_eq!(data.query_id.as_deref(), Some("inline-7"));
+    }
+
+    #[test]
+    fn deserialize_init_data_missing_required_fields() {
+        let encoded = "auth_date=1700000000";
+        let result: Result<TelegramInitData, _> = from_str(encoded);
+        assert!(result.is_err());
+    }
 }

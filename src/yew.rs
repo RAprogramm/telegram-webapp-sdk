@@ -61,7 +61,7 @@ type ClosureCell = Rc<RefCell<Option<Closure<dyn FnMut()>>>>;
 /// ```
 #[hook]
 pub fn use_telegram_context() -> Result<TelegramContext, JsValue> {
-    let context_state = use_state(|| get_context(|c| c.clone()));
+    let context_state = use_state(|| get_context(Clone::clone));
 
     {
         let context_state = context_state.clone();
@@ -74,11 +74,10 @@ pub fn use_telegram_context() -> Result<TelegramContext, JsValue> {
             {
                 let handle_clone = handle.clone();
                 let closure_clone = closure.clone();
-                let ctx_state = context_state.clone();
 
                 let check_fn = Closure::wrap(Box::new(move || {
-                    if let Ok(ctx) = get_context(|c| c.clone()) {
-                        ctx_state.set(Ok(ctx));
+                    if let Ok(ctx) = get_context(Clone::clone) {
+                        context_state.set(Ok(ctx));
                         if let Some(id) = handle_clone.borrow_mut().take()
                             && let Some(w) = web_sys::window()
                         {
@@ -149,21 +148,21 @@ mod tests {
 
         #[wasm_bindgen_test]
         fn hook_renders_component_with_context_result() {
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Ok(container) = document.create_element("div") {
-                        yew::Renderer::<TestComponent>::with_root(container).render();
-                    }
-                }
+            if let Some(window) = web_sys::window()
+                && let Some(document) = window.document()
+                && let Ok(container) = document.create_element("div")
+            {
+                yew::Renderer::<TestComponent>::with_root(container).render();
             }
         }
 
         #[wasm_bindgen_test]
         fn hook_works_with_initialized_context() {
             let init_data = TelegramInitData {
-                query_id:       Some(String::from("test_query_2")),
-                user:           Some(TelegramUser {
-                    id: 987654321,
+                query_id: Some(String::from("test_query_2")),
+                chat_join_request_query_id: None,
+                user: Some(TelegramUser {
+                    id: 987_654_321,
                     is_bot: Some(false),
                     first_name: String::from("Test2"),
                     last_name: Some(String::from("User2")),
@@ -174,15 +173,15 @@ mod tests {
                     allows_write_to_pm: Some(true),
                     photo_url: None
                 }),
-                receiver:       None,
-                chat:           None,
-                chat_type:      None,
-                chat_instance:  None,
-                start_param:    None,
+                receiver: None,
+                chat: None,
+                chat_type: None,
+                chat_instance: None,
+                start_param: None,
                 can_send_after: None,
-                auth_date:      9876543210,
-                hash:           String::from("test_hash_2"),
-                signature:      None
+                auth_date: 9_876_543_210,
+                hash: String::from("test_hash_2"),
+                signature: None
             };
 
             let theme_params = TelegramThemeParams {
@@ -209,12 +208,11 @@ mod tests {
 
             let _ = TelegramContext::init(init_data, theme_params, raw_init_data);
 
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Ok(container) = document.create_element("div") {
-                        yew::Renderer::<TestComponent>::with_root(container).render();
-                    }
-                }
+            if let Some(window) = web_sys::window()
+                && let Some(document) = window.document()
+                && let Ok(container) = document.create_element("div")
+            {
+                yew::Renderer::<TestComponent>::with_root(container).render();
             }
         }
     }

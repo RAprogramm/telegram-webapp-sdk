@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+use std::borrow::Cow;
+
 use once_cell::unsync::OnceCell;
 use percent_encoding::{percent_decode, percent_decode_str};
 use wasm_bindgen::JsValue;
@@ -39,7 +41,7 @@ impl TelegramContext {
         raw_init_data: String
     ) -> Result<(), &'static str> {
         CONTEXT.with(|cell| {
-            cell.set(TelegramContext {
+            cell.set(Self {
                 init_data,
                 theme_params,
                 raw_init_data
@@ -53,7 +55,7 @@ impl TelegramContext {
     /// Accepts a closure and returns the result of applying it to the context.
     pub fn get<F, R>(f: F) -> Option<R>
     where
-        F: FnOnce(&TelegramContext) -> R
+        F: FnOnce(&Self) -> R
     {
         CONTEXT.with(|cell| cell.get().map(f))
     }
@@ -151,13 +153,13 @@ fn decode_query_value(raw_value: &str) -> Option<String> {
         return percent_decode(buffer.as_slice())
             .decode_utf8()
             .ok()
-            .map(|cow| cow.into_owned());
+            .map(Cow::into_owned);
     }
 
     percent_decode_str(raw_value)
         .decode_utf8()
         .ok()
-        .map(|cow| cow.into_owned())
+        .map(Cow::into_owned)
 }
 
 #[cfg(test)]
@@ -185,22 +187,28 @@ mod tests {
 
         use super::super::get_launch_params;
 
-        #[allow(dead_code)]
         #[wasm_bindgen_test]
-        fn get_launch_params_returns_error_without_window() {
-            let err = get_launch_params().unwrap_err();
-            assert_eq!(err, JsValue::from_str("no window"));
+        fn get_launch_params_defaults_platform_in_browser() -> Result<(), JsValue> {
+            let params = get_launch_params()?;
+            assert_eq!(params.tg_web_app_platform.as_deref(), Some("web"));
+            assert!(params.tg_web_app_version.is_none());
+            assert!(params.tg_web_app_start_param.is_none());
+            Ok(())
         }
 
         #[wasm_bindgen_test]
         fn get_launch_params_reads_first_query_parameter() -> Result<(), JsValue> {
             let window = web_sys::window().ok_or_else(|| JsValue::from_str("no window"))?;
             let location = window.location();
-            let original_search = location.search().unwrap_or_default();
+            let history = window.history()?;
+            let original_href = location.href()?;
+            let probe_url = format!(
+                "{}{}?tgWebAppPlatform=android&tgWebAppVersion=9.2&tgWebAppStartParam=hello%2Bworld+test&tgWebAppShowSettings=1&tgWebAppBotInline=0",
+                location.origin()?,
+                location.pathname()?
+            );
 
-            location.set_search(
-                "?tgWebAppPlatform=android&tgWebAppVersion=9.2&tgWebAppStartParam=hello%2Bworld+test&tgWebAppShowSettings=1&tgWebAppBotInline=0"
-            )?;
+            history.replace_state_with_url(&JsValue::NULL, "", Some(&probe_url))?;
 
             let params = get_launch_params()?;
             assert_eq!(params.tg_web_app_platform.as_deref(), Some("android"));
@@ -212,7 +220,7 @@ mod tests {
             assert_eq!(params.tg_web_app_show_settings, Some(true));
             assert_eq!(params.tg_web_app_bot_inline, Some(false));
 
-            location.set_search(&original_search)?;
+            history.replace_state_with_url(&JsValue::NULL, "", Some(&original_href))?;
             Ok(())
         }
     }

@@ -22,14 +22,11 @@ pub struct ViewportState {
 
 impl ViewportState {
     fn snapshot(app: Option<&TelegramWebApp>) -> Self {
-        match app {
-            Some(app) => Self {
-                height:        app.viewport_height().unwrap_or(0.0),
-                stable_height: app.viewport_stable_height().unwrap_or(0.0),
-                is_expanded:   app.is_expanded()
-            },
-            None => Self::default()
-        }
+        app.map_or_else(Self::default, |app| Self {
+            height:        app.viewport_height().unwrap_or(0.0),
+            stable_height: app.viewport_stable_height().unwrap_or(0.0),
+            is_expanded:   app.is_expanded()
+        })
     }
 }
 
@@ -56,13 +53,12 @@ pub fn use_viewport() -> ViewportState {
 
     {
         let state = state.clone();
-        use_effect_with((), move |_| {
+        use_effect_with((), move |()| {
             let stash: HandleSlot = Rc::new(RefCell::new(None));
             if let Some(app) = TelegramWebApp::instance() {
                 let app_for_handler = app.clone();
-                let state_for_handler = state.clone();
                 if let Ok(handle) = app.on_viewport_changed(move || {
-                    state_for_handler.set(ViewportState::snapshot(Some(&app_for_handler)));
+                    state.set(ViewportState::snapshot(Some(&app_for_handler)));
                 }) {
                     *stash.borrow_mut() = Some(handle);
                 }

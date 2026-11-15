@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Snapshot of `Telegram.WebApp` theme state.
-#[derive(Clone, Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct ThemeState {
     /// `"light"` or `"dark"`.
     pub color_scheme: Option<String>,
@@ -20,7 +20,7 @@ pub struct ThemeState {
 
 impl ThemeState {
     fn snapshot(app: Option<&TelegramWebApp>) -> Self {
-        let color_scheme = app.and_then(|a| a.color_scheme());
+        let color_scheme = app.and_then(TelegramWebApp::color_scheme);
         let params = get_theme_params().unwrap_or_default();
         Self {
             color_scheme,
@@ -44,6 +44,7 @@ impl ThemeState {
 ///     view! { <span>{ move || theme.get().color_scheme.unwrap_or_default() }</span> }
 /// }
 /// ```
+#[must_use]
 pub fn use_theme() -> ReadSignal<ThemeState> {
     let app = TelegramWebApp::instance();
     let signal = RwSignal::new(ThemeState::snapshot(app.as_ref()));

@@ -5,10 +5,10 @@ use js_sys::Reflect;
 use web_sys::window;
 
 /// Checks if the code is running inside Telegram Mini App.
+#[must_use]
 pub fn is_telegram_env() -> bool {
-    let win = match window() {
-        Some(w) => w,
-        None => return false
+    let Some(win) = window() else {
+        return false;
     };
 
     let telegram = match Reflect::get(&win, &"Telegram".into()) {

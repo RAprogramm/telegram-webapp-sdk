@@ -17,13 +17,10 @@ pub struct SafeAreaState {
 
 impl SafeAreaState {
     fn snapshot(app: Option<&TelegramWebApp>) -> Self {
-        match app {
-            Some(app) => Self {
-                area:    app.safe_area_inset(),
-                content: app.content_safe_area_inset()
-            },
-            None => Self::default()
-        }
+        app.map_or_else(Self::default, |app| Self {
+            area:    app.safe_area_inset(),
+            content: app.content_safe_area_inset()
+        })
     }
 }
 
@@ -43,6 +40,7 @@ impl SafeAreaState {
 ///     view! { <div>{ move || safe.get().area.map(|i| i.top).unwrap_or(0.0) }</div> }
 /// }
 /// ```
+#[must_use]
 pub fn use_safe_area() -> ReadSignal<SafeAreaState> {
     let app = TelegramWebApp::instance();
     let signal = RwSignal::new(SafeAreaState::snapshot(app.as_ref()));

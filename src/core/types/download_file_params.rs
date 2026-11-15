@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// This structure mirrors the object expected by the `downloadFile` method in
 /// the Telegram Web App JavaScript API.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct DownloadFileParams<'a> {
     /// Remote URL of the file to download.

@@ -23,10 +23,12 @@ web-sys = { version = "0.3", features = [
 ] }
 telegram-webapp-sdk = { path = "../", features = ["mock", "macros"] }
 masterror = { workspace = true }
-inventory = { workspace = true }
 
 [[bin]]
 name = "demo"
 path = "src/main.rs"
 test = false
 bench = false
+
+[lints]
+workspace = true

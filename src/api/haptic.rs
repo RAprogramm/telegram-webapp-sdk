@@ -124,7 +124,6 @@ fn haptic_object() -> Result<JsValue, JsValue> {
 #[cfg(test)]
 mod tests {
     use js_sys::{Object, Reflect};
-    use wasm_bindgen::prelude::*;
     use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
     use web_sys::window;
 

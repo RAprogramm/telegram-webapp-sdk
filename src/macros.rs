@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-//! Telegram WebApp SDK macros.
+//! Telegram `WebApp` SDK macros.
 //!
-//! This module provides declarative macros for building Telegram WebApp
+//! This module provides declarative macros for building Telegram `WebApp`
 //! applications. They let you:
 //!
 //! * Register routable pages using [`telegram_page!`]

@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2025-2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+#![expect(
+    clippy::empty_enums,
+    reason = "leptos #[component] expands to a TypedBuilder with an empty state enum"
+)]
+
 use std::cell::RefCell;
 
 use leptos::prelude::*;

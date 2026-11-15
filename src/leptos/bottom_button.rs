@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
+#![expect(
+    clippy::empty_enums,
+    reason = "leptos #[component] expands to a TypedBuilder with an empty state enum"
+)]
+
 use std::{cell::RefCell, collections::HashMap};
 
 use leptos::prelude::*;
@@ -49,6 +54,10 @@ thread_local! {
 /// }
 /// ```
 #[component]
+#[expect(
+    clippy::must_use_candidate,
+    reason = "the #[must_use] attribute is stripped by the #[component] expansion"
+)]
 pub fn BottomButton<F>(
     /// Reactive text label displayed on the button.
     #[prop(into)]
@@ -248,9 +257,17 @@ mod tests {
         (show_called, hide_called, texts, click_fn)
     }
 
-    #[wasm_bindgen_test]
+    async fn yield_to_microtasks() {
+        for _ in 0..64 {
+            let _ = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::NULL))
+                .await;
+        }
+    }
+
+    #[wasm_bindgen_test(async)]
     #[allow(dead_code)]
-    fn bottom_button_updates_and_cleans_up() {
+    async fn bottom_button_updates_and_cleans_up() {
+        let _ = any_spawner::Executor::init_wasm_bindgen();
         let (show_called, hide_called, texts, click_fn) = setup_webapp();
 
         let owner = Owner::new();
@@ -265,17 +282,22 @@ mod tests {
                 on_click=move || clicked_clone.set(true)
             />
         };
-        set_text.set("Next".to_owned());
         if let Some(func) = click_fn.borrow().as_ref() {
             let _ = func.call0(&JsValue::NULL);
         }
         assert!(clicked.get());
+
+        yield_to_microtasks().await;
+        assert!(show_called.get());
+        assert_eq!(texts.borrow().as_slice(), ["Start"]);
+
+        set_text.set("Next".to_owned());
+        yield_to_microtasks().await;
+        assert_eq!(texts.borrow().as_slice(), ["Start", "Next"]);
+
         drop(owner);
 
-        assert!(show_called.get());
         assert!(hide_called.get());
         assert!(click_fn.borrow().is_none());
-        let stored = texts.borrow();
-        assert_eq!(stored.as_slice(), ["Start", "Next"]);
     }
 }
