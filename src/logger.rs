@@ -10,7 +10,7 @@ fn styled_log(level: &str, emoji: &str, color: &str, msg: &str) {
     #[cfg(debug_assertions)]
     {
         let prefix = format!("%c[SDK] {} {}", emoji, level.to_uppercase());
-        let style = format!("color: {}; font-weight: bold", color);
+        let style = format!("color: {color}; font-weight: bold");
         console::log_3(&prefix.into(), &style.into(), &msg.into());
     }
 }

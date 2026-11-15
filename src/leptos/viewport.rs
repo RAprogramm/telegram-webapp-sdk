@@ -19,14 +19,11 @@ pub struct ViewportState {
 
 impl ViewportState {
     fn snapshot(app: Option<&TelegramWebApp>) -> Self {
-        match app {
-            Some(app) => Self {
-                height:        app.viewport_height().unwrap_or(0.0),
-                stable_height: app.viewport_stable_height().unwrap_or(0.0),
-                is_expanded:   app.is_expanded()
-            },
-            None => Self::default()
-        }
+        app.map_or_else(Self::default, |app| Self {
+            height:        app.viewport_height().unwrap_or(0.0),
+            stable_height: app.viewport_stable_height().unwrap_or(0.0),
+            is_expanded:   app.is_expanded()
+        })
     }
 }
 
@@ -48,6 +45,7 @@ impl ViewportState {
 ///     view! { <span>{ move || viewport.get().height }</span> }
 /// }
 /// ```
+#[must_use]
 pub fn use_viewport() -> ReadSignal<ViewportState> {
     let app = TelegramWebApp::instance();
     let signal = RwSignal::new(ViewportState::snapshot(app.as_ref()));

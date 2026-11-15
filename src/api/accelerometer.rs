@@ -75,6 +75,7 @@ pub fn stop() -> Result<(), JsValue> {
 /// # use telegram_webapp_sdk::api::accelerometer::get_acceleration;
 /// let _ = get_acceleration();
 /// ```
+#[must_use]
 pub fn get_acceleration() -> Option<Acceleration> {
     let accel = accelerometer_object().ok()?;
     let x = Reflect::get(&accel, &"x".into()).ok()?.as_f64()?;
@@ -90,6 +91,10 @@ pub fn get_acceleration() -> Option<Acceleration> {
 /// Registers a callback for `accelerometerStarted` event.
 ///
 /// ⚠️ The closure must be kept alive for as long as it is needed.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_started(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("accelerometerStarted", callback)
 }
@@ -97,6 +102,10 @@ pub fn on_started(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
 /// Registers a callback for `accelerometerChanged` event.
 ///
 /// ⚠️ The closure must be kept alive for as long as it is needed.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_changed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("accelerometerChanged", callback)
 }
@@ -104,6 +113,10 @@ pub fn on_changed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
 /// Registers a callback for `accelerometerStopped` event.
 ///
 /// ⚠️ The closure must be kept alive for as long as it is needed.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_stopped(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("accelerometerStopped", callback)
 }
@@ -111,6 +124,10 @@ pub fn on_stopped(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
 /// Registers a callback for `accelerometerFailed` event.
 ///
 /// ⚠️ The closure must be kept alive for as long as it is needed.
+///
+/// # Errors
+/// Returns an error when `Telegram.WebApp` is unavailable, when its `onEvent`
+/// method is missing or is not callable, or when the JavaScript call throws.
 pub fn on_failed(callback: &Closure<dyn Fn()>) -> Result<(), JsValue> {
     events::on_event("accelerometerFailed", callback)
 }

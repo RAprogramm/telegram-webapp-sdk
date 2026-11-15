@@ -5,22 +5,23 @@
 
 <a id="readme-top"></a>
 
-# Telegram WebApp SDK
+# Telegram `WebApp` SDK
 
 [![Crates.io](https://img.shields.io/crates/v/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 [![docs.rs](https://img.shields.io/docsrs/telegram-webapp-sdk)](https://docs.rs/telegram-webapp-sdk)
 [![Downloads](https://img.shields.io/crates/d/telegram-webapp-sdk)](https://crates.io/crates/telegram-webapp-sdk)
 <!-- msrv_badge:start -->
-![MSRV](https://img.shields.io/badge/MSRV-1.96-blue)
+![MSRV](https://img.shields.io/badge/MSRV-1.100-blue)
 <!-- msrv_badge:end -->
 ![License](https://img.shields.io/badge/License-MIT-informational)
 [![codecov](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk/graph/badge.svg?token=7FP6HC20BK)](https://codecov.io/gh/RAprogramm/telegram-webapp-sdk)
 [![Hits-of-Code](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk?branch=main)](https://hitsofcode.com/github/RAprogramm/telegram-webapp-sdk/view?branch=main)
 [![CI](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-webapp-sdk/actions/workflows/ci.yml)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/RAprogramm/telegram-webapp-sdk?utm_source=badge)
 [![REUSE status](https://api.reuse.software/badge/github.com/RAprogramm/telegram-webapp-sdk)](https://api.reuse.software/info/github.com/RAprogramm/telegram-webapp-sdk)
 <!-- webapp_api_badges:start -->
-[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-9.6-blue)](https://core.telegram.org/bots/webapps)
-[![Coverage](https://img.shields.io/badge/Coverage-up%20to%20date%20%2853276fd%29-brightgreen)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd)
+[![Telegram WebApp API](https://img.shields.io/badge/Telegram%20WebApp%20API-10.4-blue)](https://core.telegram.org/bots/webapps)
+[![Coverage](https://img.shields.io/badge/Coverage-update%20needed%20%28713034a%29-orange)](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a)
 <!-- webapp_api_badges:end -->
 [![Wiki](https://img.shields.io/badge/Wiki-Documentation-0088cc?logo=github)](https://github.com/RAprogramm/telegram-webapp-sdk/wiki)
 
@@ -84,6 +85,7 @@ The top section represents the entire project. Proceeding with folders and final
 - [Haptic feedback](#haptic-feedback)
 - [Device storage](#device-storage)
 - [Secure storage](#secure-storage)
+- [Serverless endpoints](#serverless-endpoints)
 - [Biometric authentication](#biometric-authentication)
 - [Location manager](#location-manager)
 - [Device sensors](#device-sensors)
@@ -103,7 +105,7 @@ The top section represents the entire project. Proceeding with folders and final
 - Optional macros for automatic initialization and routing.
 - DOM helpers for ergonomic element manipulation.
 - Biometric authentication helpers, viewport metrics, and theme utilities in
-  step with the Telegram WebApp API 9.6 feature set.
+  step with the Telegram `WebApp` API 10.1 feature set.
   
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -112,7 +114,7 @@ The top section represents the entire project. Proceeding with folders and final
 The macros are available with the `macros` feature. Enable it in your `Cargo.toml`:
 
 ```toml
-telegram-webapp-sdk = { version = "0.11", features = ["macros"] }
+telegram-webapp-sdk = { version = "0.13", features = ["macros"] }
 ```
 
 Reduce boilerplate in Telegram Mini Apps using the provided macros:
@@ -170,13 +172,13 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-telegram-webapp-sdk = "0.11"
+telegram-webapp-sdk = "0.13"
 ```
 
 Enable optional features as needed:
 
 ```toml
-telegram-webapp-sdk = { version = "0.11", features = ["macros", "yew", "leptos", "mock"] }
+telegram-webapp-sdk = { version = "0.13", features = ["macros", "yew", "leptos", "mock"] }
 ```
 
 - `macros` &mdash; enables `telegram_app!`, `telegram_page!`, and `telegram_router!`.
@@ -548,7 +550,7 @@ app.off_event(handle)?;
 
 ## Sharing
 
-Share links, prepared messages, or stories and join voice chats:
+Share prepared messages or stories and join voice chats:
 
 ```rust,no_run
 use js_sys::Object;
@@ -556,7 +558,6 @@ use telegram_webapp_sdk::webapp::TelegramWebApp;
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
 let app = TelegramWebApp::try_instance()?;
-app.share_url("https://example.com", Some("Check this out"))?;
 let sent: bool = app.share_message("msg-id").await?;
 let _ = sent;
 let params = Object::new();
@@ -780,11 +781,11 @@ selection_changed()?;
 Persist lightweight data on the user's device:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::device_storage::{set, get};
+use telegram_webapp_sdk::api::device_storage::{get_item, set_item};
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-set("theme", "dark").await?;
-let value = get("theme").await?;
+set_item("theme", "dark").await?;
+let value = get_item("theme").await?;
 # Ok(())
 # }
 ```
@@ -796,18 +797,40 @@ let value = get("theme").await?;
 Store sensitive data encrypted and restorable:
 
 ```rust,no_run
-use telegram_webapp_sdk::api::secure_storage::{set, restore};
+use telegram_webapp_sdk::api::secure_storage::{restore_item, set_item};
 
 # async fn run() -> Result<(), wasm_bindgen::JsValue> {
-set("token", "secret").await?;
-let _ = restore("token").await?;
+set_item("token", "secret").await?;
+let _ = restore_item("token").await?;
 # Ok(())
 # }
 ```
 <p align="right"><a href="#readme-top">Back to top</a></p>
+## Serverless endpoints
+
+Call the bot's [Telegram Serverless](https://core.telegram.org/bots/serverless)
+endpoints from a hosted Mini App:
+
+```rust,no_run
+use serde::Deserialize;
+use telegram_webapp_sdk::api::serverless::call;
+
+#[derive(Deserialize)]
+struct Profile {
+    name: String,
+}
+
+# async fn run() -> Result<(), telegram_webapp_sdk::api::serverless::EndpointError> {
+let profile: Profile = call("getProfile", &serde_json::json!({ "lang": "en" })).await?;
+assert!(!profile.name.is_empty());
+# Ok(())
+# }
+```
+
+<p align="right"><a href="#readme-top">Back to top</a></p>
 ## Biometric authentication
 
-Guard privileged actions behind the BiometricManager API:
+Guard privileged actions behind the `BiometricManager` API:
 
 ```rust,no_run
 use telegram_webapp_sdk::api::biometric::{
@@ -918,10 +941,10 @@ See the [init-data-rs documentation](https://docs.rs/init-data-rs) for complete 
 ## API coverage
 
 <!-- webapp_api_summary:start -->
-**WebApp API coverage:** version `9.6` matches the latest Telegram WebApp API release `9.6`. Synced in commit [53276fd](https://github.com/RAprogramm/telegram-webapp-sdk/commit/53276fd) (recorded on 2026-05-13).
+**`WebApp` API coverage:** version `10.1` lags behind the latest Telegram `WebApp` API release `10.4`. Synced in commit [713034a](https://github.com/RAprogramm/telegram-webapp-sdk/commit/713034a) (recorded on 2026-11-15).
 <!-- webapp_api_summary:end -->
 
-See [WEBAPP_API.md](./WEBAPP_API.md) for a checklist of supported Telegram WebApp JavaScript API methods and features.
+See [`WEBAPP_API.md`](./WEBAPP_API.md) for a checklist of supported Telegram `WebApp` JavaScript API methods and features.
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 

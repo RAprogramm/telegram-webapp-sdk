@@ -39,6 +39,100 @@ script = ['''
 ''']
 description = "Run clippy for all targets; fail on warnings"
 
+[tasks.check-msrv]
+category = "Lint"
+clear = true
+workspace = false
+description = "Verify Cargo.toml is the single source of truth for MSRV (manifests, README badge, wiki)"
+script_runner = "bash"
+script = ['''
+  set -euo pipefail
+
+  ROOT_MANIFEST="Cargo.toml"
+  if [ ! -f "${ROOT_MANIFEST}" ]; then
+    echo "check-msrv: ${ROOT_MANIFEST} not found (run from the workspace root)."
+    exit 1
+  fi
+
+  # The only MSRV literal allowed in the workspace.
+  EXPECTED="$(sed -n '/^\[workspace\.package\]/,/^\[/p' "${ROOT_MANIFEST}" \
+    | sed -n 's/^rust-version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' \
+    | head -n1)"
+  if [ -z "${EXPECTED}" ]; then
+    echo "check-msrv: [workspace.package] rust-version is missing from ${ROOT_MANIFEST}."
+    exit 1
+  fi
+
+  MAJOR_MINOR="$(printf "%s" "${EXPECTED}" | cut -d. -f1,2)"
+  case "${MAJOR_MINOR}" in
+    [0-9]*.[0-9]*) ;;
+    *)
+      echo "check-msrv: unexpected rust-version value '${EXPECTED}' in ${ROOT_MANIFEST}."
+      exit 1
+      ;;
+  esac
+
+  STATUS=0
+
+  # 1. Every rust-version literal in every manifest must match the workspace value.
+  MATCHES="$(find . -name Cargo.toml -not -path '*/target/*' -print0 \
+    | xargs -0 -r grep -Hn 'rust-version[[:space:]]*=[[:space:]]*"' \
+    | sed 's|^\./||' || true)"
+  OFFENDING=""
+  while IFS= read -r ENTRY; do
+    [ -n "${ENTRY}" ] || continue
+    VALUE="$(printf "%s\n" "${ENTRY}" \
+      | sed -n 's/.*rust-version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p')"
+    if [ "${VALUE}" != "${EXPECTED}" ]; then
+      OFFENDING="${OFFENDING}  ${ENTRY}"$'\n'
+    fi
+  done <<< "${MATCHES}"
+  if [ -n "${OFFENDING}" ]; then
+    echo "check-msrv: manifests with a rust-version literal different from ${EXPECTED}:"
+    printf "%s" "${OFFENDING}"
+    echo "  Fix: use 'rust-version.workspace = true', or ${EXPECTED} where inheritance is impossible."
+    STATUS=1
+  fi
+
+  # 2. The README MSRV badge must carry the same major.minor.
+  if [ -f README.md ]; then
+    BADGE="$(sed -n 's|.*img\.shields\.io/badge/MSRV-\([0-9][0-9]*\.[0-9][0-9]*\)-.*|\1|p' README.md \
+      | head -n1)"
+    if [ -z "${BADGE}" ]; then
+      echo "check-msrv: no MSRV badge in README.md (expected img.shields.io/badge/MSRV-${MAJOR_MINOR}-blue)."
+      STATUS=1
+    elif [ "${BADGE}" != "${MAJOR_MINOR}" ]; then
+      echo "check-msrv: README.md MSRV badge is ${BADGE}, expected ${MAJOR_MINOR}."
+      STATUS=1
+    fi
+  fi
+
+  # 3. Wiki pages must not mention a different MSRV.
+  if [ -d wiki ]; then
+    WIKI_MATCHES="$(grep -rHnoE '(Rust|MSRV|>=)[[:space:]]*[0-9]+\.[0-9]+' wiki --include='*.md' || true)"
+    WIKI_OFFENDING=""
+    while IFS= read -r ENTRY; do
+      [ -n "${ENTRY}" ] || continue
+      VALUE="$(printf "%s\n" "${ENTRY}" | sed -n 's/.*[^0-9]\([0-9][0-9]*\.[0-9][0-9]*\)$/\1/p')"
+      if [ -n "${VALUE}" ] && [ "${VALUE}" != "${MAJOR_MINOR}" ]; then
+        WIKI_OFFENDING="${WIKI_OFFENDING}  ${ENTRY}"$'\n'
+      fi
+    done <<< "${WIKI_MATCHES}"
+    if [ -n "${WIKI_OFFENDING}" ]; then
+      echo "check-msrv: wiki pages mentioning an MSRV different from ${MAJOR_MINOR}:"
+      printf "%s" "${WIKI_OFFENDING}"
+      STATUS=1
+    fi
+  fi
+
+  if [ "${STATUS}" -ne 0 ]; then
+    echo "check-msrv: FAILED (expected MSRV ${EXPECTED})."
+    exit 1
+  fi
+
+  echo "check-msrv: OK - MSRV ${EXPECTED} is consistent across manifests, README badge and wiki."
+''']
+
 [tasks.test]
 category = "Test"
 clear = true
@@ -62,8 +156,8 @@ description = "Verify that the crate can be packaged cleanly"
 
 [tasks.ci]
 category = "Meta"
-dependencies = ["format", "clippy", "test", "package"]
-description = "Run format, clippy, tests, and packaging checks"
+dependencies = ["format", "check-msrv", "clippy", "test", "package"]
+description = "Run format, MSRV consistency, clippy, tests, and packaging checks"
 
 # ------- Release gatekeeping -------
 
@@ -298,6 +392,7 @@ script = [
 
   printf "%b%s%b\n" "$BOLD$MAGENTA" "Lint & Tests" "$RESET"
   row "cargo make clippy"                "Run clippy --workspace --all-targets -D warnings"
+  row "cargo make check-msrv"            "Verify MSRV is consistent across manifests and docs"
   row "cargo make test"                  "Run tests --workspace"
   echo
 

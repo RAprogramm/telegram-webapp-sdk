@@ -24,8 +24,8 @@ pub fn init() -> Result<(), JsValue> {
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.requestAccess(auth_key, reason,
-/// options)`.
+/// Calls `Telegram.WebApp.BiometricManager.requestAccess(reason, tokenData)`
+/// with the official JS argument order (`reason` first, token data second).
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -48,24 +48,24 @@ pub fn request_access(
     match (reason, options) {
         (Some(r), Some(o)) => {
             let r = JsValue::from_str(r);
-            func.call3(&biom, &key, &r, o)?;
+            func.call3(&biom, &r, &key, o)?;
         }
         (Some(r), None) => {
             let r = JsValue::from_str(r);
-            func.call2(&biom, &key, &r)?;
+            func.call2(&biom, &r, &key)?;
         }
         (None, Some(o)) => {
-            func.call3(&biom, &key, &JsValue::UNDEFINED, o)?;
+            func.call3(&biom, &JsValue::UNDEFINED, &key, o)?;
         }
         (None, None) => {
-            func.call1(&biom, &key)?;
+            func.call2(&biom, &JsValue::UNDEFINED, &key)?;
         }
     }
     Ok(())
 }
 
-/// Calls `Telegram.WebApp.BiometricManager.authenticate(auth_key, reason,
-/// options)`.
+/// Calls `Telegram.WebApp.BiometricManager.authenticate(reason, tokenData)`
+/// with the official JS argument order (`reason` first, token data second).
 ///
 /// # Errors
 /// Returns `Err(JsValue)` if `BiometricManager` or the method is unavailable,
@@ -88,17 +88,17 @@ pub fn authenticate(
     match (reason, options) {
         (Some(r), Some(o)) => {
             let r = JsValue::from_str(r);
-            func.call3(&biom, &key, &r, o)?;
+            func.call3(&biom, &r, &key, o)?;
         }
         (Some(r), None) => {
             let r = JsValue::from_str(r);
-            func.call2(&biom, &key, &r)?;
+            func.call2(&biom, &r, &key)?;
         }
         (None, Some(o)) => {
-            func.call3(&biom, &key, &JsValue::UNDEFINED, o)?;
+            func.call3(&biom, &JsValue::UNDEFINED, &key, o)?;
         }
         (None, None) => {
-            func.call1(&biom, &key)?;
+            func.call2(&biom, &JsValue::UNDEFINED, &key)?;
         }
     }
     Ok(())
@@ -313,9 +313,9 @@ mod tests {
     #[allow(dead_code, clippy::unused_unit)]
     fn request_access_ok() {
         let biom = setup_biometric();
-        let func = Function::new_with_args("key", "this.called = true; this.key = key;");
+        let func = Function::new_with_args("reason, key", "this.called = true; this.key = key;");
         let _ = Reflect::set(&biom, &"requestAccess".into(), &func);
-        assert!(request_access("abc", None, None).is_ok());
+        assert!(request_access("abc", Some("why"), None).is_ok());
         assert!(
             Reflect::get(&biom, &"called".into())
                 .unwrap()
@@ -342,9 +342,12 @@ mod tests {
     #[allow(dead_code, clippy::unused_unit)]
     fn authenticate_ok() {
         let biom = setup_biometric();
-        let func = Function::new_with_args("key", "this.called = true; this.key = key;");
+        let func = Function::new_with_args(
+            "reason, key",
+            "this.called = true; this.key = key; this.reason = reason;"
+        );
         let _ = Reflect::set(&biom, &"authenticate".into(), &func);
-        assert!(authenticate("abc", None, None).is_ok());
+        assert!(authenticate("abc", Some("why"), None).is_ok());
         assert!(
             Reflect::get(&biom, &"called".into())
                 .unwrap()

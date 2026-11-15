@@ -35,11 +35,11 @@ telegram-webapp-sdk = { version = "0.11", features = ["leptos", "mock"] }
 
 ## Minimum Supported Rust Version
 
-The MSRV is **Rust 1.96** (edition 2024). Older toolchains are not supported.
+The MSRV is **Rust 1.100** (edition 2024). Older toolchains are not supported.
 
 ```bash
 rustup update stable
-rustc --version   # must be >= 1.96
+rustc --version   # must be >= 1.100
 ```
 
 ## Target the browser

@@ -41,12 +41,12 @@ jobs:
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2
+        uses: taiki-e/install-action@9983c65e42da123ff25d1f78505eb6de315aa172 # v2
         with:
           tool: cargo-semver-checks
 
       - name: Run release-plz release
-        uses: release-plz/action@2eb1d8bcb770b4c48ccfaad919734b38b51958c9 # v0.5
+        uses: release-plz/action@b8d6b54b02889ff2ae2bb82e8b57c3a8fc1683a5 # v0.5
         with:
           command: release
         env:
@@ -72,14 +72,43 @@ jobs:
         uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@82cd3e7658a6f96c86c0234aeeda1748937cb0a1 # v2
+        uses: taiki-e/install-action@9983c65e42da123ff25d1f78505eb6de315aa172 # v2
         with:
           tool: cargo-semver-checks
 
       - name: Run release-plz release-pr
-        uses: release-plz/action@2eb1d8bcb770b4c48ccfaad919734b38b51958c9 # v0.5
+        id: release_pr
+        uses: release-plz/action@b8d6b54b02889ff2ae2bb82e8b57c3a8fc1683a5 # v0.5
         with:
           command: release-pr
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # release-plz bumps Cargo.toml but cannot know about the generated
+      # README/skill sections; regenerate them on the release branch so the
+      # CI "readme refresh" gate on the release PR stays green.
+      - name: Sync generated docs with the bumped version
+        if: ${{ steps.release_pr.outputs.pr != '' }}
+        env:
+          PR_JSON: ${{ steps.release_pr.outputs.pr }}
+        run: |
+          set -euo pipefail
+          branch=$(printf '%s' "$PR_JSON" | jq -r '.head_branch // empty')
+          if [ -z "$branch" ]; then
+            echo "no open release PR; nothing to sync"
+            exit 0
+          fi
+          git fetch origin "$branch"
+          git checkout "$branch"
+          cargo run -p update-readme
+          if git diff --quiet -- README.md skills; then
+            echo "generated docs already in sync with the bumped version"
+          else
+            git config user.name "github-actions[bot]"
+            bot_email="41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.email "$bot_email"
+            git add README.md skills
+            git commit -m "chore: sync generated docs with the bumped version"
+            git push origin "$branch"
+          fi

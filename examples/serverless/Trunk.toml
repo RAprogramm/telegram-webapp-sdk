@@ -1,0 +1,5 @@
+[build]
+release = true
+
+[serve]
+port = 8082

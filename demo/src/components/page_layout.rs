@@ -11,6 +11,11 @@ pub struct PageLayout {
 impl PageLayout {
     /// Creates a new page layout inside the #app-root element, clears it and
     /// sets page title.
+    ///
+    /// # Panics
+    /// Panics when there is no browser `window` or document, or when the page
+    /// has no `<div id="app-root">` element to render into.
+    #[must_use]
     pub fn new(title: &str) -> Self {
         let document = document();
 
@@ -27,6 +32,12 @@ impl PageLayout {
         }
     }
 
+    /// Builds a page layout and prepends an `<h1>` heading with `header`.
+    ///
+    /// # Panics
+    /// Panics for the same reasons as [`Self::new`], and additionally when the
+    /// `<h1>` element cannot be created or appended to the layout root.
+    #[must_use]
     pub fn with_header(title: &str, header: &str) -> Self {
         let layout = Self::new(title);
 

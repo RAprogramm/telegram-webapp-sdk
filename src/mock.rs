@@ -4,7 +4,7 @@
 //! Mocking utilities for running the SDK outside a real Telegram client.
 //!
 //! Provides configuration, sample data, initialization helpers and utilities
-//! to simulate the Telegram WebApp environment during local development and
+//! to simulate the Telegram `WebApp` environment during local development and
 //! testing.
 
 /// Configuration types for describing the mocked Telegram environment.

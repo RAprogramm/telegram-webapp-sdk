@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.12.0...v0.13.0) - 2026-11-15
+
+### Added
+
+- add chat_join_request_query_id and Serverless endpoint bindings
+- replace the Python site builder with the xtask workspace member
+- make InitError and EndpointError teach how to recover
+- add telegram-miniapp-rust agent skill
+- add golden-path minimal example and Recipes wiki pages
+- add examples/serverless demo on Telegram Serverless
+- add conformance check of WEBAPP_API.md against the bridge script
+- add docs-check gate for API names referenced in documentation
+
+### Changed
+
+- make the wasm browser suite green and gate CI on it
+
+### Documentation
+
+- track WebApp 10.1 coverage, document Serverless, add AGENTS.md
+- rework AGENTS.md for agent consumption and add nested guides
+
+### Fixed
+
+- call biometric requestAccess/authenticate with official JS argument order
+- serialize secondary button params as a flat JS object
+- drop useless Element conversion in yew bottom button test
+- align storage, button colors and sharing with the official bridge
+- sync wiki MSRV with the manifest and gate it in check-all
+- enable rustls in xtask reqwest so CI can fetch the bridge script
+- keep generated docs in sync across releases
+- read head_branch from the release-plz PR output
+
+### Maintenance
+
+- pin the toolchain and move the lint floor into the workspace manifest
+
 ## [0.11.3](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.11.2...v0.11.3) - 2026-07-19
 
 ### CI/CD

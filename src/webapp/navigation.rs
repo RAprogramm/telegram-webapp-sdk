@@ -14,6 +14,11 @@ use crate::webapp::{
 impl TelegramWebApp {
     /// Call `WebApp.openLink(url)`.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `openLink` or it is not a callable function, when `options` cannot be
+    /// serialised into a JS object, or when the JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -38,6 +43,11 @@ impl TelegramWebApp {
     }
 
     /// Call `WebApp.openTelegramLink(url)`.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `openTelegramLink`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -162,30 +172,6 @@ impl TelegramWebApp {
         Ok(())
     }
 
-    /// Call `WebApp.shareURL(url, text)`.
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
-    /// # let app = TelegramWebApp::instance().unwrap();
-    /// app.share_url("https://example.com", Some("Check this"))
-    ///     .unwrap();
-    /// ```
-    ///
-    /// # Errors
-    /// Returns [`JsValue`] if the underlying JS call fails.
-    pub fn share_url(&self, url: &str, text: Option<&str>) -> Result<(), JsValue> {
-        let f = Reflect::get(&self.inner, &"shareURL".into())?;
-        let func = f
-            .dyn_ref::<Function>()
-            .ok_or_else(|| JsValue::from_str("shareURL is not a function"))?;
-        match text {
-            Some(t) => func.call2(&self.inner, &url.into(), &t.into())?,
-            None => func.call1(&self.inner, &url.into())?
-        };
-        Ok(())
-    }
-
     /// Callback variant of [`Self::request_chat`] (Bot API 9.6+).
     ///
     /// # Errors
@@ -241,6 +227,11 @@ impl TelegramWebApp {
 
     /// Call `WebApp.addToHomeScreen()` and return whether the prompt was shown.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `addToHomeScreen`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// # use telegram_webapp_sdk::webapp::TelegramWebApp;
@@ -257,6 +248,11 @@ impl TelegramWebApp {
     }
 
     /// Callback variant of [`Self::check_home_screen_status`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `checkHomeScreenStatus`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     pub fn check_home_screen_status_with_callback<F>(&self, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(String)

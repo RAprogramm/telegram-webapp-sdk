@@ -149,6 +149,11 @@ impl TelegramWebApp {
     }
 
     /// Callback variant of [`Self::open_invoice`].
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `openInvoice`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     pub fn open_invoice_with_callback<F>(&self, url: &str, callback: F) -> Result<(), JsValue>
     where
         F: 'static + FnOnce(String)

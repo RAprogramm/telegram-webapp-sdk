@@ -45,7 +45,7 @@ async fn main() {
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
 enum Command {
-    /// Display welcome message with WebApp buttons
+    /// Display welcome message with `WebApp` buttons
     #[command(description = "Display welcome message")]
     Start,
     /// Show help information
@@ -62,7 +62,7 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
             let keyboard = InlineKeyboardMarkup::new(vec![vec![InlineKeyboardButton::web_app(
                 "Open Integration Demo",
                 WebAppInfo {
-                    url: webapp_url.to_string().parse().map_err(|e| {
+                    url: webapp_url.clone().parse().map_err(|e| {
                         AppError::new(AppErrorKind::Internal, "Invalid WebApp URL").with_context(e)
                     })?
                 }
@@ -97,7 +97,7 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
     Ok(())
 }
 
-/// Handles data received from WebApp via sendData
+/// Handles data received from `WebApp` via sendData
 async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
     if let Some(web_app_data) = msg.web_app_data() {
         // Parse the JSON data sent from WebApp
@@ -113,7 +113,7 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
                 WebAppResponse {
                     success: true,
                     message: "Echo response from bot".to_string(),
-                    data:    Some(format!("You sent: {}", payload))
+                    data:    Some(format!("You sent: {payload}"))
                 }
             }
             "get_time" => {
@@ -145,7 +145,7 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
 
         tracing::info!(
             "WebApp message from user {}: {}",
-            msg.from.as_ref().map(|u| u.id.0).unwrap_or(0),
+            msg.from.as_ref().map_or(0, |u| u.id.0),
             webapp_msg.action
         );
     }

@@ -34,7 +34,13 @@ fn install_webapp(init_data: &str) -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen_test]
-fn provide_telegram_context_succeeds_after_init() -> Result<(), JsValue> {
+fn provide_telegram_context_lifecycle() -> Result<(), JsValue> {
+    leptos::prelude::Owner::new().with(|| {
+        let result = provide_telegram_context();
+        assert!(result.is_err());
+        Ok::<(), JsValue>(())
+    })?;
+
     install_webapp("query_id=test&auth_date=1&hash=abc")?;
     init_sdk()?;
 
@@ -45,13 +51,5 @@ fn provide_telegram_context_succeeds_after_init() -> Result<(), JsValue> {
 
         assert_eq!(ctx.init_data.query_id.as_deref(), Some("test"));
         Ok(())
-    })
-}
-
-#[wasm_bindgen_test]
-fn provide_telegram_context_fails_without_init() {
-    leptos::prelude::Owner::new().with(|| {
-        let result = provide_telegram_context();
-        assert!(result.is_err());
     })
 }

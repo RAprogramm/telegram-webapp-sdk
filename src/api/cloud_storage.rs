@@ -16,7 +16,7 @@ fn cloud_storage_object() -> Result<JsValue, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.getItem()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
@@ -38,7 +38,7 @@ pub fn get_item(key: &str) -> Result<Promise, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.setItem()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
@@ -60,7 +60,7 @@ pub fn set_item(key: &str, value: &str) -> Result<Promise, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.removeItem()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
@@ -82,7 +82,7 @@ pub fn remove_item(key: &str) -> Result<Promise, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.getItems()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
@@ -107,7 +107,7 @@ pub fn get_items(keys: &[&str]) -> Result<Promise, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.removeItems()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
@@ -133,7 +133,7 @@ pub fn remove_items(keys: &[&str]) -> Result<Promise, JsValue> {
 /// Calls `Telegram.WebApp.CloudStorage.getKeys()`.
 ///
 /// # Errors
-/// Returns `Err(JsValue)` if CloudStorage or the method is unavailable, or if
+/// Returns `Err(JsValue)` if `CloudStorage` or the method is unavailable, or if
 /// the call fails.
 ///
 /// # Examples
