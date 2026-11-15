@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.13.0...v0.13.1) - 2026-11-15
+
+### CI/CD
+
+- deps(ci)(deps): bump the ci-minor-patch group with 3 updates
+
+### Fixed
+
+- tolerate an empty release-plz PR output in the docs-sync step
+- drop semver cooldown days from the github-actions ecosystem
+
 ## [0.13.0](https://github.com/RAprogramm/telegram-webapp-sdk/compare/v0.12.0...v0.13.0) - 2026-11-15
 
 ### Added
