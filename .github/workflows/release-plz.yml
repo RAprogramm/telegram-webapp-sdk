@@ -94,7 +94,11 @@ jobs:
           PR_JSON: ${{ steps.release_pr.outputs.pr }}
         run: |
           set -euo pipefail
-          branch=$(printf '%s' "$PR_JSON" | jq -er '.head_branch')
+          branch=$(printf '%s' "$PR_JSON" | jq -r '.head_branch // empty')
+          if [ -z "$branch" ]; then
+            echo "no open release PR; nothing to sync"
+            exit 0
+          fi
           git fetch origin "$branch"
           git checkout "$branch"
           cargo run -p update-readme
