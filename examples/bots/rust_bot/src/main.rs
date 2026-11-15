@@ -44,7 +44,7 @@ async fn main() {
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
 enum Command {
-    /// Display welcome message with WebApp buttons
+    /// Display welcome message with `WebApp` buttons
     #[command(description = "Display welcome message")]
     Start,
     /// Show help information
@@ -54,7 +54,7 @@ enum Command {
 
 /// Handles bot commands (/start, /help)
 ///
-/// Sends WebApp buttons for /start or help information for /help
+/// Sends `WebApp` buttons for /start or help information for /help
 async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppError> {
     let webapp_url = std::env::var("WEBAPP_URL")
         .unwrap_or_else(|_| "https://example.com/index.html".to_string());
@@ -65,18 +65,16 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
                 vec![InlineKeyboardButton::web_app(
                     "Open Burger King Menu",
                     WebAppInfo {
-                        url: format!("{}#/burger-king", webapp_url)
-                            .parse()
-                            .map_err(|e| {
-                                AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
-                                    .with_context(e)
-                            })?
+                        url: format!("{webapp_url}#/burger-king").parse().map_err(|e| {
+                            AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
+                                .with_context(e)
+                        })?
                     }
                 )],
                 vec![InlineKeyboardButton::web_app(
                     "View Init Data",
                     WebAppInfo {
-                        url: format!("{}#/init-data", webapp_url).parse().map_err(|e| {
+                        url: format!("{webapp_url}#/init-data").parse().map_err(|e| {
                             AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
                                 .with_context(e)
                         })?
@@ -85,12 +83,10 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
                 vec![InlineKeyboardButton::web_app(
                     "Theme Parameters",
                     WebAppInfo {
-                        url: format!("{}#/theme-params", webapp_url)
-                            .parse()
-                            .map_err(|e| {
-                                AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
-                                    .with_context(e)
-                            })?
+                        url: format!("{webapp_url}#/theme-params").parse().map_err(|e| {
+                            AppError::new(AppErrorKind::Internal, "Invalid WebApp URL")
+                                .with_context(e)
+                        })?
                     }
                 )],
             ]);
@@ -124,7 +120,7 @@ async fn handle_command(bot: Bot, msg: Message, cmd: Command) -> Result<(), AppE
     Ok(())
 }
 
-/// Handles data received from WebApp
+/// Handles data received from `WebApp`
 ///
 /// Processes orders from the Burger King demo and sends confirmation messages
 async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
@@ -132,7 +128,7 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
         let order: OrderData = serde_json::from_str(&web_app_data.data).map_err(|e| {
             AppError::new(AppErrorKind::BadRequest, "Invalid order data format").with_context(e)
         })?;
-        let price_dollars = order.price_cents as f64 / 100.0;
+        let price_dollars = f64::from(order.price_cents) / 100.0;
 
         let response = format!(
             "✅ Order Received!\n\n\
@@ -149,7 +145,7 @@ async fn handle_webapp_data(bot: Bot, msg: Message) -> Result<(), AppError> {
 
         tracing::info!(
             "Order from user {}: {} (${:.2})",
-            msg.from.as_ref().map(|u| u.id.0).unwrap_or(0),
+            msg.from.as_ref().map_or(0, |u| u.id.0),
             order.name,
             price_dollars
         );

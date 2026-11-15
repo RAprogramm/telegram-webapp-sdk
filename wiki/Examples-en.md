@@ -4,6 +4,39 @@ The repository ships several runnable examples, wired into the Cargo workspace.
 Each shows a different integration style — from a full Trunk-built Mini App down
 to a plain WASM binary and the bot side of a full-stack app.
 
+## `examples/minimal` — golden path
+
+The canonical starting point: the shortest complete Mini App. It falls back to
+the SDK mock when `Telegram.WebApp` is absent, calls `init_sdk()`, marks the
+interface `ready()` + `expand()`, greets the launching user from the parsed
+`TelegramContext`, and wires the MainButton to fire haptic feedback and
+persist a visit counter through `DeviceStorage`.
+
+```bash
+cd examples/minimal
+trunk serve        # http://localhost:8081
+```
+
+Read it top to bottom before writing your own app — every step it takes is one
+the SDK docs explain in detail.
+
+## `examples/serverless` — Mini App on Telegram Serverless
+
+A full-stack demo whose backend runs on [Telegram
+Serverless](https://core.telegram.org/bots/serverless) instead of a self-hosted
+server: the Rust frontend calls the `getVisits` endpoint through
+`api::serverless::call`, and the endpoint (a JavaScript module in
+`tgcloud/endpoints/`) keeps a per-user counter in the platform's built-in
+database. One `npm run deploy` ships frontend and backend together to
+`https://app<app_id>.tgcloud.ai/`. The directory `README.md` walks through the
+@BotFather setup.
+
+```bash
+cd examples/serverless
+trunk serve          # local UI with the mock; http://localhost:8082
+npm run deploy       # build + tgcloud push (after `npx tgcloud login`)
+```
+
 ## `demo/` — Trunk WASM app
 
 A complete Mini App built with the `macros` and `mock` features. It uses

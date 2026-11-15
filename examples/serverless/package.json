@@ -1,0 +1,10 @@
+{
+  "name": "telegram-webapp-sdk-serverless-demo",
+  "private": true,
+  "scripts": {
+    "build": "trunk build --release",
+    "deploy": "npm run build && npx tgcloud push",
+    "migrate": "npx tgcloud migrate",
+    "status": "npx tgcloud status"
+  }
+}

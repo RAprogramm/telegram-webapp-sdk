@@ -17,7 +17,7 @@ pub mod cloud_storage;
 pub mod device_orientation;
 /// Device storage: local key-value storage on the current device.
 pub mod device_storage;
-/// WebApp event subscription helpers (`onEvent`/`offEvent`).
+/// `WebApp` event subscription helpers (`onEvent`/`offEvent`).
 pub mod events;
 /// Gyroscope sensor: angular velocity readings.
 pub mod gyroscope;
@@ -27,7 +27,9 @@ pub mod haptic;
 pub mod location_manager;
 /// Secure storage: encrypted key-value storage that survives reinstalls.
 pub mod secure_storage;
-/// Settings button: control over the WebApp settings button.
+/// Serverless endpoints: call the bot's Telegram Serverless project functions.
+pub mod serverless;
+/// Settings button: control over the `WebApp` settings button.
 pub mod settings_button;
 /// Theme parameters exposed by the Telegram client.
 pub mod theme;

@@ -10,6 +10,11 @@ use web_sys::{Document, Element, HtmlElement, window};
 /// - `label`: основной текст (например, "Init Data")
 /// - `subtitle`: второстепенный текст (может быть `None`)
 /// - `href`: путь, на который должна перейти страница при клике
+///
+/// # Panics
+/// Panics when the browser refuses to create or append one of the elements, or
+/// when the generated `div` cannot be cast to an `HtmlElement`.
+#[must_use]
 pub fn nav_link(label: &str, subtitle: Option<&str>, href: &str) -> Element {
     let document = document();
     let link = document.create_element("div").unwrap();

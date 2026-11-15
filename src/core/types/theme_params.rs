@@ -9,9 +9,9 @@ use web_sys::{CssStyleDeclaration, HtmlElement};
 
 use crate::logger::warn;
 
-/// Represents all theme parameters provided by the Telegram WebApp API.
+/// Represents all theme parameters provided by the Telegram `WebApp` API.
 ///
-/// Each field corresponds to a CSS color value in `#RRGGBB` format.  
+/// Each field corresponds to a CSS color value in `#RRGGBB` format.
 /// When deserialized from `Telegram.WebApp.themeParams`, only the colors
 /// actually present in the user’s current Telegram theme will be `Some`.
 ///
@@ -104,12 +104,14 @@ impl TelegramThemeParams {
     ///     Some(&"#000000".to_string())
     /// );
     /// ```
+    #[must_use]
     pub fn into_css_vars(self) -> HashMap<String, String> {
         self.css_vars_impl()
     }
 
     /// Returns all theme parameters as CSS custom properties without
     /// consuming `self`.
+    #[must_use]
     pub fn css_vars(&self) -> HashMap<String, String> {
         self.css_vars_impl()
     }
@@ -178,12 +180,9 @@ impl TelegramThemeParams {
         for (key, val) in self.into_css_vars() {
             style.set_property(&key, &val).unwrap_or_else(|err| {
                 // extract a string from the JsValue or fall back to Debug
-                let err_msg = err.as_string().unwrap_or_else(|| format!("{:?}", err));
+                let err_msg = err.as_string().unwrap_or_else(|| format!("{err:?}"));
                 // log via your styled logger
-                warn(&format!(
-                    "Failed to set CSS var {} = {}: {}",
-                    key, val, err_msg
-                ));
+                warn(&format!("Failed to set CSS var {key} = {val}: {err_msg}"));
             });
         }
 
@@ -192,6 +191,7 @@ impl TelegramThemeParams {
 
     /// Returns all non‐empty theme parameters as a vector of
     /// `(css_variable_name, color_value)` pairs.
+    #[must_use]
     pub fn to_map(&self) -> Vec<(String, String)> {
         self.css_vars_impl().into_iter().collect()
     }
@@ -209,6 +209,6 @@ impl TelegramThemeParams {
 /// unavailable or the document root cannot be cast to an `HtmlElement`.
 #[wasm_bindgen]
 pub fn apply_default_theme() -> Result<(), JsValue> {
-    let theme: TelegramThemeParams = Default::default();
+    let theme = TelegramThemeParams::default();
     theme.apply_to_root()
 }

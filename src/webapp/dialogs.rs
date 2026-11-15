@@ -62,6 +62,11 @@ impl TelegramWebApp {
 
     /// Call `WebApp.showPopup(params, callback)`.
     ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `showPopup`, when it is not a callable function, or when the JavaScript
+    /// call itself throws.
+    ///
     /// # Examples
     /// ```no_run
     /// # use js_sys::Object;
@@ -112,6 +117,11 @@ impl TelegramWebApp {
     ///
     /// The text is shown above the scanner viewport. Pass an empty string to
     /// open the scanner without a caption.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `showScanQrPopup`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run
@@ -166,6 +176,11 @@ impl TelegramWebApp {
     }
 
     /// Call `WebApp.closeScanQrPopup()`.
+    ///
+    /// # Errors
+    /// Returns a `JsValue` error when `Telegram.WebApp` does not expose
+    /// `closeScanQrPopup`, when it is not a callable function, or when the
+    /// JavaScript call itself throws.
     ///
     /// # Examples
     /// ```no_run

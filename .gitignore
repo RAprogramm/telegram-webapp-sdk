@@ -2,5 +2,5 @@
 **/target
 /wasmcov
 wasm-coverage
-demo/dist
+dist/
 __pycache__/

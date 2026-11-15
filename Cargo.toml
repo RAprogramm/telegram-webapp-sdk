@@ -1,7 +1,7 @@
 [package]
 name = "telegram-webapp-sdk"
-version = "0.11.3"
-rust-version = "1.96"
+version = "0.13.0"
+rust-version.workspace = true
 edition = "2024"
 description = "Telegram WebApp SDK for Rust"
 license = "MIT"
@@ -15,11 +15,21 @@ categories = ["web-programming", "wasm"]
 all-features = true
 
 [workspace.package]
-rust-version = "1.96"
+rust-version = "1.100"
+
+[workspace.lints.clippy]
+# The lint floor lives in the manifest so every `cargo clippy` (local, CI,
+# agents) enforces it, not only the CI command line. `priority = -1` lets the
+# individual allowances below win over the denied groups.
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+# The bridge is single-threaded wasm: `JsFuture` is `!Send` by design, so every
+# future awaiting `Telegram.WebApp` is `!Send` and a `Send` bound is meaningless.
+future_not_send = "allow"
 
 [workspace.dependencies]
 inventory = "0.3"
-masterror = "0.29"
+masterror = "0.32"
 
 
 [lib]
@@ -49,10 +59,9 @@ web-sys = { version = "0.3", features = [
   "CssStyleDeclaration",
 ] }
 percent-encoding = "2"
-masterror = { workspace = true }
 urlencoding = { version = "2", optional = true }
 inventory = { workspace = true, optional = true }
-toml = "1"
+toml = { version = "1", optional = true }
 
 [build-dependencies]
 version_check = "0.9"
@@ -79,16 +88,19 @@ default = []
 macros = ["dep:inventory"]
 yew = ["dep:yew"]
 leptos = ["dep:leptos", "dep:send_wrapper"]
-mock = ["dep:urlencoding"]
+mock = ["dep:urlencoding", "dep:toml"]
 full = ["macros", "yew", "leptos", "mock"]
 
 [workspace]
 members = [
   "demo",
+  "examples/minimal",
+  "examples/serverless",
   "examples/vanilla",
   "examples/bots/rust_bot",
   "examples/integration/backend",
   "tools/update-readme",
+  "xtask",
 ]
 default-members = ["."]
 exclude = ["examples/integration/frontend"]
@@ -96,3 +108,15 @@ exclude = ["examples/integration/frontend"]
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 wasm-bindgen-futures = "0.4"
+any_spawner = { version = "0.3", features = ["wasm-bindgen"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+divan = { version = "6.0.0", package = "codspeed-divan-compat" }
+
+[[bench]]
+name = "sdk"
+harness = false
+required-features = ["mock"]
+
+[lints]
+workspace = true

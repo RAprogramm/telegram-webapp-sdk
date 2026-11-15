@@ -17,7 +17,7 @@ pub mod logger;
 
 #[cfg(feature = "mock")]
 pub mod mock;
-/// Utility helpers, including environment detection for the Telegram WebApp.
+/// Utility helpers, including environment detection for the Telegram `WebApp`.
 pub mod utils;
 /// Safe Rust bindings for `window.Telegram.WebApp` and its sub-objects.
 pub mod webapp;

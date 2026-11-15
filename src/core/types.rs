@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2025 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-/// Chat descriptor found in the `chat` field of Telegram WebApp `initData`.
+/// Chat descriptor found in the `chat` field of Telegram `WebApp` `initData`.
 pub mod chat;
-/// Parameters accepted by the `downloadFile` Telegram WebApp method.
+/// Parameters accepted by the `downloadFile` Telegram `WebApp` method.
 pub mod download_file_params;
-/// Parsed, strongly-typed view of the Telegram WebApp `initData` payload.
+/// Parsed, strongly-typed view of the Telegram `WebApp` `initData` payload.
 pub mod init_data;
-/// Raw, string-based view of the Telegram WebApp `initData` payload used for
+/// Raw, string-based view of the Telegram `WebApp` `initData` payload used for
 /// signature validation before deserialization into richer types.
 pub mod init_data_internal;
 /// Launch parameters read from the Mini App URL query string

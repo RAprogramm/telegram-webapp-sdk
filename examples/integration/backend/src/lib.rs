@@ -3,8 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Message received from WebApp via sendData
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+/// Message received from `WebApp` via sendData
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct WebAppMessage {
     /// Action type
     pub action:  String,
@@ -12,7 +12,7 @@ pub struct WebAppMessage {
     pub payload: Option<String>
 }
 
-/// Response sent to WebApp
+/// Response sent to `WebApp`
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WebAppResponse {
     /// Success status

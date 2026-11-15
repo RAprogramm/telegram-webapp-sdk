@@ -25,7 +25,8 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     }),
     // Touches main bottom button
     ("main-button", |tg| {
-        // These setters are infallible in the SDK; wrap in Ok to fit the Handler type.
+        // These setters are infallible in the SDK; wrap in Ok to fit the
+        // Handler type.
         let _ = tg.set_bottom_button_text(BottomButton::Main, "Clicked!");
         let _ = tg.show_bottom_button(BottomButton::Main);
         Ok(())
@@ -33,7 +34,7 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     // Checks expansion state and acts accordingly
     ("is-expanded", |tg| {
         let expanded = tg.is_expanded();
-        info(&format!("isExpanded = {}", expanded));
+        info(&format!("isExpanded = {expanded}"));
         if expanded {
             tg.show_alert("Viewport is already expanded.")?;
         } else {
@@ -44,7 +45,7 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     // Tries to show "Add to Home Screen" prompt and logs the result
     ("add-to-home-screen", |tg| {
         if let Ok(shown) = tg.add_to_home_screen() {
-            info(&format!("addToHomeScreen shown = {}", shown));
+            info(&format!("addToHomeScreen shown = {shown}"));
         }
         Ok(())
     }),
@@ -52,17 +53,17 @@ const BUTTON_IDS: &[(&str, Handler)] = &[
     ("check-home-screen", |tg| {
         let _ = tg.check_home_screen_status_with_callback(|status| {
             // callback is fire-and-forget; log status
-            info(&format!("home screen status: {}", status));
+            info(&format!("home screen status: {status}"));
         });
         Ok(())
     })
 ];
 
 pub fn setup_dev_menu() {
-    // Try to get document; silently return if not available (e.g., not in browser)
-    let doc = match window().and_then(|w| w.document()) {
-        Some(doc) => doc,
-        None => return
+    // Try to get document; silently return if not available (e.g., not in
+    // browser)
+    let Some(doc) = window().and_then(|w| w.document()) else {
+        return;
     };
 
     for (id, handler) in BUTTON_IDS {
@@ -73,9 +74,11 @@ pub fn setup_dev_menu() {
             // No need to clone function pointers; they're Copy.
             let handler = *handler;
 
-            // Create JS callback that invokes our handler, logging errors to console
+            // Create JS callback that invokes our handler, logging errors to
+            // console
             let cb = Closure::<dyn FnMut()>::new(move || {
-                // Collapse nested ifs via let-chains to satisfy clippy::collapsible-if
+                // Collapse nested ifs via let-chains to satisfy
+                // clippy::collapsible-if
                 if let Some(tg) = TelegramWebApp::instance()
                     && let Err(err) = handler(&tg)
                 {
