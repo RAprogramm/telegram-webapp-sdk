@@ -73,6 +73,68 @@ impl EndpointError {
             parameters: None
         }
     }
+
+    /// Returns an actionable hint describing how to recover from this error.
+    ///
+    /// The hint is keyed on the platform error category stored in
+    /// [`Self::kind`] (see the Serverless section of the Bot API
+    /// documentation) and falls back to the HTTP status class in
+    /// [`Self::status`] when the failure was not classified.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use telegram_webapp_sdk::api::serverless::EndpointError;
+    ///
+    /// let error = EndpointError {
+    ///     message:    "init data is invalid".to_string(),
+    ///     kind:       "UNAUTHORIZED".to_string(),
+    ///     status:     401,
+    ///     parameters: None
+    /// };
+    /// assert!(error.hint().contains("initData"));
+    /// ```
+    #[must_use]
+    pub fn hint(&self) -> &'static str {
+        match self.kind.as_str() {
+            "ENDPOINT_ERROR" => {
+                "the endpoint refused the call; show `message` to the user and branch on \
+                 machine-readable codes placed inside `parameters`"
+            }
+            "UNAUTHORIZED" => {
+                "initData is missing or invalid; call init_sdk() before any Serverless call \
+                 and reopen the Mini App link from the bot to obtain fresh initData"
+            }
+            "PAYMENT_REQUIRED" => {
+                "the Mini App paid membership is missing or expired; ask the user to renew \
+                 via Telegram.WebApp.openInvoice"
+            }
+            "FORBIDDEN" => "the user blocked the bot or access to this endpoint was revoked",
+            "NOT_FOUND" => {
+                "no endpoint with this name is deployed; check the name against the bot's \
+                 Serverless configuration in BotFather"
+            }
+            "TOO_MANY_REQUESTS" => {
+                "rate limited; back off and retry later, honoring retry_after in `parameters` \
+                 when present"
+            }
+            _ if self.message.contains("InitDataUnavailable") => {
+                "call init_sdk() before any Serverless call so the bridge can send initData"
+            }
+            _ if self.status == 429 => "rate limited; back off and retry later",
+            _ if self.status >= 500 => {
+                "the endpoint or the platform failed on Telegram's side; retry with \
+                 exponential backoff"
+            }
+            _ if self.status >= 400 => {
+                "the request was rejected; validate the input payload against the endpoint \
+                 contract"
+            }
+            _ => {
+                "the call did not reach the endpoint; run inside Telegram with network access \
+                 and make sure Serverless is enabled for the bot in BotFather"
+            }
+        }
+    }
 }
 
 impl std::fmt::Display for EndpointError {
@@ -84,7 +146,7 @@ impl std::fmt::Display for EndpointError {
         if self.status != 0 {
             write!(f, " (status {})", self.status)?;
         }
-        Ok(())
+        write!(f, " — {}", self.hint())
     }
 }
 
@@ -312,5 +374,40 @@ mod tests {
         assert!(error.message.contains("deserialize"));
         assert_eq!(error.status, 0);
         Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    fn endpoint_error_display_carries_kind_status_and_hint() {
+        let error = EndpointError {
+            message:    "boom".to_string(),
+            kind:       "UNAUTHORIZED".to_string(),
+            status:     401,
+            parameters: None
+        };
+        let text = error.to_string();
+        assert!(text.contains("serverless call failed: boom"));
+        assert!(text.contains("[UNAUTHORIZED]"));
+        assert!(text.contains("(status 401)"));
+        assert!(text.contains("initData"));
+    }
+
+    #[wasm_bindgen_test]
+    fn endpoint_error_hint_falls_back_to_status_class() {
+        let unclassified = EndpointError {
+            message:    "gateway exploded".to_string(),
+            kind:       String::new(),
+            status:     502,
+            parameters: None
+        };
+        assert!(unclassified.hint().contains("backoff"));
+        assert!(unclassified.to_string().contains("(status 502)"));
+
+        let unreach = EndpointError {
+            message:    "bridge missing".to_string(),
+            kind:       String::new(),
+            status:     0,
+            parameters: None
+        };
+        assert!(unreach.hint().contains("BotFather"));
     }
 }

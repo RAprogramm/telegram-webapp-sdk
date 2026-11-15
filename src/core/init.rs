@@ -35,14 +35,40 @@ pub enum InitError {
 impl std::fmt::Display for InitError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::WindowUnavailable => write!(f, "Browser window object is not available"),
-            Self::TelegramUnavailable => write!(f, "window.Telegram is undefined"),
-            Self::WebAppUnavailable => write!(f, "Telegram.WebApp is undefined"),
-            Self::InitDataParseFailed(msg) => write!(f, "Failed to parse initData: {msg}"),
-            Self::ThemeParamsParseFailed(msg) => {
-                write!(f, "Failed to parse theme parameters: {msg}")
-            }
-            Self::ContextInitFailed(msg) => write!(f, "Failed to initialize context: {msg}")
+            Self::WindowUnavailable => write!(
+                f,
+                "Browser window object is not available — the SDK needs a DOM window; \
+                 run the app compiled for wasm32-unknown-unknown in a browser page, not in a \
+                 Web Worker or a native binary"
+            ),
+            Self::TelegramUnavailable => write!(
+                f,
+                "window.Telegram is undefined — open the app inside a Telegram chat as a Mini \
+                 App, or enable the `mock` feature and call mock::mock_telegram_webapp() to \
+                 develop in a plain browser"
+            ),
+            Self::WebAppUnavailable => write!(
+                f,
+                "Telegram.WebApp is undefined — load the official \
+                 https://telegram.org/js/telegram-web-app.js script in the page <head> before \
+                 the app bundle"
+            ),
+            Self::InitDataParseFailed(msg) => write!(
+                f,
+                "Failed to parse initData: {msg} — pass the raw URL-encoded string from \
+                 Telegram.WebApp.initData unchanged; never hand-craft or re-encode it"
+            ),
+            Self::ThemeParamsParseFailed(msg) => write!(
+                f,
+                "Failed to parse theme parameters: {msg} — Telegram.WebApp.themeParams must be \
+                 the object injected by the client; call init_sdk() only after the client has \
+                 initialized the WebApp object"
+            ),
+            Self::ContextInitFailed(msg) => write!(
+                f,
+                "Failed to initialize context: {msg} — init_sdk() may run only once per page \
+                 load; reuse the initialized context via TelegramContext::get() instead"
+            )
         }
     }
 }

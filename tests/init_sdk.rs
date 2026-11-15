@@ -99,30 +99,29 @@ fn init_sdk_context_lifecycle() -> Result<(), JsValue> {
 
 #[wasm_bindgen_test]
 fn init_error_display_formatting() {
-    assert_eq!(
-        InitError::WindowUnavailable.to_string(),
-        "Browser window object is not available"
-    );
-    assert_eq!(
-        InitError::TelegramUnavailable.to_string(),
-        "window.Telegram is undefined"
-    );
-    assert_eq!(
-        InitError::WebAppUnavailable.to_string(),
-        "Telegram.WebApp is undefined"
-    );
-    assert_eq!(
-        InitError::InitDataParseFailed("test error".to_string()).to_string(),
-        "Failed to parse initData: test error"
-    );
-    assert_eq!(
-        InitError::ThemeParamsParseFailed("theme error".to_string()).to_string(),
-        "Failed to parse theme parameters: theme error"
-    );
-    assert_eq!(
-        InitError::ContextInitFailed("context error".to_string()).to_string(),
-        "Failed to initialize context: context error"
-    );
+    let window = InitError::WindowUnavailable.to_string();
+    assert!(window.starts_with("Browser window object is not available"));
+    assert!(window.contains("wasm32-unknown-unknown"));
+
+    let telegram = InitError::TelegramUnavailable.to_string();
+    assert!(telegram.starts_with("window.Telegram is undefined"));
+    assert!(telegram.contains("mock_telegram_webapp"));
+
+    let webapp = InitError::WebAppUnavailable.to_string();
+    assert!(webapp.starts_with("Telegram.WebApp is undefined"));
+    assert!(webapp.contains("telegram-web-app.js"));
+
+    let init_data = InitError::InitDataParseFailed("test error".to_string()).to_string();
+    assert!(init_data.contains("Failed to parse initData: test error"));
+    assert!(init_data.contains("URL-encoded"));
+
+    let theme = InitError::ThemeParamsParseFailed("theme error".to_string()).to_string();
+    assert!(theme.contains("Failed to parse theme parameters: theme error"));
+    assert!(theme.contains("themeParams"));
+
+    let context = InitError::ContextInitFailed("context error".to_string()).to_string();
+    assert!(context.contains("Failed to initialize context: context error"));
+    assert!(context.contains("once per page"));
 }
 
 #[wasm_bindgen_test]
@@ -130,8 +129,10 @@ fn init_error_converts_to_jsvalue() {
     let err = InitError::WindowUnavailable;
     let js_val: JsValue = err.into();
 
-    assert_eq!(
-        js_val.as_string().unwrap(),
-        "Browser window object is not available"
+    assert!(
+        js_val
+            .as_string()
+            .unwrap_or_default()
+            .starts_with("Browser window object is not available")
     );
 }
